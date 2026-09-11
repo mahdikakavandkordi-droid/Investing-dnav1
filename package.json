@@ -1,8 +1,12 @@
 {
   "name": "investing-dna",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
-  "scripts": {"dev": "next dev", "build": "next build", "start": "next start"},
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
     "next": "^15.5.0",

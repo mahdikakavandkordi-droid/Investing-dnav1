@@ -1,3 +1,8 @@
+
+## Version 1.2
+
+Risk Profile Matrix, zone placement, human-readable behavioral insights, and cleaner result presentation.
+
 # Investing DNA
 
 Premium investor personality assessment frontend.
