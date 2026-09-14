@@ -1,0 +1,5 @@
+ "use client";
+import {useEffect,useState} from "react";import {supabase,rpc} from "@/lib/supabase";
+export default function Watchlist(){const [rows,setRows]=useState<any[]>([]),[msg,setMsg]=useState("Loading…");
+useEffect(()=>{(async()=>{try{if(!supabase)throw new Error("Configure Supabase.");const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error("Sign in to access your private watchlist.");const {data:p}=await supabase.rpc("get_or_create_current_profile");if(!p?.id)throw new Error("Profile unavailable.");const d=await rpc<any>("get_watchlist",{p_profile_id:p.id});setRows(Array.isArray(d)?d:(d?.items||[]));setMsg("")}catch(e:any){setMsg(e.message)}})()},[]);
+return <section className="section"><div className="container"><div className="eyebrow">Watchlist</div><h1>Your investments to watch.</h1>{msg&&<div className="notice">{msg}</div>}{rows.length>0&&<div className="grid3" style={{marginTop:24}}>{rows.map((x:any)=><div className="card" key={x.id||x.investment_id}><h3>{x.symbol||x.investment?.symbol}</h3><p className="muted">{x.name||x.investment?.name}</p></div>)}</div>}</div></section>}

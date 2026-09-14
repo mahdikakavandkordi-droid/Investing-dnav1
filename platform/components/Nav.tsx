@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function Nav(){return <header className="nav"><div className="navin"><Link className="brand" href="/">Investing <span>DNA</span></Link><nav className="links" aria-label="Main navigation"><Link href="/">Home</Link><Link href="/dna">Investing DNA</Link><Link href="/explore">Explore</Link><Link href="/screener">Screener</Link><Link href="/watchlist">Watchlist</Link></nav><Link className="profile-link" href="/profile">My profile</Link></div></header>}
