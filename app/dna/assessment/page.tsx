@@ -1,7 +1,6 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
-import Link from "next/link";
 import {supabase,pilot} from "@/lib/supabase";
 import {Question,Draft,Submission,answerRows,optionsFor,readDraft,writeDraft,clearDraft,sectionLabel} from "@/lib/dna";
 
@@ -69,35 +68,37 @@ export default function Assessment() {
   const q=questions[draft?.index||0];
   const chosen=q&&draft?.answers[q.question_id];
   const options=q?optionsFor(q):[];
+  const current=(draft?.index||0)+1;
 
-  return <section className="section"><div className="container narrow"><div className="card question">
-    {loading?<h1>Restoring your progress…</h1>:!draft?<>
-      <div className="eyebrow">Investing DNA · research candidate</div>
-      <h1>Get to know the investor behind your decisions.</h1>
-      <p>This 28-question assessment looks at risk tolerance, behavioral decision patterns, financial capacity and investment experience.</p>
-      <p className="muted">There are no “good investor” answers. Choose what is closest to you today. This is a pre-validation research version, not a diagnostic or investment recommendation.</p>
-      <p className="muted">You can take part without an account. Progress is kept on this browser for up to 24 hours, and you choose whether to link your result to an account.</p>
-      <button className="btn primary" disabled={busy} onClick={start}>{busy?'Starting…':'Agree and start assessment'}</button>
-    </>:q?<>
-      <div className="eyebrow">{sectionLabel(q.section)}</div>
-      <p className="muted">Question {draft.index+1} of {questions.length}</p>
-      <progress aria-label="Assessment progress" max={questions.length} value={draft.index+1}/>
-      <h1 className="question-title">{q.prompt}</h1>
-      <div role="group" aria-label="Answer choices">
-        {options.map(o=><button aria-pressed={chosen===o.value} className={'option '+(chosen===o.value?'active':'')} key={o.value} disabled={busy} onClick={()=>persist({...draft,answers:{...draft.answers,[q.question_id]:o.value}})}>{o.label}</button>)}
+  return <main className="assessment-page"><div className="container assessment-container">
+    {loading?<div className="assessment-card assessment-loading"><h1>Restoring your progress…</h1></div>:!draft?<div className="assessment-card assessment-intro">
+      <div className="eyebrow">Investing DNA assessment</div>
+      <h1>Understand how you invest.</h1>
+      <p className="assessment-lede">A short, research-stage assessment of your risk tolerance, decision patterns, financial capacity and investing experience.</p>
+      <div className="assessment-meta" aria-label="Assessment details">
+        <span>28 questions</span><span>No account required</span><span>Save later if you want</span>
       </div>
-      <div className="actions">
+      <div className="assessment-note">
+        <strong>No “good investor” answers.</strong>
+        <span>Choose what is closest to how you would really feel or act today.</span>
+      </div>
+      <button className="btn primary assessment-start" disabled={busy} onClick={start}>{busy?'Starting…':'Start assessment'}</button>
+      <p className="muted fine assessment-consent">Research candidate only — not a diagnostic or investment recommendation. Your progress stays in this browser for up to 24 hours unless you choose to save it to an account.</p>
+      {error&&<p role="alert" className="notice">{error}</p>}
+    </div>:q?<div className="assessment-card question-shell">
+      <div className="question-header"><div><div className="eyebrow">{sectionLabel(q.section)}</div><div className="question-count">Question {current} of {questions.length}</div></div><div className="question-percent">{Math.round((current/questions.length)*100)}%</div></div>
+      <progress aria-label="Assessment progress" max={questions.length} value={current}/>
+      <h1 className="question-title">{q.prompt}</h1>
+      <div className="question-options" role="group" aria-label="Answer choices">
+        {options.map(o=><button aria-pressed={chosen===o.value} className={'option '+(chosen===o.value?'active':'')} key={o.value} disabled={busy} onClick={()=>persist({...draft,answers:{...draft.answers,[q.question_id]:o.value}})}><span>{o.label}</span></button>)}
+      </div>
+      <div className="question-actions">
         <button className="btn" disabled={busy||draft.index===0} onClick={()=>persist({...draft,index:draft.index-1})}>Back</button>
         {draft.index<questions.length-1?<button className="btn primary" disabled={busy||chosen===undefined} onClick={()=>persist({...draft,index:draft.index+1})}>Next</button>:<button className="btn primary" disabled={busy||chosen===undefined} onClick={finish}>{busy?'Calculating…':'See my DNA'}</button>}
       </div>
-      <p className="muted fine">Answer based on what you would actually feel or do, not what seems most financially sophisticated.</p>
-    </>:<>
-      <h1>Unable to load your assessment</h1>
-      <button className="btn" onClick={()=>location.reload()}>Retry loading</button>
-      <button className="btn" onClick={()=>{clearDraft();setDraft(null);setError('')}}>Discard this draft</button>
-    </>}
-    {error&&<p role="alert" className="notice">{error}</p>}
-    {warning&&<p role="status" className="notice">{warning}</p>}
-    <div className="actions"><Link href="/profile">My profile</Link></div>
-  </div></div></section>;
+      <p className="muted fine question-hint">Pick the closest answer. You can go back and change it.</p>
+      {error&&<p role="alert" className="notice">{error}</p>}
+      {warning&&<p role="status" className="notice">{warning}</p>}
+    </div>:<div className="assessment-card"><h1>Unable to load your assessment</h1><p className="muted">Your saved draft could not be restored.</p><div className="question-actions"><button className="btn" onClick={()=>location.reload()}>Try again</button><button className="btn" onClick={()=>{clearDraft();setDraft(null);setError('')}}>Start fresh</button></div>{error&&<p role="alert" className="notice">{error}</p>}</div>}
+  </div></main>;
 }
