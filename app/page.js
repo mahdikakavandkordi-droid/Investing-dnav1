@@ -371,7 +371,7 @@ export default function Home() {
     try {
       const payload = { ...context, age: Number(context.age), amount_to_invest: context.amount_to_invest ? Number(context.amount_to_invest) : 'prefer_not_to_say' };
       const data = await edgeApi('save_context', { assessment_id: assessmentSession.assessment_id, session_token: assessmentSession.session_token, context: payload }, authSession?.access_token || null);
-      setResult(current => ({ ...(current || {}), report: data.report || current?.report, investment_context: data.investment_context || payload }));
+      setResult(current => ({ ...(current || {}), report: data.report || current?.report, investment_context: data.investment_context || payload, match: data.match || current?.match, portfolio: data.portfolio || current?.portfolio }));
       setNotice(c.contextSaved); setScreen('result');
       if (authSession?.user) await loadUserData();
     } catch (e) { setError(e.message || 'Unable to save context.'); }
