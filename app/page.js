@@ -1,411 +1,567 @@
- 'use client';
-import { useEffect, useMemo, useState } from "react";
+'use client';
 
-const SUPABASE_URL = "https://bxjjannguzzzqsamnhem.supabase.co";
+import { useEffect, useMemo, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bxjjannguzzzqsamnhem.supabase.co';
+const PUBLIC_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_p2fijbzQmFxdayOXr1C_fA_OMx4FepZ';
 const FN = `${SUPABASE_URL}/functions/v1/investing-dna-pilot`;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const SESSION_KEY = "investing_dna_session_v1";
+const ASSESSMENT_KEY = 'investing_dna_session_v2';
+const LANGUAGE_KEY = 'investing_dna_language_v2';
 
-async function api(action, body={}) {
-  const r=await fetch(FN,{
-    method:"POST",
-    headers:{"Content-Type":"application/json",...(ANON?{"apikey":ANON,"Authorization":`Bearer ${ANON}`}:{})},
-    body:JSON.stringify({action,...body})
+const supabase = createClient(SUPABASE_URL, PUBLIC_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+});
+
+async function edgeApi(action, body = {}, accessToken = null) {
+  const headers = { 'Content-Type': 'application/json', apikey: PUBLIC_KEY };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  const response = await fetch(FN, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ action, ...body }),
   });
-  const data=await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(data.error||data.message||"Request failed");
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || data.message || `Request failed (${response.status})`);
   return data;
 }
 
-function normalizeOptions(raw){
-  if(Array.isArray(raw)) return raw;
-  if(raw && Array.isArray(raw.options)) return raw.options;
-  if(raw && typeof raw==="object"){
-    return Object.entries(raw).map(([key,value])=>{
-      if(value && typeof value==="object")
-        return {...value,key:value.key??key,value:value.value??key,label_en:value.label_en??value.label??value.text_en??value.text??String(key)};
-      return {key,value:key,label_en:String(value)};
+const COPY = {
+  en: {
+    home: 'Home', dna: 'Investing DNA', explore: 'Explore', screener: 'Screener', compare: 'Compare', watchlist: 'Watchlist', profile: 'Profile',
+    signIn: 'Sign in', signUp: 'Create account', signOut: 'Sign out', saveDna: 'Save my DNA', optionalAccount: 'Optional account',
+    heroEyebrow: 'INVESTING DNA · INTELLIGENT INVESTING', heroTitle: 'Know yourself. Invest better.', heroLead: 'Understand the investor behind the decision — then explore real investments and see how well they fit your Investor DNA.',
+    discover: 'Discover my Investor DNA', exploreInvestments: 'Explore investments', realPlatform: 'From self-knowledge to investment fit',
+    feature1: 'Know yourself', feature1b: 'Measure Risk Tolerance, Risk Capacity and Behavioral DNA.', feature2: 'Explore real investments', feature2b: 'Browse a live investment universe from the product database.', feature3: 'Find your fit', feature3b: 'See personalized compatibility after your DNA assessment.',
+    educational: 'Educational platform only. Compatibility signals are not investment advice.',
+    universe: 'INVESTMENT UNIVERSE', exploreTitle: 'Explore investments', exploreLead: 'Search, filter, compare and open full investment profiles.', search: 'Search symbol, fund, issuer or category…', all: 'All', allRisk: 'All risk levels', allRegions: 'All regions', sort: 'Sort', featured: 'Featured', topMatch: 'Best DNA fit', return1y: '1Y return', mer: 'MER', yield: 'Yield', risk: 'Risk', view: 'View', addCompare: 'Compare', removeCompare: 'Remove', addWatchlist: 'Save', saved: 'Saved', noResults: 'No investments match these filters.', loading: 'Loading live data…',
+    liveData: 'Live backend data', sourceStatus: 'Connected to Supabase', dataError: 'Could not load investment data.',
+    detail: 'Investment profile', overview: 'Overview', performance: 'Performance & risk', construction: 'Portfolio construction', suitability: 'Who this may fit', objective: 'Objective', benchmark: 'Benchmark', strategy: 'Strategy', issuer: 'Issuer', region: 'Region', currency: 'Currency', inception: 'Inception', price: 'Price', return3y: '3Y annualized', return5y: '5Y annualized', volatility: '1Y volatility', drawdown: '1Y max drawdown', sharpe: 'Sharpe ratio', beta: 'Beta', aum: 'AUM', equity: 'Equity', fixedIncome: 'Fixed income', keyRisks: 'Key risks', dnaFit: 'Your DNA fit', whyFits: 'Why it fits', watch: 'What to watch', fitUnavailable: 'Complete your Investor DNA to unlock a personalized fit score.',
+    compareTitle: 'Compare investments', compareLead: 'Compare up to three investments side by side.', needTwo: 'Choose at least two investments to compare.', metric: 'Metric', clear: 'Clear',
+    screenerTitle: 'Investment screener', screenerLead: 'Use risk, region, type and fee filters to narrow the universe.', maxMer: 'Maximum MER', anyFee: 'Any MER',
+    watchlistTitle: 'Your watchlist', watchlistLead: 'Saved investments stay here when you sign in.', authNeeded: 'Sign in to keep a watchlist and save your Investor DNA across visits.', emptyWatchlist: 'Your watchlist is empty.',
+    profileTitle: 'Your Investor Profile', profileLead: 'Your saved DNA, latest assessment and platform activity.', noSavedDna: 'No saved Investor DNA yet.', takeAssessment: 'Take assessment', retake: 'Retake assessment', latestDna: 'Latest Investor DNA', decisionStyle: 'Decision style', pressureStyle: 'Under pressure', lastActivity: 'Last activity', savedItems: 'Saved investments',
+    before: 'BEFORE WE BEGIN', consentTitle: 'Your answers shape your DNA.', consentBody: 'There are 36 questions. Answer honestly rather than choosing what you think a “good investor” should choose.', privacy: 'Privacy first', privacyBody: 'You can complete the assessment anonymously. Creating an account is optional and lets you save your DNA, watchlist and future activity.', start: 'Start assessment', starting: 'Starting…', back: 'Back', next: 'Next', reveal: 'Reveal my DNA', analyzing: 'Analyzing…', question: 'Question', of: 'of', tolerance: 'RISK TOLERANCE', capacity: 'RISK CAPACITY', behavior: 'BEHAVIORAL DNA', notAtAll: 'Not at all', extremely: 'Extremely',
+    resultEyebrow: 'YOUR INVESTOR DNA', riskProfile: 'Risk profile', riskTolerance: 'Risk Tolerance', riskCapacity: 'Risk Capacity', fingerprint: 'Decision fingerprint', strengths: 'Strengths', watchouts: 'Watchouts', completeContext: 'Complete investment context', seeMatches: 'See investment matches', saveAndReturn: 'Save my DNA',
+    contextTitle: 'Complete your investment context', contextLead: 'This turns a DNA-only compatibility signal into a more useful context-aware view.', firstName: 'First name', age: 'Age', amount: 'Amount to invest', amountOptional: 'Amount (optional)', goal: 'Primary goal', horizon: 'Time horizon', liquidity: 'Liquidity need', requiredReturn: 'Return objective', lossImpact: 'If this fell 30%, impact on your life', experience: 'Investing experience', finishContext: 'Save context', skipContext: 'Skip for now', contextSaved: 'Investment context saved.',
+    retirement: 'Retirement / long-term wealth', growth: 'General growth', home: 'Home purchase', education: 'Education', income: 'Income', emergency: 'Emergency reserve', under2: 'Under 2 years', y1to3: '1–3 years', y3to5: '3–5 years', y5plus: '5+ years', high: 'High', medium: 'Medium', low: 'Low', preserve: 'Protect capital; return is secondary', moderateGrowth: 'Moderate growth', strongGrowth: 'Strong long-term growth', maxGrowth: 'Maximize potential growth', severe: 'Severe — essential plans would be disrupted', meaningful: 'Meaningful — I would need to change plans', manageable: 'Manageable — uncomfortable but absorbable', minimal: 'Minimal — little effect on my life', beginner: 'Beginner', some: 'Some experience', experienced: 'Experienced', advanced: 'Advanced',
+    authTitleIn: 'Sign in to Investing DNA', authTitleUp: 'Create your Investing DNA account', email: 'Email', password: 'Password', passwordHint: 'At least 6 characters', submitIn: 'Sign in', submitUp: 'Create account', switchUp: 'Need an account? Create one', switchIn: 'Already have an account? Sign in', close: 'Close', checkEmail: 'Account created. Check your email if confirmation is required.', signedIn: 'Signed in successfully.', dnaSaved: 'Your assessment is now linked to your account.',
+    retry: 'Retry', connected: 'Connected', account: 'Account', anonymous: 'Anonymous',
+  },
+  fr: {
+    home: 'Accueil', dna: 'Investing DNA', explore: 'Explorer', screener: 'Filtreur', compare: 'Comparer', watchlist: 'Favoris', profile: 'Profil',
+    signIn: 'Connexion', signUp: 'Créer un compte', signOut: 'Déconnexion', saveDna: 'Enregistrer mon DNA', optionalAccount: 'Compte facultatif',
+    heroEyebrow: 'INVESTING DNA · INVESTISSEMENT INTELLIGENT', heroTitle: 'Connaissez-vous. Investissez mieux.', heroLead: 'Comprenez l’investisseur derrière la décision, puis explorez de vrais placements et voyez leur compatibilité avec votre Investor DNA.',
+    discover: 'Découvrir mon Investor DNA', exploreInvestments: 'Explorer les placements', realPlatform: 'De la connaissance de soi à la compatibilité',
+    feature1: 'Mieux vous connaître', feature1b: 'Mesurez votre tolérance, votre capacité au risque et votre DNA comportemental.', feature2: 'Explorer de vrais placements', feature2b: 'Parcourez un univers de placements alimenté par la base de données.', feature3: 'Trouver votre compatibilité', feature3b: 'Obtenez une compatibilité personnalisée après votre évaluation.',
+    educational: 'Plateforme éducative uniquement. Les signaux de compatibilité ne sont pas des conseils en placement.',
+    universe: 'UNIVERS DE PLACEMENTS', exploreTitle: 'Explorer les placements', exploreLead: 'Recherchez, filtrez, comparez et ouvrez des profils complets.', search: 'Rechercher symbole, fonds, émetteur ou catégorie…', all: 'Tous', allRisk: 'Tous les niveaux de risque', allRegions: 'Toutes les régions', sort: 'Trier', featured: 'En vedette', topMatch: 'Meilleure compatibilité DNA', return1y: 'Rendement 1 an', mer: 'RFG', yield: 'Rendement', risk: 'Risque', view: 'Voir', addCompare: 'Comparer', removeCompare: 'Retirer', addWatchlist: 'Enregistrer', saved: 'Enregistré', noResults: 'Aucun placement ne correspond aux filtres.', loading: 'Chargement des données…',
+    liveData: 'Données du backend', sourceStatus: 'Connecté à Supabase', dataError: 'Impossible de charger les placements.',
+    detail: 'Profil du placement', overview: 'Aperçu', performance: 'Rendement et risque', construction: 'Construction du portefeuille', suitability: 'À qui cela peut convenir', objective: 'Objectif', benchmark: 'Indice de référence', strategy: 'Stratégie', issuer: 'Émetteur', region: 'Région', currency: 'Devise', inception: 'Création', price: 'Prix', return3y: '3 ans annualisé', return5y: '5 ans annualisé', volatility: 'Volatilité 1 an', drawdown: 'Baisse max 1 an', sharpe: 'Ratio de Sharpe', beta: 'Bêta', aum: 'Actif géré', equity: 'Actions', fixedIncome: 'Revenu fixe', keyRisks: 'Principaux risques', dnaFit: 'Votre compatibilité DNA', whyFits: 'Pourquoi cela convient', watch: 'Points à surveiller', fitUnavailable: 'Complétez votre Investor DNA pour obtenir un score personnalisé.',
+    compareTitle: 'Comparer les placements', compareLead: 'Comparez jusqu’à trois placements côte à côte.', needTwo: 'Choisissez au moins deux placements.', metric: 'Mesure', clear: 'Effacer',
+    screenerTitle: 'Filtreur de placements', screenerLead: 'Filtrez par risque, région, type et frais.', maxMer: 'RFG maximum', anyFee: 'Tous les RFG',
+    watchlistTitle: 'Vos favoris', watchlistLead: 'Vos placements enregistrés restent ici lorsque vous êtes connecté.', authNeeded: 'Connectez-vous pour conserver vos favoris et votre Investor DNA.', emptyWatchlist: 'Aucun placement enregistré.',
+    profileTitle: 'Votre profil d’investisseur', profileLead: 'Votre DNA enregistré, votre dernière évaluation et votre activité.', noSavedDna: 'Aucun Investor DNA enregistré.', takeAssessment: 'Faire l’évaluation', retake: 'Refaire l’évaluation', latestDna: 'Dernier Investor DNA', decisionStyle: 'Style de décision', pressureStyle: 'Sous pression', lastActivity: 'Dernière activité', savedItems: 'Placements enregistrés',
+    before: 'AVANT DE COMMENCER', consentTitle: 'Vos réponses façonnent votre DNA.', consentBody: 'Il y a 36 questions. Répondez honnêtement plutôt que de choisir ce qu’un « bon investisseur » devrait répondre.', privacy: 'Confidentialité d’abord', privacyBody: 'Vous pouvez faire l’évaluation anonymement. Le compte est facultatif et sert à conserver votre DNA, vos favoris et votre activité.', start: 'Commencer', starting: 'Démarrage…', back: 'Retour', next: 'Suivant', reveal: 'Révéler mon DNA', analyzing: 'Analyse…', question: 'Question', of: 'sur', tolerance: 'TOLÉRANCE AU RISQUE', capacity: 'CAPACITÉ DE RISQUE', behavior: 'DNA COMPORTEMENTAL', notAtAll: 'Pas du tout', extremely: 'Tout à fait',
+    resultEyebrow: 'VOTRE INVESTOR DNA', riskProfile: 'Profil de risque', riskTolerance: 'Tolérance au risque', riskCapacity: 'Capacité de risque', fingerprint: 'Empreinte décisionnelle', strengths: 'Forces', watchouts: 'Points à surveiller', completeContext: 'Compléter le contexte', seeMatches: 'Voir les compatibilités', saveAndReturn: 'Enregistrer mon DNA',
+    contextTitle: 'Complétez votre contexte d’investissement', contextLead: 'Cela rend la compatibilité plus pertinente en ajoutant votre situation actuelle.', firstName: 'Prénom', age: 'Âge', amount: 'Montant à investir', amountOptional: 'Montant (facultatif)', goal: 'Objectif principal', horizon: 'Horizon', liquidity: 'Besoin de liquidité', requiredReturn: 'Objectif de rendement', lossImpact: 'Impact d’une baisse de 30 %', experience: 'Expérience', finishContext: 'Enregistrer le contexte', skipContext: 'Plus tard', contextSaved: 'Contexte enregistré.',
+    retirement: 'Retraite / patrimoine à long terme', growth: 'Croissance générale', home: 'Achat d’une maison', education: 'Études', income: 'Revenu', emergency: 'Fonds d’urgence', under2: 'Moins de 2 ans', y1to3: '1–3 ans', y3to5: '3–5 ans', y5plus: '5 ans et +', high: 'Élevé', medium: 'Moyen', low: 'Faible', preserve: 'Protéger le capital; rendement secondaire', moderateGrowth: 'Croissance modérée', strongGrowth: 'Forte croissance à long terme', maxGrowth: 'Maximiser la croissance potentielle', severe: 'Sévère — projets essentiels perturbés', meaningful: 'Important — je devrais modifier mes plans', manageable: 'Gérable — inconfortable mais absorbable', minimal: 'Minime — peu d’effet sur ma vie', beginner: 'Débutant', some: 'Une certaine expérience', experienced: 'Expérimenté', advanced: 'Avancé',
+    authTitleIn: 'Connexion à Investing DNA', authTitleUp: 'Créer votre compte Investing DNA', email: 'Courriel', password: 'Mot de passe', passwordHint: 'Au moins 6 caractères', submitIn: 'Se connecter', submitUp: 'Créer le compte', switchUp: 'Pas de compte? Créez-en un', switchIn: 'Déjà un compte? Connectez-vous', close: 'Fermer', checkEmail: 'Compte créé. Vérifiez votre courriel si une confirmation est requise.', signedIn: 'Connexion réussie.', dnaSaved: 'Votre évaluation est maintenant liée à votre compte.',
+    retry: 'Réessayer', connected: 'Connecté', account: 'Compte', anonymous: 'Anonyme',
+  },
+  fa: {
+    home: 'خانه', dna: 'DNA سرمایه‌گذاری', explore: 'سرمایه‌گذاری‌ها', screener: 'فیلتر پیشرفته', compare: 'مقایسه', watchlist: 'لیست من', profile: 'پروفایل',
+    signIn: 'ورود', signUp: 'ساخت حساب', signOut: 'خروج', saveDna: 'ذخیره DNA من', optionalAccount: 'حساب اختیاری',
+    heroEyebrow: 'INVESTING DNA · سرمایه‌گذاری هوشمند', heroTitle: 'خودت را بشناس. بهتر سرمایه‌گذاری کن.', heroLead: 'اول سرمایه‌گذار پشت تصمیم را بشناس؛ بعد سرمایه‌گذاری‌های واقعی را بررسی کن و ببین چقدر با DNA سرمایه‌گذاری تو هماهنگ‌اند.',
+    discover: 'DNA سرمایه‌گذاری من را پیدا کن', exploreInvestments: 'بررسی سرمایه‌گذاری‌ها', realPlatform: 'از شناخت خود تا پیدا کردن گزینه مناسب',
+    feature1: 'خودت را بشناس', feature1b: 'تحمل ریسک، ظرفیت ریسک و DNA رفتاری خودت را اندازه بگیر.', feature2: 'داده واقعی را ببین', feature2b: 'محصولات واقعی را مستقیم از دیتابیس پلتفرم بررسی کن.', feature3: 'تناسب خودت را پیدا کن', feature3b: 'بعد از ارزیابی، امتیاز سازگاری هر سرمایه‌گذاری با DNA خودت را ببین.',
+    educational: 'این پلتفرم صرفاً آموزشی است و امتیازهای سازگاری توصیه سرمایه‌گذاری نیستند.',
+    universe: 'دنیای سرمایه‌گذاری', exploreTitle: 'سرمایه‌گذاری‌ها را بررسی کن', exploreLead: 'جستجو، فیلتر، مقایسه و پروفایل کامل هر محصول را باز کن.', search: 'نماد، صندوق، شرکت یا دسته‌بندی را جستجو کن…', all: 'همه', allRisk: 'همه سطح‌های ریسک', allRegions: 'همه مناطق', sort: 'مرتب‌سازی', featured: 'منتخب', topMatch: 'بیشترین تطابق DNA', return1y: 'بازده ۱ ساله', mer: 'هزینه (MER)', yield: 'بازده نقدی', risk: 'ریسک', view: 'مشاهده', addCompare: 'مقایسه', removeCompare: 'حذف', addWatchlist: 'ذخیره', saved: 'ذخیره شده', noResults: 'هیچ سرمایه‌گذاری با این فیلترها پیدا نشد.', loading: 'در حال دریافت داده واقعی…',
+    liveData: 'داده زنده بک‌اند', sourceStatus: 'متصل به Supabase', dataError: 'دریافت اطلاعات سرمایه‌گذاری‌ها ناموفق بود.',
+    detail: 'پروفایل سرمایه‌گذاری', overview: 'معرفی', performance: 'بازده و ریسک', construction: 'ساختار پرتفوی', suitability: 'برای چه کسی مناسب‌تر است', objective: 'هدف', benchmark: 'شاخص مبنا', strategy: 'استراتژی', issuer: 'ناشر', region: 'منطقه', currency: 'ارز', inception: 'تاریخ شروع', price: 'قیمت', return3y: 'بازده سالانه ۳ ساله', return5y: 'بازده سالانه ۵ ساله', volatility: 'نوسان ۱ ساله', drawdown: 'بیشترین افت ۱ ساله', sharpe: 'نسبت شارپ', beta: 'بتا', aum: 'دارایی تحت مدیریت', equity: 'سهام', fixedIncome: 'درآمد ثابت', keyRisks: 'ریسک‌های اصلی', dnaFit: 'تطابق با DNA شما', whyFits: 'چرا می‌تواند مناسب باشد', watch: 'چه چیزهایی را باید مراقب باشید', fitUnavailable: 'برای دیدن امتیاز شخصی، ابتدا DNA سرمایه‌گذاری خود را کامل کنید.',
+    compareTitle: 'مقایسه سرمایه‌گذاری‌ها', compareLead: 'تا سه سرمایه‌گذاری را کنار هم مقایسه کن.', needTwo: 'حداقل دو سرمایه‌گذاری برای مقایسه انتخاب کن.', metric: 'معیار', clear: 'پاک کردن',
+    screenerTitle: 'فیلتر پیشرفته سرمایه‌گذاری', screenerLead: 'با ریسک، منطقه، نوع محصول و هزینه، گزینه‌ها را محدود کن.', maxMer: 'حداکثر MER', anyFee: 'هر میزان هزینه',
+    watchlistTitle: 'لیست سرمایه‌گذاری‌های من', watchlistLead: 'وقتی وارد حساب باشی، گزینه‌های ذخیره‌شده اینجا می‌مانند.', authNeeded: 'برای نگه‌داشتن Watchlist و ذخیره DNA بین مراجعه‌ها وارد حساب شو.', emptyWatchlist: 'هنوز چیزی ذخیره نکرده‌ای.',
+    profileTitle: 'پروفایل سرمایه‌گذار شما', profileLead: 'DNA ذخیره‌شده، آخرین ارزیابی و فعالیت شما در پلتفرم.', noSavedDna: 'هنوز DNA ذخیره‌شده‌ای نداری.', takeAssessment: 'شروع ارزیابی', retake: 'ارزیابی دوباره', latestDna: 'آخرین DNA سرمایه‌گذاری', decisionStyle: 'سبک تصمیم‌گیری', pressureStyle: 'رفتار تحت فشار', lastActivity: 'آخرین فعالیت', savedItems: 'سرمایه‌گذاری‌های ذخیره‌شده',
+    before: 'قبل از شروع', consentTitle: 'پاسخ‌های شما DNA شما را شکل می‌دهند.', consentBody: '۳۶ سؤال وجود دارد. صادقانه پاسخ بده؛ نه چیزی که فکر می‌کنی یک «سرمایه‌گذار خوب» باید انتخاب کند.', privacy: 'حریم خصوصی در اولویت است', privacyBody: 'می‌توانی ارزیابی را بدون ساخت حساب انجام بدهی. حساب کاملاً اختیاری است و فقط برای ذخیره DNA، لیست و فعالیت‌های بعدی استفاده می‌شود.', start: 'شروع ارزیابی', starting: 'در حال شروع…', back: 'بازگشت', next: 'بعدی', reveal: 'نمایش DNA من', analyzing: 'در حال تحلیل…', question: 'سؤال', of: 'از', tolerance: 'تحمل ریسک', capacity: 'ظرفیت ریسک', behavior: 'DNA رفتاری', notAtAll: 'اصلاً', extremely: 'کاملاً',
+    resultEyebrow: 'DNA سرمایه‌گذاری شما', riskProfile: 'پروفایل ریسک', riskTolerance: 'تحمل ریسک', riskCapacity: 'ظرفیت ریسک', fingerprint: 'اثر انگشت تصمیم‌گیری', strengths: 'نقاط قوت', watchouts: 'موارد قابل توجه', completeContext: 'تکمیل شرایط سرمایه‌گذاری', seeMatches: 'دیدن تطابق سرمایه‌گذاری‌ها', saveAndReturn: 'ذخیره DNA من',
+    contextTitle: 'شرایط سرمایه‌گذاری‌ات را کامل کن', contextLead: 'این اطلاعات باعث می‌شود تطابق‌ها فقط بر اساس DNA نباشند و شرایط واقعی سرمایه‌گذاری تو هم در نظر گرفته شود.', firstName: 'نام', age: 'سن', amount: 'مبلغ سرمایه‌گذاری', amountOptional: 'مبلغ (اختیاری)', goal: 'هدف اصلی', horizon: 'افق زمانی', liquidity: 'نیاز به نقدشوندگی', requiredReturn: 'هدف بازده', lossImpact: 'اگر این سرمایه‌گذاری ۳۰٪ افت کند چه اثری دارد؟', experience: 'تجربه سرمایه‌گذاری', finishContext: 'ذخیره شرایط', skipContext: 'فعلاً رد کن', contextSaved: 'شرایط سرمایه‌گذاری ذخیره شد.',
+    retirement: 'بازنشستگی / ثروت بلندمدت', growth: 'رشد عمومی سرمایه', home: 'خرید خانه', education: 'تحصیل', income: 'درآمد دوره‌ای', emergency: 'ذخیره اضطراری', under2: 'کمتر از ۲ سال', y1to3: '۱ تا ۳ سال', y3to5: '۳ تا ۵ سال', y5plus: 'بیش از ۵ سال', high: 'زیاد', medium: 'متوسط', low: 'کم', preserve: 'حفظ سرمایه؛ بازده در اولویت دوم است', moderateGrowth: 'رشد متعادل', strongGrowth: 'رشد قوی بلندمدت', maxGrowth: 'بیشینه‌کردن رشد بالقوه', severe: 'شدید — برنامه‌های ضروری مختل می‌شوند', meaningful: 'قابل‌توجه — باید برنامه‌هایم را تغییر بدهم', manageable: 'قابل مدیریت — ناراحت‌کننده اما قابل تحمل', minimal: 'کم — اثر مهمی روی زندگی‌ام ندارد', beginner: 'مبتدی', some: 'کمی تجربه', experienced: 'باتجربه', advanced: 'پیشرفته',
+    authTitleIn: 'ورود به Investing DNA', authTitleUp: 'ساخت حساب Investing DNA', email: 'ایمیل', password: 'رمز عبور', passwordHint: 'حداقل ۶ کاراکتر', submitIn: 'ورود', submitUp: 'ساخت حساب', switchUp: 'حساب نداری؟ بساز', switchIn: 'حساب داری؟ وارد شو', close: 'بستن', checkEmail: 'حساب ساخته شد. اگر تأیید ایمیل فعال باشد، ایمیلت را بررسی کن.', signedIn: 'با موفقیت وارد شدی.', dnaSaved: 'این ارزیابی به حساب تو متصل و ذخیره شد.',
+    retry: 'تلاش دوباره', connected: 'متصل', account: 'حساب', anonymous: 'بدون حساب',
+  },
+};
+
+const ARCHETYPE = {
+  VAULT: { en: 'The Capital Protector', fr: 'Protecteur du capital', fa: 'محافظ سرمایه' },
+  ANCHOR: { en: 'The Steady Builder', fr: 'Bâtisseur stable', fa: 'سازنده باثبات' },
+  COOLHAND: { en: 'The Calm Conservative', fr: 'Conservateur serein', fa: 'محافظ آرام' },
+  SCOUT: { en: 'The Cautious Explorer', fr: 'Explorateur prudent', fa: 'کاوشگر محتاط' },
+  MAVERICK: { en: 'The Balanced Risk Taker', fr: 'Preneur de risque équilibré', fa: 'ریسک‌پذیر متعادل' },
+  STRIKER: { en: 'The Calculated Aggressor', fr: 'Agresseur calculé', fa: 'مهاجم حساب‌شده' },
+  HOTSHOT: { en: 'The High-Risk Aspirant', fr: 'Aspirant à haut risque', fa: 'ریسک‌پذیر بلندپرواز' },
+  HIGHROLLER: { en: 'The High-Conviction Investor', fr: 'Investisseur à forte conviction', fa: 'سرمایه‌گذار با اطمینان بالا' },
+  JACKPOT: { en: 'The Adaptive Risk Taker', fr: 'Preneur de risque adaptable', fa: 'ریسک‌پذیر انعطاف‌پذیر' },
+};
+
+const CONTEXT_OPTIONS = {
+  goal: [
+    ['retirement', 'retirement'], ['growth', 'growth'], ['house', 'home'], ['education', 'education'], ['income', 'income'], ['emergency', 'emergency'],
+  ],
+  time_horizon: [['under_2_years', 'under2'], ['1_3_years', 'y1to3'], ['3_5_years', 'y3to5'], ['5_plus_years', 'y5plus']],
+  liquidity_need: [['high', 'high'], ['medium', 'medium'], ['low', 'low']],
+  required_return: [['capital_preservation', 'preserve'], ['moderate_growth', 'moderateGrowth'], ['strong_growth', 'strongGrowth'], ['maximum_growth', 'maxGrowth']],
+  loss_consequence: [['severe', 'severe'], ['meaningful', 'meaningful'], ['manageable', 'manageable'], ['minimal', 'minimal']],
+  experience: [['beginner', 'beginner'], ['some', 'some'], ['experienced', 'experienced'], ['advanced', 'advanced']],
+};
+
+function fmtPct(value, digits = 1) {
+  if (value === null || value === undefined || value === '') return '—';
+  const n = Number(value);
+  return Number.isFinite(n) ? `${n.toFixed(digits)}%` : '—';
+}
+function fmtMoney(value, currency = 'CAD') {
+  if (value === null || value === undefined || value === '') return '—';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat('en-CA', { style: 'currency', currency, maximumFractionDigits: 2 }).format(n);
+}
+function fmtCompact(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat('en-CA', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+}
+function optionArray(q, language) {
+  const raw = language === 'fr' ? q.options_fr : language === 'fa' ? q.options_fa : q.options;
+  const fallback = Array.isArray(q.options) ? q.options : [];
+  return Array.isArray(raw) && raw.length ? raw : fallback;
+}
+function questionPrompt(q, language) {
+  return q?.[`prompt_${language}`] || q?.prompt || q?.prompt_en || '';
+}
+function sectionName(section, c) {
+  if (section === 'risk_tolerance') return c.tolerance;
+  if (section === 'risk_capacity') return c.capacity;
+  return c.behavior;
+}
+function normalizeJsonList(value) {
+  if (Array.isArray(value)) return value;
+  if (value && typeof value === 'object') return Object.values(value);
+  return value ? [String(value)] : [];
+}
+function matchFromSubmit(result) {
+  const list = result?.match?.results;
+  return Array.isArray(list) ? list : [];
+}
+
+function Brand({ compact = false }) {
+  return <button className={`brand ${compact ? 'compact' : ''}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Investing DNA">
+    <img src="/logo.png" alt="Investing DNA" />
+  </button>;
+}
+
+function LanguagePicker({ language, setLanguage }) {
+  return <div className="language-picker" role="group" aria-label="Language">
+    <button className={language === 'en' ? 'active' : ''} onClick={() => setLanguage('en')}>EN</button>
+    <button className={language === 'fr' ? 'active' : ''} onClick={() => setLanguage('fr')}>FR</button>
+    <button className={language === 'fa' ? 'active' : ''} onClick={() => setLanguage('fa')}>فا</button>
+  </div>;
+}
+
+function EmptyState({ children }) { return <div className="empty-state">{children}</div>; }
+
+export default function Home() {
+  const [language, setLanguage] = useState('en');
+  const c = COPY[language] || COPY.en;
+  const [screen, setScreen] = useState('home');
+  const [authSession, setAuthSession] = useState(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [pendingClaim, setPendingClaim] = useState(false);
+  const [profileHome, setProfileHome] = useState(null);
+  const [savedDna, setSavedDna] = useState(null);
+  const [watchlist, setWatchlist] = useState([]);
+  const [userMatches, setUserMatches] = useState([]);
+
+  const [catalog, setCatalog] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState('');
+  const [search, setSearch] = useState('');
+  const [assetType, setAssetType] = useState('All');
+  const [riskFilter, setRiskFilter] = useState('All');
+  const [regionFilter, setRegionFilter] = useState('All');
+  const [maxMer, setMaxMer] = useState('any');
+  const [sortBy, setSortBy] = useState('featured');
+  const [selectedInvestment, setSelectedInvestment] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [compareIds, setCompareIds] = useState([]);
+
+  const [assessmentSession, setAssessmentSession] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [result, setResult] = useState(null);
+  const [context, setContext] = useState({
+    first_name: '', age: '', amount_to_invest: '', goal: 'growth', time_horizon: '5_plus_years', liquidity_need: 'low', required_return: 'moderate_growth', loss_consequence: 'manageable', experience: 'some',
+  });
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+
+  useEffect(() => {
+    try {
+      const savedLanguage = localStorage.getItem(LANGUAGE_KEY);
+      if (savedLanguage && COPY[savedLanguage]) setLanguage(savedLanguage);
+      const savedAssessment = JSON.parse(localStorage.getItem(ASSESSMENT_KEY) || 'null');
+      if (savedAssessment?.assessment_id && savedAssessment?.session_token) setAssessmentSession(savedAssessment);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem(LANGUAGE_KEY, language); } catch {}
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === 'fa' ? 'rtl' : 'ltr';
+  }, [language]);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => { if (mounted) setAuthSession(data.session || null); });
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => setAuthSession(session || null));
+    return () => { mounted = false; subscription?.subscription?.unsubscribe(); };
+  }, []);
+
+  useEffect(() => { loadCatalog(); }, []);
+
+  useEffect(() => {
+    if (authSession?.user) loadUserData(authSession);
+    else {
+      setProfileHome(null); setSavedDna(null); setWatchlist([]); setUserMatches([]);
+    }
+  }, [authSession?.user?.id]);
+
+  async function loadCatalog() {
+    setCatalogLoading(true); setCatalogError('');
+    const fields = 'id,symbol,name,legal_name,asset_type,category,subcategory,strategy,sector,region,country_code,currency,exchange,description,inception_date,is_featured,data_status,issuer_name,issuer_website,metrics_as_of_date,price,daily_change_pct,return_1m_pct,return_3m_pct,return_1y_pct,return_3y_annualized_pct,return_5y_annualized_pct,yield_pct,distribution_frequency,mer_pct,aum,volume,risk_level,volatility_1y_pct,max_drawdown_1y_pct,beta,sharpe_ratio,standard_deviation_pct,data_quality_status,data_quality_score,profile_objective,profile_benchmark,profile_methodology,profile_portfolio_construction,profile_target_allocation,profile_geographic_exposure,profile_currency_hedging,profile_distribution_policy,profile_management_style,profile_replication_method,profile_ideal_for,profile_key_risks,profile_summary,equity_pct,fixed_income_pct';
+    const { data, error: loadError } = await supabase.from('v_app_investment_catalog').select(fields).order('is_featured', { ascending: false }).order('name');
+    if (loadError) setCatalogError(loadError.message || c.dataError);
+    else setCatalog(Array.isArray(data) ? data : []);
+    setCatalogLoading(false);
+  }
+
+  async function loadUserData(session = authSession) {
+    if (!session?.user) return;
+    const [homeRes, dnaRes, watchRes] = await Promise.all([
+      supabase.from('v_investor_home').select('*').maybeSingle(),
+      supabase.from('v_app_dna').select('*').maybeSingle(),
+      supabase.from('v_app_watchlist').select('*').order('created_at', { ascending: false }),
+    ]);
+    if (!homeRes.error) setProfileHome(homeRes.data || null);
+    if (!dnaRes.error) setSavedDna(dnaRes.data || null);
+    if (!watchRes.error) setWatchlist(Array.isArray(watchRes.data) ? watchRes.data : []);
+    const assessmentId = dnaRes.data?.latest_assessment_id || homeRes.data?.latest_assessment_id;
+    if (assessmentId) {
+      const { data } = await supabase.from('v_investment_match_ranked').select('*').eq('assessment_id', assessmentId).order('match_rank').limit(100);
+      setUserMatches(Array.isArray(data) ? data : []);
+    } else setUserMatches([]);
+  }
+
+  const submitMatches = useMemo(() => matchFromSubmit(result), [result]);
+  const matchMap = useMemo(() => {
+    const map = new Map();
+    for (const item of userMatches) map.set(item.investment_id, item);
+    for (const item of submitMatches) map.set(item.investment_id, item);
+    return map;
+  }, [userMatches, submitMatches]);
+
+  const regions = useMemo(() => [...new Set(catalog.map(x => x.region).filter(Boolean))].sort(), [catalog]);
+  const types = useMemo(() => [...new Set(catalog.map(x => x.asset_type).filter(Boolean))].sort(), [catalog]);
+  const riskLevels = useMemo(() => [...new Set(catalog.map(x => x.risk_level).filter(Boolean))].sort(), [catalog]);
+
+  const filteredCatalog = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const max = maxMer === 'any' ? null : Number(maxMer);
+    const rows = catalog.filter(x => {
+      const haystack = [x.symbol, x.name, x.issuer_name, x.category, x.subcategory, x.strategy, x.region].filter(Boolean).join(' ').toLowerCase();
+      return (!q || haystack.includes(q)) &&
+        (assetType === 'All' || x.asset_type === assetType) &&
+        (riskFilter === 'All' || x.risk_level === riskFilter) &&
+        (regionFilter === 'All' || x.region === regionFilter) &&
+        (max === null || (x.mer_pct !== null && Number(x.mer_pct) <= max));
     });
-  }
-  return [];
-}
-function optionValue(o,i){ return o&&typeof o==="object" ? o.value??o.key??o.id??i : o; }
-function optionLabel(o,i){ return o&&typeof o==="object" ? o.label??o.label_en??o.text_en??o.text??o.label_fa??String(optionValue(o,i)) : String(o); }
-function clamp(n,min=0,max=100){ return Math.max(min,Math.min(max,Number(n)||0)); }
+    return rows.sort((a, b) => {
+      if (sortBy === 'match') return Number(matchMap.get(b.id)?.match_score || -1) - Number(matchMap.get(a.id)?.match_score || -1);
+      if (sortBy === 'return') return Number(b.return_1y_pct ?? -999) - Number(a.return_1y_pct ?? -999);
+      if (sortBy === 'fee') return Number(a.mer_pct ?? 999) - Number(b.mer_pct ?? 999);
+      if (sortBy === 'name') return String(a.name).localeCompare(String(b.name));
+      return Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured)) || String(a.name).localeCompare(String(b.name));
+    });
+  }, [catalog, search, assetType, riskFilter, regionFilter, maxMer, sortBy, matchMap]);
 
-const faOptions={
- RT01:["بازده ۶٪ با تغییرات بسیار کم قیمت","بازده ۱۰٪ با مقداری نوسان قیمت","بازده ۱۶٪ با نوسان شدید قیمت","بازده ۲۵٪ با نوسان بسیار شدید قیمت"],RT02:["بیشتر یا تمام آن را می‌فروشم","بخشی از آن را می‌فروشم","آن را نگه می‌دارم","بیشتر خرید می‌کنم"],RT03:["۹۵٪ احتمال سود ۴٬۰۰۰ دلار؛ ۵٪ احتمال زیان ۵۰۰ دلار","۸۰٪ احتمال سود ۶٬۰۰۰ دلار؛ ۲۰٪ احتمال زیان ۲٬۰۰۰ دلار","۶۵٪ احتمال سود ۱۰٬۰۰۰ دلار؛ ۳۵٪ احتمال زیان ۵٬۰۰۰ دلار","۵۰٪ احتمال سود ۱۶٬۰۰۰ دلار؛ ۵۰٪ احتمال زیان ۸٬۰۰۰ دلار"],RT04:["اول از همه از پولم محافظت می‌کنم","برای بازده بهتر مقداری ریسک می‌پذیرم","با نوسان شدید قیمت راحت هستم","برای بازده بسیار بالاتر، زیان‌های بزرگ را می‌پذیرم"],RT05:["می‌فروشم و سراغ گزینه دیگری می‌روم","آن را بررسی می‌کنم و شاید بخشی را بفروشم","اگر دلیل اولیه‌ام هنوز معتبر باشد نگهش می‌دارم","اگر دلیل اولیه‌ام همچنان قوی باشد نگه می‌دارم و شاید بیشتر بخرم"],RT06:["خیلی ناراحت می‌شوم","تا حدی ناراحت می‌شوم","راحت هستم","کاملاً راحت هستم"],RT07:["سریع می‌فروشم","صبر می‌کنم و قبل از اقدام فکر می‌کنم","سرمایه‌گذاری‌هایم را نگه می‌دارم","دنبال فرصتی برای خرید می‌گردم"],RT08:["جلوگیری از زیان","ایجاد تعادل بین ریسک و بازده","دستیابی به بازده بیشتر","دستیابی به بیشترین سود ممکن"],RT09:["از آن اجتناب می‌کنم","فقط مبلغ کمی سرمایه‌گذاری می‌کنم","اگر همچنان به آن باور داشته باشم سرمایه‌گذاری می‌کنم","با جدیت سرمایه‌گذاری در آن را بررسی می‌کنم"],RT10:["معمولاً از ریسک‌های بزرگ اجتناب کرده‌ام","گاهی بیشتر از حدی که با آن راحت بودم ریسک کرده‌ام","ریسک قابل‌توجهی در سرمایه‌گذاری پذیرفته‌ام","برای بازده بالقوه بیشتر، ریسک بسیار بالایی پذیرفته‌ام"],RT07B:["خیلی محتمل است","تا حدی محتمل است","بعید است","خیلی بعید است"],
- BD01:["احتمال بالای از دست دادن پول","تغییرات شدید قیمت","عدم‌قطعیت زیاد","احتمال از دست دادن یک فرصت خوب"],BD02:["بله","لزوماً نه","نه — عوامل دیگری هم می‌توانند یک سرمایه‌گذاری را پرریسک‌تر یا کم‌ریسک‌تر کنند"],BD04:["اصلاً","کم","زیاد","خیلی زیاد"],BD05:["حدود ۵۰٪","حدود ۶۵٪","حدود ۸۰٪","حدود ۹۵٪"],BD07:["خیلی کمتر علاقه‌مند می‌شوم","تقریباً به همان اندازه","کمی بیشتر علاقه‌مند می‌شوم","خیلی بیشتر علاقه‌مند می‌شوم"],BD08:["قیمت ۱۰۰ دلاری که پرداخت کردم","قیمت فعلی ۶۰ دلار","ارزش واقعی سرمایه‌گذاری از نظر من در امروز"],BD09:["بیشتر دنبال اطلاعاتی می‌گردم که نظر من را تأیید کند","به نظر آنها گوش می‌دهم، اما بیشتر روی دیدگاه خودم تمرکز می‌کنم","دلایل آنها را با دیدگاه خودم مقایسه می‌کنم","صبر می‌کنم و اطلاعات بیشتری بررسی می‌کنم"],BD11:["می‌فروشم و سود را قطعی می‌کنم","بخشی را می‌فروشم و بخشی را نگه می‌دارم","اگر هنوز به آن باور داشته باشم نگهش می‌دارم","اگر چشم‌انداز را بهتر بدانم بیشتر می‌خرم"],BD12:["معمولاً از دیدگاه اولیه‌ام دفاع می‌کنم","محتاط‌تر می‌شوم","تصمیمم را دوباره بررسی می‌کنم","اگر اطلاعات جدید به‌اندازه کافی قوی باشد تصمیمم را تغییر می‌دهم"],BD15:["صبر می‌کنم تا شرایط کم‌ابهام‌تر شود","قیمت نسبت به ارزش سرمایه‌گذاری جذاب به نظر می‌رسد","بازده احتمالی بلندمدت جذاب به نظر می‌رسد","افت قیمت فرصتی برای خرید در زمانی ایجاد کرده که دیگران نگران‌اند"],
- RC01:["کمتر از ۴۰٬۰۰۰ دلار","۴۰٬۰۰۰ تا ۷۹٬۹۹۹ دلار","۸۰٬۰۰۰ تا ۱۴۹٬۹۹۹ دلار","۱۵۰٬۰۰۰ دلار یا بیشتر"],RC02:["خیلی نامطمئن یا بسیار متغیر","گاهی تغییر می‌کند","عمدتاً پایدار","خیلی پایدار"],RC03:["کمتر از ۲۵٬۰۰۰ دلار","۲۵٬۰۰۰ تا ۹۹٬۹۹۹ دلار","۱۰۰٬۰۰۰ تا ۴۹۹٬۹۹۹ دلار","۵۰۰٬۰۰۰ دلار یا بیشتر"],RC04:["زیاد — میزان سرمایه‌گذاری من را محدود می‌کند","متوسط","کم","خیلی کم یا بدون بدهی قابل‌توجه"],RC05:["کمتر از ۱ ماه","۱ تا ۳ ماه","۳ تا ۶ ماه","بیش از ۶ ماه"],RC06:["۴ نفر یا بیشتر","۲ تا ۳ نفر","۱ نفر","هیچ‌کس"],RC07:["ممکن است برای پرداخت نیازهای ضروری دچار مشکل شوم","باید تغییرات بزرگی در سبک زندگی‌ام ایجاد کنم","ناراحت‌کننده است اما قابل مدیریت است","تأثیر کمی بر سبک زندگی من دارد"],RC08:["بیش از ۵۰٪","۲۵٪ تا ۵۰٪","۱۰٪ تا ۲۵٪","کمتر از ۱۰٪"],RC09:["خیر","احتمالاً نه","احتمالاً بله","قطعاً بله"],RC10:["امن نیست","تا حدی نامطمئن","عمدتاً امن","کاملاً امن"]
-};
-const scaleFa={BD03:["اصلاً مطمئن نیستم",1,2,3,4,5,6,7,8,9,"کاملاً مطمئن هستم"],BD06:["اصلاً",1,2,3,4,5,6,7,8,9,"کاملاً"],BD10:["اصلاً",1,2,3,4,5,6,7,8,9,"خیلی زیاد"],BD13:["اصلاً توانمند نیستم",1,2,3,4,5,6,7,8,9,"کاملاً توانمندم"],BD14:["اصلاً دشوار نیست",1,2,3,4,5,6,7,8,9,"بسیار دشوار است"]};
-function localizedOptions(q,lang){
- if(lang!=="fa") return normalizeOptions(q.options);
- const arr=faOptions[q.question_id]||scaleFa[q.question_id];
- if(arr) return arr.map((label,i)=>({value:q.question_type==="scale"?i:(q.options?.[i]?.value??String.fromCharCode(65+i)),label:String(label)}));
- return normalizeOptions(q.options);
-}
-
-const traitCopy={
-  overconfidence:["Overconfidence","Strong conviction can sometimes make uncertainty feel smaller than it really is."],
-  recency_bias:["Recency Bias","Recent market moves may have more influence on your judgment than the longer-term picture."],
-  social_influence:["Social Influence","Other investors' opinions or outcomes may influence your decisions more than you intend."],
-  anchoring:["Anchoring","An early price, opinion or reference point can sometimes stay influential after new evidence appears."],
-  confirmation_bias:["Confirmation Bias","You may be more likely to notice evidence that supports an existing investment view."],
-  regret_sensitivity:["Regret Sensitivity","The fear of making the wrong decision can sometimes affect how quickly you act."],
-  disposition_effect:["Disposition Effect","You may be tempted to treat winning and losing positions differently when deciding what to do next."],
-  emotional_reactivity:["Emotional Reactivity","Strong market moves can make it harder to stay aligned with a pre-planned strategy."],
-  adaptability:["Adaptability","You are willing to revise your view when meaningful new evidence changes the investment case."],
-  self_confidence:["Self-Confidence","You generally trust your ability to make investment decisions."],
-  financial_self_efficacy:["Financial Self-Efficacy","You feel capable of understanding and managing important financial decisions."]
-};
-
-const traitLocalized={
- fr:{overconfidence:["Surconfiance","Une forte conviction peut parfois réduire la perception de l’incertitude."],recency_bias:["Biais de récence","Les mouvements récents du marché peuvent peser plus que les tendances de long terme."],social_influence:["Influence sociale","Les opinions ou résultats d’autres investisseurs peuvent influencer vos décisions."],anchoring:["Ancrage","Un prix ou point de référence initial peut rester influent malgré de nouvelles informations."],confirmation_bias:["Biais de confirmation","Vous pouvez accorder davantage d’attention aux éléments qui confirment votre opinion."],regret_sensitivity:["Sensibilité au regret","La crainte de faire le mauvais choix peut parfois influencer votre vitesse d’action."],disposition_effect:["Effet de disposition","Vous pouvez traiter différemment vos positions gagnantes et perdantes."],emotional_reactivity:["Réactivité émotionnelle","De forts mouvements de marché peuvent rendre plus difficile le respect d’une stratégie préparée."],adaptability:["Adaptabilité","Vous êtes prêt à revoir votre opinion lorsque de nouvelles données importantes apparaissent."],self_confidence:["Confiance en soi","Vous faites généralement confiance à votre capacité à prendre des décisions d’investissement."],financial_self_efficacy:["Efficacité financière","Vous vous sentez capable de comprendre et de gérer les décisions financières importantes."]},
- fa:{overconfidence:["اعتمادبه‌نفس بیش‌ازحد","اعتماد بالا به تحلیل خود گاهی می‌تواند میزان عدم‌قطعیت را کوچک‌تر از واقعیت نشان دهد."],recency_bias:["سوگیری تازگی","حرکت‌های اخیر بازار ممکن است بیش از تصویر بلندمدت روی قضاوت شما اثر بگذارند."],social_influence:["تأثیر اجتماعی","نظر یا نتیجه دیگر سرمایه‌گذاران ممکن است بیش از چیزی که قصد دارید بر تصمیم شما اثر بگذارد."],anchoring:["لنگر ذهنی","قیمت یا نظر اولیه ممکن است حتی پس از دریافت اطلاعات جدید همچنان اثرگذار بماند."],confirmation_bias:["سوگیری تأییدی","ممکن است بیشتر متوجه شواهدی شوید که دیدگاه قبلی شما را تأیید می‌کنند."],regret_sensitivity:["حساسیت به پشیمانی","ترس از تصمیم اشتباه گاهی می‌تواند بر سرعت تصمیم‌گیری شما اثر بگذارد."],disposition_effect:["اثر تمایل به فروش","ممکن است هنگام تصمیم‌گیری با موقعیت‌های سودده و زیان‌ده رفتار متفاوتی داشته باشید."],emotional_reactivity:["واکنش‌پذیری هیجانی","نوسانات شدید بازار ممکن است پایبندی به استراتژی از پیش تعیین‌شده را سخت‌تر کند."],adaptability:["انعطاف‌پذیری","وقتی شواهد مهم تغییر می‌کنند، آماده‌اید دیدگاه خود را اصلاح کنید."],self_confidence:["اعتمادبه‌نفس","معمولاً به توانایی خود در تصمیم‌گیری سرمایه‌گذاری اعتماد دارید."],financial_self_efficacy:["توانمندی مالی","خودتان را در درک و مدیریت تصمیم‌های مالی مهم توانمند می‌دانید."]}
-};
-function localizedTrait(key,lang){return traitLocalized[lang]?.[key]||traitCopy[key]||null;}
-function prettyTrait(key){
-  return traitCopy[key]?.[0] || String(key||"").replaceAll("_"," ").replace(/\b\w/g,m=>m.toUpperCase());
-}
-function traitDescription(key){
-  return traitCopy[key]?.[1] || "This trait adds context to how you approach investment decisions.";
-}
-
-
-const contextQuestions=[
- {id:"first_name",type:"text",label:{en:"What is your first name?",fr:"Quel est votre prénom ?",fa:"نام کوچک شما چیست؟"},hint:{en:"We’ll use your first name to personalize your Investor DNA report.",fr:"Nous utiliserons votre prénom pour personnaliser votre rapport Investor DNA.",fa:"از نام کوچک شما برای شخصی‌سازی گزارش DNA سرمایه‌گذاری استفاده می‌کنیم."}},
- {id:"age",type:"number",label:{en:"How old are you?",fr:"Quel âge avez-vous ?",fa:"چند سال دارید؟"},hint:{en:"Your age helps us understand the context around your investment profile.",fr:"Votre âge nous aide à mieux comprendre le contexte de votre profil d’investisseur.",fa:"سن شما به ما کمک می‌کند زمینه پروفایل سرمایه‌گذاری‌تان را بهتر درک کنیم."}},
- {id:"amount_to_invest",type:"amount",label:{en:"How much are you planning to invest?",fr:"Quel montant prévoyez-vous d’investir ?",fa:"چه مقدار می‌خواهید سرمایه‌گذاری کنید؟"},hint:{en:"Enter the amount you plan to invest in this portfolio. Optional.",fr:"Indiquez le montant que vous prévoyez d’investir dans ce portefeuille. Facultatif.",fa:"مبلغی را که برای این سبد در نظر دارید وارد کنید. اختیاری است."}},
- {id:"goal",type:"choice",label:{en:"What is the main goal for this money?",fr:"Quel est l’objectif principal de cet argent ?",fa:"هدف اصلی شما از این پول چیست؟"},options:[
-  {value:"growth",en:"Grow my wealth",fr:"Faire croître mon patrimoine",fa:"رشد سرمایه"},{value:"income",en:"Generate income",fr:"Générer un revenu",fa:"ایجاد درآمد"},{value:"preservation",en:"Preserve capital",fr:"Préserver le capital",fa:"حفظ سرمایه"},{value:"major_purchase",en:"Fund a major future purchase",fr:"Financer un achat important",fa:"تأمین هزینه یک خرید بزرگ در آینده"},{value:"retirement",en:"Retirement",fr:"Retraite",fa:"بازنشستگی"},{value:"other",en:"Something else",fr:"Autre",fa:"هدف دیگر"}]},
- {id:"time_horizon",type:"choice",label:{en:"When do you expect to need this money?",fr:"Quand pensez-vous avoir besoin de cet argent ?",fa:"چه زمانی انتظار دارید به این پول نیاز پیدا کنید؟"},options:[
-  {value:"lt_1y",en:"Less than 1 year",fr:"Moins d’un an",fa:"کمتر از ۱ سال"},{value:"1_3y",en:"1–3 years",fr:"1 à 3 ans",fa:"۱ تا ۳ سال"},{value:"3_5y",en:"3–5 years",fr:"3 à 5 ans",fa:"۳ تا ۵ سال"},{value:"5_10y",en:"5–10 years",fr:"5 à 10 ans",fa:"۵ تا ۱۰ سال"},{value:"gt_10y",en:"More than 10 years",fr:"Plus de 10 ans",fa:"بیش از ۱۰ سال"}]},
- {id:"liquidity_need",type:"choice",label:{en:"How important is quick access to this money?",fr:"À quel point un accès rapide à cet argent est-il important ?",fa:"چقدر مهم است که بتوانید سریع به این پول دسترسی داشته باشید؟"},options:[
-  {value:"very_high",en:"Very important — I may need it quickly",fr:"Très important — je pourrais en avoir besoin rapidement",fa:"خیلی مهم — ممکن است سریع به آن نیاز داشته باشم"},{value:"high",en:"Important, but I have some flexibility",fr:"Important, mais j’ai une certaine flexibilité",fa:"مهم است، اما کمی انعطاف دارم"},{value:"medium",en:"Moderately important",fr:"Moyennement important",fa:"اهمیت متوسطی دارد"},{value:"low",en:"Not very important — I can leave it invested",fr:"Pas très important — je peux laisser l’argent investi",fa:"خیلی مهم نیست — می‌توانم پول را سرمایه‌گذاری‌شده نگه دارم"}]},
- {id:"required_return",type:"choice",label:{en:"Which return objective best matches your goal?",fr:"Quel objectif de rendement correspond le mieux à votre objectif ?",fa:"کدام هدف بازدهی بیشتر با هدف شما سازگار است؟"},options:[
-  {value:"capital_preservation",en:"Protect capital; return is secondary",fr:"Protéger le capital; le rendement est secondaire",fa:"حفظ سرمایه؛ بازده در اولویت دوم است"},{value:"moderate_growth",en:"Moderate growth",fr:"Croissance modérée",fa:"رشد متعادل"},{value:"strong_growth",en:"Strong long-term growth",fr:"Forte croissance à long terme",fa:"رشد قوی در بلندمدت"},{value:"maximum_growth",en:"Maximize potential growth",fr:"Maximiser le potentiel de croissance",fa:"بیشینه‌کردن پتانسیل رشد"}]},
- {id:"loss_consequence",type:"choice",label:{en:"If this investment lost 30%, what would the impact be on your life?",fr:"Si cet investissement perdait 30 %, quel serait l’impact sur votre vie ?",fa:"اگر این سرمایه‌گذاری ۳۰٪ افت کند، چه اثری بر زندگی شما خواهد داشت؟"},options:[
-  {value:"severe",en:"Severe — it would disrupt essential plans",fr:"Sévère — cela perturberait des projets essentiels",fa:"شدید — برنامه‌های ضروری زندگی‌ام را مختل می‌کند"},{value:"meaningful",en:"Meaningful — I would need to adjust plans",fr:"Important — je devrais ajuster mes projets",fa:"قابل‌توجه — باید برنامه‌هایم را تغییر دهم"},{value:"manageable",en:"Manageable — uncomfortable but absorbable",fr:"Gérable — inconfortable mais absorbable",fa:"قابل مدیریت — ناراحت‌کننده است اما قابل تحمل است"},{value:"minimal",en:"Minimal — it would not materially affect my life",fr:"Minime — cela n’affecterait pas sensiblement ma vie",fa:"کم — اثر قابل‌توجهی بر زندگی‌ام ندارد"}]},
- {id:"experience",type:"choice",label:{en:"How would you describe your investing experience?",fr:"Comment décririez-vous votre expérience en investissement ?",fa:"تجربه سرمایه‌گذاری خود را چگونه توصیف می‌کنید؟"},options:[
-  {value:"beginner",en:"Beginner — I am still learning",fr:"Débutant — j’apprends encore",fa:"مبتدی — هنوز در حال یادگیری هستم"},{value:"some",en:"Some experience — I have invested before",fr:"Une certaine expérience — j’ai déjà investi",fa:"کمی تجربه — قبلاً سرمایه‌گذاری کرده‌ام"},{value:"experienced",en:"Experienced — I actively manage investments",fr:"Expérimenté — je gère activement mes placements",fa:"باتجربه — فعالانه سرمایه‌گذاری‌هایم را مدیریت می‌کنم"},{value:"advanced",en:"Advanced — I am comfortable with complex investments",fr:"Avancé — je suis à l’aise avec les placements complexes",fa:"پیشرفته — با سرمایه‌گذاری‌های پیچیده راحت هستم"}]}
-];
-
-export default function Home(){
-  const [screen,setScreen]=useState("landing"),[session,setSession]=useState(null);
-  const [investments,setInvestments]=useState([]),[investmentSearch,setInvestmentSearch]=useState(""),[investmentType,setInvestmentType]=useState("All"),[investmentLoading,setInvestmentLoading]=useState(false),[investmentError,setInvestmentError]=useState("");
-  const [questions,setQuestions]=useState([]),[answers,setAnswers]=useState({});
-  const [idx,setIdx]=useState(0),[result,setResult]=useState(null),[error,setError]=useState("");
-  const [busy,setBusy]=useState(false),[saving,setSaving]=useState(false);
-  const [language,setLanguage]=useState("en");
-  const [context,setContext]=useState({});
-  const [contextIdx,setContextIdx]=useState(0);
-
-  useEffect(()=>{
-    try{const l=localStorage.getItem("investing_dna_language_v1");if(l&&["en","fr","fa"].includes(l)) setLanguage(l);
-      const s=JSON.parse(localStorage.getItem(SESSION_KEY)||"null");
-      if(s?.session_token&&s?.assessment_id) setSession(s);
-    }catch{}
-  },[]);
-
-  useEffect(()=>{try{localStorage.setItem("investing_dna_language_v1",language)}catch{};
-    if(typeof document!=="undefined"){document.documentElement.lang=language;document.documentElement.dir=language==="fa"?"rtl":"ltr"}
-  },[language]);
-
-  function storeSession(d){
-    if(!d?.session_token||!d?.assessment_id) throw new Error("Assessment session could not be created. Please try again.");
-    setSession(d);
-    try{localStorage.setItem(SESSION_KEY,JSON.stringify(d))}catch{}
-    return d;
-  }
-  function clearSession(){
-    setSession(null);setQuestions([]);setAnswers({});setIdx(0);setContext({});setContextIdx(0);
-    try{localStorage.removeItem(SESSION_KEY)}catch{}
-  }
-  async function start(){
-    setBusy(true);setError("");
-    try{
-      clearSession();
-      const d=await api("start",{cohort_code:"PILOT_V1_3",language_code:language,consent_version:`pilot-v1.3-${language}`}),s=storeSession(d);
-      const q=await api("questionnaire",{assessment_id:s.assessment_id,session_token:s.session_token});
-      const list=q.questions||q;
-      if(!Array.isArray(list)||!list.length) throw new Error("Questionnaire could not be loaded. Please try again.");
-      setQuestions(list);setScreen("quiz");
-    }catch(e){clearSession();setError(e.message||"Unable to start assessment.")}
-    finally{setBusy(false)}
-  }
-  async function save(qid,value){
-    if(!session?.assessment_id||!session?.session_token){setError("Your assessment session expired. Please restart the assessment.");return;}
-    setAnswers(a=>({...a,[qid]:value}));setError("");setSaving(true);
-    try{
-      await api("save_answers",{assessment_id:session.assessment_id,session_token:session.session_token,answers:[{question_id:qid,answer_value:{value}}]});
-    }catch(e){setError(e.message||"Unable to save your answer.")}
-    finally{setSaving(false)}
-  }
-  async function submit(){
-    if(!session?.assessment_id||!session?.session_token){setError("Your assessment session expired. Please restart the assessment.");return;}
-    setBusy(true);setError("");
-    try{
-      const d=await api("submit",{assessment_id:session.assessment_id,session_token:session.session_token});
-      setResult(d);setScreen("result");
-    }catch(e){setError(e.message||"Unable to generate your result.")}
-    finally{setBusy(false)}
+  async function openInvestment(investment) {
+    setSelectedInvestment(investment); setScreen('detail'); setDetailLoading(true); setError('');
+    const { data, error: detailError } = await supabase.from('v_app_investment_detail').select('*').eq('id', investment.id).maybeSingle();
+    if (detailError) setError(detailError.message);
+    if (data) setSelectedInvestment(data);
+    setDetailLoading(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function contextValueValid(q){
-    const v=context[q.id];
-    if(q.type==="amount") return v==="prefer_not_to_say" || (v!==undefined && v!==null && v!=="" && Number(v)>0);
-    if(q.type==="text") return typeof v==="string" && v.trim().length>=2;
-    if(q.type==="number") return Number.isInteger(Number(v)) && Number(v)>=18 && Number(v)<=100;
-    return v!==undefined && v!==null && v!=="";
+  function toggleCompare(id) {
+    setCompareIds(ids => ids.includes(id) ? ids.filter(x => x !== id) : ids.length >= 3 ? [...ids.slice(1), id] : [...ids, id]);
   }
-  async function saveContextAndFinish(){
-    if(!session?.assessment_id||!session?.session_token){setError("Your assessment session expired. Please restart the assessment.");return;}
-    setBusy(true);setError("");
-    try{
-      const d=await api("save_context",{assessment_id:session.assessment_id,session_token:session.session_token,context});
-      const rr=d?.report?.report;
-      if(rr){
-        setResult({
-          result:{risk_tolerance:rr.risk_tolerance,risk_capacity:rr.risk_capacity,archetype:rr.archetype,behavioral_profile:rr.behavioral_profile,model_version:rr.model_version,scoring_version:rr.model_version},
-          fingerprint:{fingerprint_code:rr.fingerprint_code,decision_style:rr.decision_style,pressure_style:rr.pressure_style,strengths:rr.strengths||[],watchouts:rr.watchouts||[]},
-          narrative:rr.narrative||{},
-          report:d.report,
-          investment_context:d.investment_context||context,
-          context_saved_at:d?.investment_context?.updated_at||new Date().toISOString()
-        });
-      }else{
-        setResult(prev=>({...prev,investment_context:d?.investment_context||context,context_saved_at:d?.investment_context?.updated_at||new Date().toISOString()}));
+
+  async function toggleWatchlist(investmentId) {
+    if (!authSession?.user) { setAuthMode('signin'); setAuthOpen(true); return; }
+    const isSaved = watchlist.some(x => x.investment_id === investmentId);
+    setBusy(true); setError('');
+    const { error: rpcError } = await supabase.rpc('app_watchlist', { p_action: isSaved ? 'remove' : 'add', p_investment_id: investmentId });
+    if (rpcError) setError(rpcError.message);
+    else await loadUserData();
+    setBusy(false);
+  }
+
+  function persistAssessment(session) {
+    setAssessmentSession(session);
+    try { localStorage.setItem(ASSESSMENT_KEY, JSON.stringify(session)); } catch {}
+    return session;
+  }
+
+  async function startAssessment() {
+    setBusy(true); setError(''); setNotice(''); setAnswers({}); setQuestionIndex(0); setResult(null);
+    try {
+      const started = await edgeApi('start', { cohort_code: 'PILOT_V1_3', language_code: language, consent_version: `platform-v2-${language}` }, authSession?.access_token || null);
+      const stored = persistAssessment(started);
+      const questionnaire = await edgeApi('questionnaire', { assessment_id: stored.assessment_id, session_token: stored.session_token }, authSession?.access_token || null);
+      const list = questionnaire.questions || questionnaire;
+      if (!Array.isArray(list) || !list.length) throw new Error('Questionnaire returned no questions.');
+      setQuestions(list); setScreen('quiz');
+    } catch (e) { setError(e.message || 'Unable to start assessment.'); }
+    setBusy(false);
+  }
+
+  async function saveAnswer(questionId, value) {
+    if (!assessmentSession?.assessment_id) return;
+    setAnswers(current => ({ ...current, [questionId]: value }));
+    try {
+      await edgeApi('save_answers', { assessment_id: assessmentSession.assessment_id, session_token: assessmentSession.session_token, answers: [{ question_id: questionId, answer_value: { value } }] }, authSession?.access_token || null);
+    } catch (e) { setError(e.message || 'Unable to save answer.'); }
+  }
+
+  async function submitAssessment() {
+    if (!assessmentSession?.assessment_id) return;
+    setBusy(true); setError('');
+    try {
+      const data = await edgeApi('submit', { assessment_id: assessmentSession.assessment_id, session_token: assessmentSession.session_token }, authSession?.access_token || null);
+      setResult(data);
+      persistAssessment({ ...assessmentSession, account_linked: Boolean(data.account_linked), completed: true });
+      setScreen('result');
+      if (authSession?.user) await loadUserData();
+    } catch (e) { setError(e.message || 'Unable to generate result.'); }
+    setBusy(false);
+  }
+
+  async function saveContext() {
+    if (!assessmentSession?.assessment_id) return;
+    if (!String(context.first_name || '').trim() || !context.age) { setError(`${c.firstName} / ${c.age}`); return; }
+    setBusy(true); setError('');
+    try {
+      const payload = { ...context, age: Number(context.age), amount_to_invest: context.amount_to_invest ? Number(context.amount_to_invest) : 'prefer_not_to_say' };
+      const data = await edgeApi('save_context', { assessment_id: assessmentSession.assessment_id, session_token: assessmentSession.session_token, context: payload }, authSession?.access_token || null);
+      setResult(current => ({ ...(current || {}), report: data.report || current?.report, investment_context: data.investment_context || payload }));
+      setNotice(c.contextSaved); setScreen('result');
+      if (authSession?.user) await loadUserData();
+    } catch (e) { setError(e.message || 'Unable to save context.'); }
+    setBusy(false);
+  }
+
+  async function claimAssessment(accessToken = authSession?.access_token) {
+    if (!assessmentSession?.assessment_id || !accessToken) return false;
+    try {
+      await edgeApi('claim_assessment', { assessment_id: assessmentSession.assessment_id, session_token: assessmentSession.session_token }, accessToken);
+      persistAssessment({ ...assessmentSession, account_linked: true });
+      setNotice(c.dnaSaved);
+      await loadUserData({ ...authSession, access_token: accessToken, user: authSession?.user || { id: 'current' } });
+      return true;
+    } catch (e) {
+      if (String(e.message).includes('already linked')) return true;
+      setError(e.message || 'Unable to link assessment.'); return false;
+    }
+  }
+
+  async function submitAuth(event) {
+    event.preventDefault(); setBusy(true); setError(''); setNotice('');
+    try {
+      if (authMode === 'signup') {
+        const { data, error: authError } = await supabase.auth.signUp({ email: authEmail.trim(), password: authPassword });
+        if (authError) throw authError;
+        if (data.session) {
+          setAuthSession(data.session); setNotice(c.signedIn); setAuthOpen(false);
+          if (pendingClaim) { await claimAssessment(data.session.access_token); setPendingClaim(false); }
+        } else setNotice(c.checkEmail);
+      } else {
+        const { data, error: authError } = await supabase.auth.signInWithPassword({ email: authEmail.trim(), password: authPassword });
+        if (authError) throw authError;
+        setAuthSession(data.session); setNotice(c.signedIn); setAuthOpen(false);
+        if (pendingClaim) { await claimAssessment(data.session.access_token); setPendingClaim(false); }
       }
-      setScreen("result");
-    }catch(e){setError(e.message||"Unable to save your investment context.")}
-    finally{setBusy(false)}
+    } catch (e) { setError(e.message || 'Authentication failed.'); }
+    setBusy(false);
   }
 
-  const Brand=({compact=false})=><img className={compact?"brand-logo compact":"brand-logo"} width={compact?72:160} height={compact?40:80} src="/logo.png" alt="Investing DNA"/>;
+  async function signOut() {
+    await supabase.auth.signOut(); setScreen('home'); setNotice(''); setError('');
+  }
 
-  const ui={
-    en:{eyebrow:"INVESTING DNA · V1.3",title:"Know your investor.",title2:"Before you invest.",lead:"A deeper look at how you respond to risk, uncertainty, opportunity and pressure.",cta:"Discover My Investor DNA",questions:"36 questions",time:"~7 minutes",report:"Personal report",disclaimer:"Educational assessment only. Not investment, financial or psychological advice.",before:"BEFORE WE BEGIN",consentTitle:"Your answers shape your DNA.",consentBody:"There are 36 questions. Answer honestly rather than choosing what you think a “good investor” should choose.",privacy:"Privacy first.",privacyBody:"Your assessment is used to generate your Investor DNA report.",start:"I understand — Start Assessment →",back:"Back",next:"Next →",reveal:"Reveal My DNA →",selected:"Selected",analyzing:"Analyzing…",starting:"Starting…",tolerance:"RISK TOLERANCE",capacity:"RISK CAPACITY",behavior:"BEHAVIORAL DNA",notAtAll:"Not at all",extremely:"Extremely",yourDNA:"YOUR INVESTOR DNA · V1.3",riskProfile:"YOUR RISK PROFILE",mapTitle:"Where you sit on the risk map",riskTolerance:"Risk Tolerance",riskCapacity:"Risk Capacity",zone:"Your zone",how:"HOW YOU INVEST",fingerprint:"Your decision fingerprint",decision:"DECISION STYLE",pressure:"UNDER PRESSURE",decisionDesc:"How you tend to approach investment decisions.",pressureDesc:"How your decision-making can change when markets get stressful.",strengths:"YOUR STRENGTHS",watch:"WHAT TO WATCH",strength:"Strength",watchLabel:"Watch",emptyStrength:"Your profile shows a balanced set of strengths.",emptyWatch:"No major behavioral watchouts were flagged.",character:"YOUR INVESTOR CHARACTER",mapNote:"Your tolerance reflects how comfortable you are with risk. Your capacity reflects how much risk your financial situation can absorb.",print:"Save / Print Report ↗",profile:"Your Investor Profile",contextEyebrow:"INVESTMENT CONTEXT",contextTitle:"Now let’s complete your investment profile.",contextLead:"Your DNA tells us how you invest. These questions tell us what this investment needs to do for you.",contextStep:"Step 2 · Investment Context",contextQuestions:"9 questions · ~2 minutes",firstName:"First name",age:"Age",amount:"Investment amount",preferNot:"Prefer not to say",profileComplete:"PROFILE COMPLETE",continueCard:"Your DNA is complete. Now let’s see how it fits your current investment situation.",continueCta:"Complete My Investment Profile →",contextFinish:"Finish My Investor Profile →",contextComplete:"Your investment profile is complete.",amountCurrency:"CAD"},
-    fr:{eyebrow:"INVESTING DNA · V1.3",title:"Découvrez votre profil d’investisseur.",title2:"Avant d’investir.",lead:"Une analyse plus approfondie de votre réaction au risque, à l’incertitude, aux occasions et à la pression.",cta:"Découvrir mon Investor DNA",questions:"36 questions",time:"~7 minutes",report:"Rapport personnel",disclaimer:"Évaluation éducative uniquement. Ne constitue pas un conseil en placement, financier ou psychologique.",before:"AVANT DE COMMENCER",consentTitle:"Vos réponses façonnent votre DNA.",consentBody:"Il y a 36 questions. Répondez honnêtement plutôt que de choisir ce qu’un « bon investisseur » devrait répondre.",privacy:"Confidentialité d’abord.",privacyBody:"Votre évaluation sert à générer votre rapport Investor DNA.",start:"J’ai compris — Commencer →",back:"Retour",next:"Suivant →",reveal:"Révéler mon DNA →",selected:"Sélectionné",analyzing:"Analyse…",starting:"Démarrage…",tolerance:"TOLÉRANCE AU RISQUE",capacity:"CAPACITÉ DE RISQUE",behavior:"DNA COMPORTEMENTAL",notAtAll:"Pas du tout",extremely:"Tout à fait",yourDNA:"VOTRE INVESTOR DNA · V1.3",riskProfile:"VOTRE PROFIL DE RISQUE",mapTitle:"Votre position sur la carte du risque",riskTolerance:"Tolérance au risque",riskCapacity:"Capacité de risque",zone:"Votre zone",how:"VOTRE STYLE D’INVESTISSEMENT",fingerprint:"Votre empreinte décisionnelle",decision:"STYLE DE DÉCISION",pressure:"SOUS PRESSION",decisionDesc:"Votre manière habituelle d’aborder les décisions d’investissement.",pressureDesc:"La façon dont vos décisions peuvent changer sous stress de marché.",strengths:"VOS FORCES",watch:"POINTS À SURVEILLER",strength:"Force",watchLabel:"À surveiller",emptyStrength:"Votre profil montre un ensemble équilibré de forces.",emptyWatch:"Aucun point comportemental majeur à surveiller n’a été signalé.",character:"VOTRE PERSONNAGE D’INVESTISSEUR",mapNote:"Votre tolérance reflète votre confort face au risque. Votre capacité reflète la quantité de risque que votre situation financière peut absorber.",print:"Enregistrer / Imprimer le rapport ↗",profile:"Votre profil d’investisseur",contextEyebrow:"CONTEXTE D’INVESTISSEMENT",contextTitle:"Complétons maintenant votre profil d’investisseur.",contextLead:"Votre DNA montre comment vous investissez. Ces questions précisent les besoins de cet investissement.",contextStep:"Étape 2 · Contexte d’investissement",contextQuestions:"9 questions · ~2 minutes",firstName:"Prénom",age:"Âge",amount:"Montant investi",preferNot:"Je préfère ne pas répondre",profileComplete:"PROFIL COMPLET",continueCard:"Votre DNA est terminé. Voyons maintenant comment il s’intègre à votre situation actuelle.",continueCta:"Compléter mon profil d’investisseur →",contextFinish:"Terminer mon profil d’investisseur →",contextComplete:"Votre profil d’investissement est complet.",amountCurrency:"CAD"},
-    fa:{eyebrow:"INVESTING DNA · V1.3",title:"سرمایه‌گذار درونت را بشناس.",title2:"قبل از اینکه سرمایه‌گذاری کنی.",lead:"نگاهی عمیق‌تر به واکنش شما نسبت به ریسک، عدم‌قطعیت، فرصت و فشار.",cta:"DNA سرمایه‌گذاری من را ببین",questions:"۳۶ سؤال",time:"حدود ۷ دقیقه",report:"گزارش شخصی",disclaimer:"این ارزیابی صرفاً آموزشی است و توصیه سرمایه‌گذاری، مالی یا روان‌شناختی نیست.",before:"قبل از شروع",consentTitle:"پاسخ‌های شما DNA شما را شکل می‌دهند.",consentBody:"۳۶ سؤال وجود دارد. صادقانه پاسخ دهید و چیزی را انتخاب نکنید که فکر می‌کنید یک «سرمایه‌گذار خوب» باید انتخاب کند.",privacy:"حریم خصوصی اولویت ماست.",privacyBody:"از ارزیابی شما برای ساخت گزارش DNA سرمایه‌گذاری استفاده می‌شود.",start:"متوجه شدم — شروع ارزیابی ←",back:"بازگشت",next:"بعدی ←",reveal:"DNA من را نشان بده ←",selected:"انتخاب شده",analyzing:"در حال تحلیل…",starting:"در حال شروع…",tolerance:"تحمل ریسک",capacity:"ظرفیت ریسک",behavior:"DNA رفتاری",notAtAll:"اصلاً",extremely:"کاملاً",yourDNA:"DNA سرمایه‌گذاری شما · V1.3",riskProfile:"پروفایل ریسک شما",mapTitle:"جایگاه شما روی نقشه ریسک",riskTolerance:"تحمل ریسک",riskCapacity:"ظرفیت ریسک",zone:"ناحیه شما",how:"سبک سرمایه‌گذاری شما",fingerprint:"اثر انگشت تصمیم‌گیری شما",decision:"سبک تصمیم‌گیری",pressure:"تحت فشار",decisionDesc:"نحوه معمول شما در تصمیم‌های سرمایه‌گذاری.",pressureDesc:"نحوه‌ای که تصمیم‌گیری شما ممکن است در شرایط پراسترس بازار تغییر کند.",strengths:"نقاط قوت شما",watch:"مواردی که باید مراقبشان باشید",strength:"نقطه قوت",watchLabel:"مورد قابل توجه",emptyStrength:"پروفایل شما مجموعه‌ای متعادل از نقاط قوت را نشان می‌دهد.",emptyWatch:"مورد رفتاری مهمی برای مراقبت شناسایی نشد.",character:"شخصیت سرمایه‌گذاری شما",mapNote:"تحمل ریسک نشان می‌دهد چقدر با ریسک راحت هستید. ظرفیت ریسک نشان می‌دهد وضعیت مالی شما چه میزان ریسک را می‌تواند تحمل کند.",print:"ذخیره / چاپ گزارش ←",profile:"پروفایل سرمایه‌گذار شما",contextEyebrow:"زمینه سرمایه‌گذاری",contextTitle:"حالا پروفایل سرمایه‌گذاری‌تان را کامل کنید.",contextLead:"DNA شما نشان می‌دهد چگونه سرمایه‌گذاری می‌کنید. این سؤال‌ها مشخص می‌کنند این سرمایه‌گذاری چه نیازهایی برای شما دارد.",contextStep:"مرحله ۲ · زمینه سرمایه‌گذاری",contextQuestions:"۹ سؤال · حدود ۲ دقیقه",firstName:"نام کوچک",age:"سن",amount:"مبلغ سرمایه‌گذاری",preferNot:"ترجیح می‌دهم نگویم",profileComplete:"پروفایل کامل شد",continueCard:"DNA شما کامل شد. حالا ببینیم این پروفایل با شرایط فعلی سرمایه‌گذاری‌تان چطور هماهنگ است.",continueCta:"تکمیل پروفایل سرمایه‌گذاری ←",contextFinish:"تکمیل پروفایل سرمایه‌گذاری ←",contextComplete:"پروفایل سرمایه‌گذاری شما کامل شد.",amountCurrency:"CAD"}
-  }[language]||null;
+  function requestSaveDna() {
+    if (authSession?.user) { claimAssessment(); return; }
+    setPendingClaim(true); setAuthMode('signup'); setAuthOpen(true);
+  }
 
-  useEffect(()=>{
-    if(screen!=="explore") return;
-    let cancelled=false;
-    (async()=>{
-      setInvestmentLoading(true); setInvestmentError("");
-      try{
-        const select="id,symbol,name,asset_type,category,subcategory,strategy,region,currency,exchange,issuer_name,price,daily_change_pct,return_1y_pct,mer_pct,yield_pct,aum,risk_level,data_status,is_featured";
-        const url=`${SUPABASE_URL}/rest/v1/v_investment_catalog?select=${encodeURIComponent(select)}&order=is_featured.desc,name.asc`;
-        const r=await fetch(url,{headers:{apikey:ANON,Authorization:`Bearer ${ANON}`}});
-        const data=await r.json().catch(()=>[]);
-        if(!r.ok) throw new Error(data?.message||"Unable to load investments");
-        if(!cancelled) setInvestments(Array.isArray(data)?data:[]);
-      }catch(e){ if(!cancelled) setInvestmentError(e.message||"Unable to load investments"); }
-      finally{ if(!cancelled) setInvestmentLoading(false); }
-    })();
-    return ()=>{cancelled=true};
-  },[screen]);
+  function go(next) { setScreen(next); setError(''); setNotice(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-  const filteredInvestments=useMemo(()=>{
-    const q=investmentSearch.trim().toLowerCase();
-    return investments.filter(x=>{
-      const matchesType=investmentType==="All" || x.asset_type===investmentType;
-      const hay=[x.symbol,x.name,x.category,x.subcategory,x.strategy,x.region,x.issuer_name].filter(Boolean).join(" ").toLowerCase();
-      return matchesType && (!q || hay.includes(q));
-    });
-  },[investments,investmentSearch,investmentType]);
+  const nav = <header className="platform-nav">
+    <Brand compact />
+    <nav className="nav-links" aria-label="Primary">
+      <button className={screen === 'home' ? 'active' : ''} onClick={() => go('home')}>{c.home}</button>
+      <button className={['consent','quiz','result','context'].includes(screen) ? 'active' : ''} onClick={() => go(result ? 'result' : 'consent')}>{c.dna}</button>
+      <button className={['explore','detail'].includes(screen) ? 'active' : ''} onClick={() => go('explore')}>{c.explore}</button>
+      <button className={screen === 'screener' ? 'active' : ''} onClick={() => go('screener')}>{c.screener}</button>
+      <button className={screen === 'compare' ? 'active' : ''} onClick={() => go('compare')}>{c.compare}{compareIds.length ? ` (${compareIds.length})` : ''}</button>
+      <button className={screen === 'watchlist' ? 'active' : ''} onClick={() => go('watchlist')}>{c.watchlist}</button>
+    </nav>
+    <div className="nav-actions">
+      <span className="backend-pill"><i />{c.connected}</span>
+      <LanguagePicker language={language} setLanguage={setLanguage} />
+      {authSession?.user ? <button className="account-button" onClick={() => go('profile')}>{c.profile}</button> : <button className="account-button" onClick={() => { setAuthMode('signin'); setAuthOpen(true); }}>{c.signIn}</button>}
+    </div>
+  </header>;
 
-  if(screen==="landing") return <main className={`home-shell ${language==="fa"?"rtl":""}`}>
-    <header className="home-nav">
-      <div className="home-brand"><Brand compact/></div>
-      <nav className="home-links" aria-label="Primary">
-        <button className="home-link active">Home</button>
-        <button className="home-link" onClick={()=>setScreen("consent")}>Investing DNA</button>
-        <button className="home-link muted" onClick={()=>setScreen("explore")}>Explore</button>
-        <button className="home-link muted" onClick={()=>setScreen("explore")}>Screener</button>
-        <button className="home-link muted" onClick={()=>setScreen("explore")}>Watchlist</button>
-      </nav>
-      <div className="home-actions">
-        <div className="language-picker" role="group" aria-label="Language"><button className={language==="en"?"active":""} onClick={()=>setLanguage("en")}>EN</button><button className={language==="fr"?"active":""} onClick={()=>setLanguage("fr")}>FR</button><button className={language==="fa"?"active":""} onClick={()=>setLanguage("fa")}>فا</button></div>
+  function InvestmentCard({ item }) {
+    const match = matchMap.get(item.id);
+    const isSaved = watchlist.some(x => x.investment_id === item.id);
+    const inCompare = compareIds.includes(item.id);
+    return <article className="investment-card">
+      <div className="investment-card-top"><div><span className="type-chip">{item.asset_type || '—'}</span>{item.is_featured && <span className="feature-chip">{c.featured}</span>}</div><strong className="symbol">{item.symbol}</strong></div>
+      <h3>{item.name}</h3>
+      <p className="muted line-clamp">{[item.category, item.region, item.issuer_name].filter(Boolean).join(' · ')}</p>
+      {match && <div className="match-chip"><b>{Math.round(Number(match.match_score))}%</b><span>{match.fit_label || match.recommendation_tier?.replaceAll('_',' ') || c.dnaFit}</span></div>}
+      <div className="mini-stats"><div><span>{c.risk}</span><b>{item.risk_level || '—'}</b></div><div><span>{c.return1y}</span><b>{fmtPct(item.return_1y_pct)}</b></div><div><span>{c.mer}</span><b>{fmtPct(item.mer_pct, 2)}</b></div></div>
+      <div className="card-actions"><button className="primary small" onClick={() => openInvestment(item)}>{c.view} →</button><button className={inCompare ? 'soft active' : 'soft'} onClick={() => toggleCompare(item.id)}>{inCompare ? c.removeCompare : c.addCompare}</button><button className={isSaved ? 'icon-button saved' : 'icon-button'} onClick={() => toggleWatchlist(item.id)} aria-label={isSaved ? c.saved : c.addWatchlist}>{isSaved ? '★' : '☆'}</button></div>
+    </article>;
+  }
+
+  function CatalogControls({ advanced = false }) {
+    return <>
+      <div className="search-box"><span>⌕</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder={c.search} /></div>
+      <div className="filter-row">
+        <select value={assetType} onChange={e => setAssetType(e.target.value)}><option value="All">{c.all}</option>{types.map(x => <option key={x}>{x}</option>)}</select>
+        <select value={riskFilter} onChange={e => setRiskFilter(e.target.value)}><option value="All">{c.allRisk}</option>{riskLevels.map(x => <option key={x}>{x}</option>)}</select>
+        <select value={regionFilter} onChange={e => setRegionFilter(e.target.value)}><option value="All">{c.allRegions}</option>{regions.map(x => <option key={x}>{x}</option>)}</select>
+        {advanced && <select value={maxMer} onChange={e => setMaxMer(e.target.value)}><option value="any">{c.anyFee}</option><option value="0.25">≤ 0.25%</option><option value="0.5">≤ 0.50%</option><option value="1">≤ 1.00%</option><option value="2">≤ 2.00%</option></select>}
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)}><option value="featured">{c.featured}</option><option value="match">{c.topMatch}</option><option value="return">{c.return1y}</option><option value="fee">{c.mer}</option><option value="name">A–Z</option></select>
       </div>
-    </header>
-    <section className="home-hero">
-      <div className="home-copy">
-        <div className="eyebrow">INVESTING DNA · INTELLIGENT INVESTING</div>
-        <h1>Know yourself.<br/><span>Invest better.</span></h1>
-        <p className="lead">Understand the investor behind the decision — then discover investments that fit.</p>
-        <div className="home-ctas">
-          <button onClick={()=>setScreen("consent")} className="primary">{ui.cta} <b>→</b></button>
-          <button onClick={()=>setScreen("explore")} className="secondary">Explore Investments <b>→</b></button>
-        </div>
-        <div className="home-proof"><span>Know Yourself</span><i>→</i><span>Explore</span><i>→</i><span>Find Your Fit</span></div>
-      </div>
+    </>;
+  }
+
+  function CatalogGrid() {
+    if (catalogLoading) return <div className="loading-panel">{c.loading}</div>;
+    if (catalogError) return <div className="error-box">{catalogError}<button onClick={loadCatalog}>{c.retry}</button></div>;
+    if (!filteredCatalog.length) return <EmptyState>{c.noResults}</EmptyState>;
+    return <div className="investment-grid">{filteredCatalog.map(item => <InvestmentCard key={item.id} item={item} />)}</div>;
+  }
+
+  let content = null;
+
+  if (screen === 'home') content = <main className="page home-page">
+    <section className="hero-section">
+      <div className="hero-copy"><span className="eyebrow">{c.heroEyebrow}</span><h1>{c.heroTitle}</h1><p>{c.heroLead}</p><div className="hero-actions"><button className="primary" onClick={() => go('consent')}>{c.discover} →</button><button className="secondary" onClick={() => go('explore')}>{c.exploreInvestments} →</button></div><div className="backend-proof"><span><i />{c.liveData}</span><b>{catalog.length || '—'}</b><span>{c.sourceStatus}</span></div></div>
+      <div className="hero-visual"><div className="dna-orbit"><div className="orbit-core"><img src="/logo.png" alt="" /></div><span className="orbit-node n1">DNA</span><span className="orbit-node n2">Risk</span><span className="orbit-node n3">Fit</span><span className="orbit-node n4">Data</span></div></div>
     </section>
-    <section className="home-features">
-      <article><span>01</span><h3>Know Yourself</h3><p>Discover your Risk Tolerance, Capacity and Behavioral DNA.</p></article>
-      <article><span>02</span><h3>Explore</h3><p>Search and compare investments across a growing universe.</p></article>
-      <article><span>03</span><h3>Find Your Fit</h3><p>See how an investment aligns with your Investor DNA.</p></article>
-    </section>
-    <p className="home-disclaimer">Educational platform. Not investment, financial or psychological advice.</p>
+    <section className="feature-strip"><div><span>01</span><h3>{c.feature1}</h3><p>{c.feature1b}</p></div><div><span>02</span><h3>{c.feature2}</h3><p>{c.feature2b}</p></div><div><span>03</span><h3>{c.feature3}</h3><p>{c.feature3b}</p></div></section>
+    <section className="platform-flow"><span className="eyebrow">{c.realPlatform}</span><div className="flow-line"><b>{c.dna}</b><i>→</i><b>{c.explore}</b><i>→</i><b>{c.compare}</b><i>→</i><b>{c.watchlist}</b><i>→</i><b>{c.profile}</b></div></section>
+    <p className="disclaimer">{c.educational}</p>
   </main>;
 
-  if(screen==="explore") return <main className={`home-shell ${language==="fa"?"rtl":""}`}><header className="home-nav"><div className="home-brand"><Brand compact/></div><nav className="home-links"><button className="home-link" onClick={()=>setScreen("landing")}>Home</button><button className="home-link" onClick={()=>setScreen("consent")}>Investing DNA</button><button className="home-link active">Explore</button><button className="home-link">Screener</button><button className="home-link">Watchlist</button></nav><div className="home-actions"><div className="language-picker" role="group" aria-label="Language"><button className={language==="en"?"active":""} onClick={()=>setLanguage("en")}>EN</button><button className={language==="fr"?"active":""} onClick={()=>setLanguage("fr")}>FR</button><button className={language==="fa"?"active":""} onClick={()=>setLanguage("fa")}>فا</button></div></div></header>
-    <section className="explore-page">
-      <div className="explore-header"><div><div className="eyebrow">INVESTING DNA · INVESTMENT UNIVERSE</div><h1>Explore Investments</h1><p>Discover investments, understand what they are, and find what fits your way of investing.</p></div></div>
-      <div className="explore-search"><span>⌕</span><input value={investmentSearch} onChange={e=>setInvestmentSearch(e.target.value)} placeholder="Search stocks, ETFs, funds..." aria-label="Search investments"/></div>
-      <div className="explore-filters">{["All","ETF","Stock","Mutual Fund","Bond","GIC"].map(t=><button key={t} className={investmentType===t?"active":""} onClick={()=>setInvestmentType(t)}>{t}</button>)}</div>
-      {investmentError&&<div className="error">{investmentError}</div>}
-      <section className="investment-section"><div className="section-heading"><div><h2>Featured</h2><p>{filteredInvestments.length} investments in the current universe</p></div></div>
-        {investmentLoading?<div className="investment-grid"><div className="investment-skeleton"/><div className="investment-skeleton"/><div className="investment-skeleton"/></div>:<div className="investment-grid">{filteredInvestments.map(x=><article className="investment-card" key={x.id}><div className="investment-top"><span className="investment-type">{x.asset_type}</span><span className="investment-symbol">{x.symbol}</span></div><h3>{x.name}</h3><p className="investment-meta">{[x.category,x.subcategory,x.region].filter(Boolean).join(" · ")}</p><div className="investment-stats"><div><small>Risk</small><strong>{x.risk_level||"—"}</strong></div><div><small>1Y Return</small><strong>{x.return_1y_pct==null?"—":`${Number(x.return_1y_pct).toFixed(1)}%`}</strong></div><div><small>MER</small><strong>{x.mer_pct==null?"—":`${Number(x.mer_pct).toFixed(2)}%`}</strong></div></div><div className="investment-footer"><span>{x.issuer_name||"Issuer pending"}</span><button onClick={()=>{}} aria-label={`View ${x.symbol}`}>View →</button></div></article>)}{!investmentLoading&&filteredInvestments.length===0&&<div className="empty-state">No investments match your search yet.</div>}</div>}
-      </section>
-      <section className="match-banner"><div><span className="eyebrow">YOUR INVESTOR DNA</span><h2>Find investments that fit you.</h2><p>Complete your Investor DNA to unlock personalized fit analysis.</p></div><button className="primary" onClick={()=>setScreen("consent")}>Discover My Investor DNA →</button></section>
-    </section>
+  if (screen === 'explore' || screen === 'screener') content = <main className="page catalog-page">
+    <section className="page-heading"><div><span className="eyebrow">{c.universe}</span><h1>{screen === 'screener' ? c.screenerTitle : c.exploreTitle}</h1><p>{screen === 'screener' ? c.screenerLead : c.exploreLead}</p></div><div className="connection-card"><i /><div><b>{c.liveData}</b><span>{c.sourceStatus}</span></div></div></section>
+    <CatalogControls advanced={screen === 'screener'} />
+    <div className="results-count">{filteredCatalog.length} / {catalog.length}</div>
+    <CatalogGrid />
   </main>;
 
-  if(screen==="consent") return <main className={`shell ${language==="fa"?"rtl":""}`}><section className="card narrow">
-    <Brand compact/><div className="language-picker compact-picker"><button className={language==="en"?"active":""} onClick={()=>setLanguage("en")}>English</button><button className={language==="fr"?"active":""} onClick={()=>setLanguage("fr")}>Français</button><button className={language==="fa"?"active":""} onClick={()=>setLanguage("fa")}>فارسی</button></div>
-    <div className="eyebrow">{ui.before}</div><h2>{ui.consentTitle}</h2>
-    <p>{ui.consentBody}</p>
-    <div className="notice"><strong>{ui.privacy}</strong><br/>{ui.privacyBody}</div>
-    {error&&<div className="error">{error}</div>}
-    <button className="primary" disabled={busy} onClick={start}>{busy?ui.starting:ui.start}</button>
-    <button className="ghost" onClick={()=>{setError("");setScreen("landing")}}>{ui.back}</button>
-  </section></main>;
-
-  if(screen==="quiz"){
-    const q=questions[idx],pct=Math.round(((idx+1)/questions.length)*100),value=q&&answers[q.question_id];
-    if(!q) return <main className="shell"><div className="card">Loading questionnaire…</div></main>;
-    const opts=localizedOptions(q,language);
-    const isScale=q.question_type==="scale";
-    return <main className={`shell ${language==="fa"?"rtl":""}`}><section className="quiz">
-      <header><div><Brand compact/><div className="eyebrow">INVESTOR DNA</div></div><div className="count">{idx+1} / {questions.length}</div></header>
-      <div className="progress"><i style={{width:`${pct}%`}}/></div>
-      <div className="qtype">{q.section==="risk_tolerance"?ui.tolerance:q.section==="risk_capacity"?ui.capacity:ui.behavior}</div>
-      <h2>{q.prompt||q.prompt_en||"Question"}</h2>
-      {isScale ? <div className="scale-wrap">
-        <div className="scale-value">{value==null?"—":value}</div>
-        <input className="scale-input" type="range" min="0" max="10" step="1" value={value==null?5:value} onChange={e=>save(q.question_id,Number(e.target.value))}/>
-        <div className="scale-labels"><span>0</span><span>5</span><span>10</span></div>
-        <p className="scale-hint">0 = {ui.notAtAll} &nbsp; • &nbsp; 10 = {ui.extremely}</p>
-      </div> : <div className="options">
-        {opts.map((o,i)=>{const ov=optionValue(o,i),label=optionLabel(o,i);const selected=String(value)===String(ov);
-return <button key={i} aria-pressed={selected} className={selected?"option selected":"option"} onClick={()=>save(q.question_id,ov)}>
-  <span className="radio">{selected&&<span className="radio-dot" />}</span>
-  <span className="option-label">{label}</span>
-  {selected&&<span className="selected-badge">{ui.selected}</span>}
-</button>})}
-      </div>}
-      {error&&<div className="error">{error}</div>}
-      <footer><button className="ghost" disabled={idx===0} onClick={()=>setIdx(idx-1)}>{language==="fa"?"→ ":"← "}{ui.back}</button>
-      {idx<questions.length-1?<button className="primary small" disabled={value==null||saving} onClick={()=>setIdx(idx+1)}>{ui.next}</button>:
-      <button className="primary small" disabled={value==null||busy||saving} onClick={submit}>{busy?ui.analyzing:ui.reveal}</button>}</footer>
-    </section></main>
-  }
-
-
-  if(screen==="context"){
-    const q=contextQuestions[contextIdx];
-    const value=context[q.id];
-    const opts=q.options||[];
-    const valid=contextValueValid(q);
-    return <main className={`shell ${language==="fa"?"rtl":""}`}><section className="quiz context-quiz">
-      <header><div><Brand compact/><div className="eyebrow">{ui.contextStep}</div></div><div className="count">{contextIdx+1} / {contextQuestions.length}</div></header>
-      <div className="progress"><i style={{width:`${Math.round(((contextIdx+1)/contextQuestions.length)*100)}%`}}/></div>
-      <div className="qtype">{ui.contextEyebrow}</div>
-      <h2>{q.label[language]||q.label.en}</h2>
-      {q.hint&&<p className="context-hint">{q.hint[language]||q.hint.en}</p>}
-      {q.type==="text"&&<div className="context-input-wrap"><input className="context-input" type="text" autoComplete="given-name" maxLength="40" value={value??""} placeholder={ui.firstName} onChange={e=>setContext(c=>({...c,[q.id]:e.target.value}))}/></div>}{q.type==="number"&&<div className="context-input-wrap"><input className="context-input" inputMode="numeric" type="number" min="18" max="100" value={value??""} placeholder="18–100" onChange={e=>setContext(c=>({...c,[q.id]:e.target.value}))}/><span className="input-suffix">{ui.age}</span></div>}
-      {q.type==="amount"&&<div className="context-input-wrap amount-wrap"><span className="currency">$</span><input className="context-input" inputMode="decimal" type="number" min="1" step="0.01" value={value&&value!=="prefer_not_to_say"?value:""} placeholder="0.00" disabled={value==="prefer_not_to_say"} onChange={e=>setContext(c=>({...c,[q.id]:e.target.value}))}/><span className="input-suffix">{ui.amountCurrency}</span></div>}
-      {q.type==="amount"&&<button className={`prefer-button ${value==="prefer_not_to_say"?"selected":""}`} onClick={()=>setContext(c=>({...c,[q.id]:c[q.id]==="prefer_not_to_say"?"": "prefer_not_to_say"}))}>{value==="prefer_not_to_say"?"✓ ":""}{ui.preferNot}</button>}
-      {q.type==="choice"&&<div className="options context-options">{opts.map(o=>{const selected=value===o.value;return <button key={o.value} className={selected?"option selected":"option"} onClick={()=>setContext(c=>({...c,[q.id]:o.value}))}><span className="radio">{selected&&<span className="radio-dot"/>}</span><span className="option-label">{o[language]||o.en}</span>{selected&&<span className="selected-badge">{ui.selected}</span>}</button>})}</div>}
-      {error&&<div className="error">{error}</div>}
-      <footer><button className="ghost" disabled={contextIdx===0} onClick={()=>setContextIdx(i=>i-1)}>{language==="fa"?"→ ":"← "}{ui.back}</button>{contextIdx<contextQuestions.length-1?<button className="primary small" disabled={!valid} onClick={()=>setContextIdx(i=>i+1)}>{ui.next}</button>:<button className="primary small" disabled={!valid||busy} onClick={saveContextAndFinish}>{busy?ui.analyzing:ui.contextFinish}</button>}</footer>
-    </section></main>;
-  }
-
-  const r=result?.result||result||{},f=result?.fingerprint||{},n=result?.narrative||{};
-  const tolerance=clamp(r.risk_tolerance),capacity=clamp(r.risk_capacity);
-  const archetype=r.archetype||"";
-  const archetypeNames={VAULT:"The Capital Protector",ANCHOR:"The Steady Builder",COOLHAND:"The Calm Conservative",SCOUT:"The Cautious Explorer",MAVERICK:"The Balanced Risk Taker",STRIKER:"The Calculated Aggressor",HOTSHOT:"The High-Risk Aspirant",HIGHROLLER:"The High-Conviction Investor",JACKPOT:"The Adaptive Risk Taker"};
-  const archetypeTag={VAULT:"Protect first. Participate second.",ANCHOR:"Careful, but not frozen.",COOLHAND:"You can take risk, but you do not need to.",SCOUT:"Curious about risk, careful with consequences.",MAVERICK:"Comfortable taking calculated risk.",STRIKER:"Ready to act when the odds justify it.",HOTSHOT:"Willing to swing hard, but capacity may say no.",HIGHROLLER:"High appetite with meaningful financial room.",JACKPOT:"High appetite. High capacity. Discipline matters."};
-  const archetypeLocalized=language==="fa"?{VAULT:"محافظ سرمایه",ANCHOR:"سازنده باثبات",COOLHAND:"محافظ آرام",SCOUT:"کاوشگر محتاط",MAVERICK:"ریسک‌پذیر متعادل",STRIKER:"مهاجم حساب‌شده",HOTSHOT:"ریسک‌پذیر بلندپرواز",HIGHROLLER:"سرمایه‌گذار با اطمینان بالا",JACKPOT:"ریسک‌پذیر انعطاف‌پذیر"}:language==="fr"?{VAULT:"Protecteur du capital",ANCHOR:"Bâtisseur stable",COOLHAND:"Conservateur serein",SCOUT:"Explorateur prudent",MAVERICK:"Preneur de risque équilibré",STRIKER:"Agresseur calculé",HOTSHOT:"Aspirant à haut risque",HIGHROLLER:"Investisseur à forte conviction",JACKPOT:"Preneur de risque adaptable"}:{};
-  const archetypeDisplay=archetypeLocalized[archetype]||archetypeNames[archetype]||ui.profile;
-  const archetypeTagLocalized=language==="fa"?{VAULT:"اول از سرمایه محافظت می‌کنی؛ بعد مشارکت می‌کنی.",ANCHOR:"محتاطی، اما متوقف نمی‌شوی.",COOLHAND:"توان پذیرش ریسک را داری، اما نیازی به آن نداری.",SCOUT:"به ریسک کنجکاوی، اما پیامدها را جدی می‌گیری.",MAVERICK:"با ریسک حساب‌شده راحتی.",STRIKER:"وقتی احتمال موفقیت توجیه کند، آماده اقدامی.",HOTSHOT:"حاضر به نوسان شدید هستی، اما ظرفیت مالی ممکن است محدودت کند.",HIGHROLLER:"اشتها و ظرفیت مالی بالایی برای ریسک داری.",JACKPOT:"اشتها و ظرفیت ریسک بالا داری؛ انضباط اهمیت بیشتری پیدا می‌کند."}:{};
-  const decisionLabels={"Conviction-Driven":{fr:"Guidé par la conviction",fa:"تصمیم‌گیری مبتنی بر اطمینان"},Adaptive:{fr:"Adaptatif",fa:"انعطاف‌پذیر"},"Socially Influenced":{fr:"Influencé socialement",fa:"متأثر از دیگران"},"Recency-Sensitive":{fr:"Sensible aux tendances récentes",fa:"حساس به روندهای اخیر"},Balanced:{fr:"Équilibré",fa:"متعادل"}};
-  const pressureLabels={"Emotionally Reactive":{fr:"Réactif émotionnellement",fa:"واکنش‌پذیر هیجانی"},Composed:{fr:"Maîtrisé",fa:"آرام و مسلط"},"Adaptive Under Pressure":{fr:"Adaptatif sous pression",fa:"انعطاف‌پذیر تحت فشار"},Balanced:{fr:"Équilibré",fa:"متعادل"}};
-  const localStyle=(value,map)=>language==="en"?value:(map[value]?.[language]||value||"—");
-  const watchouts=(f.watchouts||[]).slice(0,3);
-  const strengths=(f.strengths||[]).slice(0,3);
-  const characterAssets={VAULT:"/characters/vault.png",ANCHOR:"/characters/anchor.png",COOLHAND:"/characters/coolhand.png",SCOUT:"/characters/scout.png",MAVERICK:"/characters/maverick.png",STRIKER:"/characters/striker.png",HOTSHOT:"/characters/hotshot.png",HIGHROLLER:"/characters/highroller.png",JACKPOT:"/characters/jackpot.png"};
-  const characterAsset=characterAssets[archetype];
-
-  return <main className={`shell ${language==="fa"?"rtl":""}`}><section className="result">
-    <Brand compact/>
-    <div className="result-top character-result-top"><div className="result-identity">{characterAsset&&<div className="result-character" aria-hidden="true"><img src={characterAsset} alt="" /></div>}<div className="result-identity-copy"><div className="eyebrow">{ui.yourDNA}</div><h1>{archetype}</h1><p className="archetype-name">{archetypeDisplay}</p><p className="tagline">{archetypeTagLocalized[archetype]||archetypeTag[archetype]||"Your investment style, decoded."}</p></div></div></div>
-
-    {result?.investment_context && <section className="profile-overview">
-      <div className="profile-greeting"><small>{ui.yourDNA}</small><h2>{language==="fa"?`${result.investment_context.first_name||""}، این پروفایل سرمایه‌گذاری شماست.`:language==="fr"?`${result.investment_context.first_name||""}, voici votre profil d’investisseur.`:`${result.investment_context.first_name||"Investor"}, here’s your Investor DNA.`}</h2><p>{language==="fa"?"ابتدا زمینه شخصی و سرمایه‌گذاری شما را می‌بینیم؛ سپس وارد تحلیل عمیق DNA می‌شویم.":language==="fr"?"Commençons par votre contexte personnel et d’investissement, puis découvrons votre analyse détaillée.":"First, your personal and investment context. Then, your detailed Investor DNA analysis."}</p></div>
-      <div className="profile-overview-grid">
-        <article><small>{ui.firstName}</small><b>{result.investment_context.first_name||"—"}</b></article>
-        <article><small>{ui.age}</small><b>{result.investment_context.age||"—"}</b></article>
-        <article><small>{ui.amount}</small><b>{result.investment_context.amount_to_invest==null?ui.preferNot:`$${Number(result.investment_context.amount_to_invest).toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})} ${ui.amountCurrency}`}</b></article>
-        <article><small>{contextQuestions.find(q=>q.id==="goal")?.label[language]||"Goal"}</small><b>{contextQuestions.find(q=>q.id==="goal")?.options?.find(o=>o.value===result.investment_context.goal)?.[language]||contextQuestions.find(q=>q.id==="goal")?.options?.find(o=>o.value===result.investment_context.goal)?.en||"—"}</b></article>
-        <article><small>{contextQuestions.find(q=>q.id==="time_horizon")?.label[language]||"Time horizon"}</small><b>{contextQuestions.find(q=>q.id==="time_horizon")?.options?.find(o=>o.value===result.investment_context.time_horizon)?.[language]||contextQuestions.find(q=>q.id==="time_horizon")?.options?.find(o=>o.value===result.investment_context.time_horizon)?.en||"—"}</b></article>
-        <article><small>{contextQuestions.find(q=>q.id==="experience")?.label[language]||"Experience"}</small><b>{contextQuestions.find(q=>q.id==="experience")?.options?.find(o=>o.value===result.investment_context.experience)?.[language]||contextQuestions.find(q=>q.id==="experience")?.options?.find(o=>o.value===result.investment_context.experience)?.en||"—"}</b></article>
-      </div>
-    </section>}
-
-    <section className="risk-section">
-      <div className="section-heading"><div><small>{ui.riskProfile}</small><h2>{ui.mapTitle}</h2></div></div>
-      <div className="risk-map-wrap">
-        <div className="y-axis-label">{ui.capacity}</div>
-        <div className="risk-map">
-          <div className={`zone z-high-low ${archetype==="COOLHAND"?"selected":""}`}><span>{language==="fa"?"کم":language==="fr"?"FAIBLE":"LOW"}</span><b>COOLHAND</b></div>
-          <div className={`zone z-high-med ${archetype==="STRIKER"?"selected":""}`}><span>{language==="fa"?"متوسط":language==="fr"?"MOYEN":"MEDIUM"}</span><b>STRIKER</b></div>
-          <div className={`zone z-high-high ${archetype==="JACKPOT"?"selected":""}`}><span>{language==="fa"?"زیاد":language==="fr"?"ÉLEVÉ":"HIGH"}</span><b>JACKPOT</b></div>
-          <div className={`zone z-med-low ${archetype==="ANCHOR"?"selected":""}`}><span>{language==="fa"?"کم":language==="fr"?"FAIBLE":"LOW"}</span><b>ANCHOR</b></div>
-          <div className={`zone z-med-med ${archetype==="MAVERICK"?"selected":""}`}><span>{language==="fa"?"متوسط":language==="fr"?"MOYEN":"MEDIUM"}</span><b>MAVERICK</b></div>
-          <div className={`zone z-med-high ${archetype==="HIGHROLLER"?"selected":""}`}><span>{language==="fa"?"زیاد":language==="fr"?"ÉLEVÉ":"HIGH"}</span><b>HIGHROLLER</b></div>
-          <div className={`zone z-low-low ${archetype==="VAULT"?"selected":""}`}><span>{language==="fa"?"کم":language==="fr"?"FAIBLE":"LOW"}</span><b>VAULT</b></div>
-          <div className={`zone z-low-med ${archetype==="SCOUT"?"selected":""}`}><span>{language==="fa"?"متوسط":language==="fr"?"MOYEN":"MEDIUM"}</span><b>SCOUT</b></div>
-          <div className={`zone z-low-high ${archetype==="HOTSHOT"?"selected":""}`}><span>{language==="fa"?"زیاد":language==="fr"?"ÉLEVÉ":"HIGH"}</span><b>HOTSHOT</b></div>
-          <div className="crosshair x1"/><div className="crosshair x2"/><div className="crosshair y1"/><div className="crosshair y2"/>
+  if (screen === 'detail') {
+    const x = selectedInvestment;
+    const match = x ? matchMap.get(x.id) : null;
+    const why = normalizeJsonList(match?.explanation?.why_it_fits || match?.why_it_fits);
+    const watches = normalizeJsonList(match?.explanation?.watchouts || match?.watchouts);
+    const risks = normalizeJsonList(x?.profile_key_risks);
+    content = <main className="page detail-page">
+      {!x ? <EmptyState>{c.loading}</EmptyState> : <>
+        <button className="back-link" onClick={() => go('explore')}>← {c.explore}</button>
+        <section className="detail-hero"><div><div className="detail-chips"><span>{x.asset_type}</span><span>{x.category}</span><span>{x.region}</span></div><div className="symbol-big">{x.symbol}</div><h1>{x.name}</h1><p>{x.profile_summary || x.description || [x.strategy, x.issuer_name].filter(Boolean).join(' · ')}</p></div><div className="detail-actions">{match ? <div className="fit-score"><span>{c.dnaFit}</span><b>{Math.round(Number(match.match_score))}%</b><em>{match.fit_label || match.recommendation_tier?.replaceAll('_',' ')}</em></div> : <div className="fit-empty">{c.fitUnavailable}<button onClick={() => go('consent')}>{c.takeAssessment}</button></div>}<button className="secondary" onClick={() => toggleCompare(x.id)}>{compareIds.includes(x.id) ? c.removeCompare : c.addCompare}</button><button className="secondary" onClick={() => toggleWatchlist(x.id)}>{watchlist.some(w => w.investment_id === x.id) ? `★ ${c.saved}` : `☆ ${c.addWatchlist}`}</button></div></section>
+        {detailLoading && <div className="loading-line" />}
+        <section className="detail-stat-grid"><div><span>{c.price}</span><b>{fmtMoney(x.price, x.currency || 'CAD')}</b></div><div><span>{c.return1y}</span><b>{fmtPct(x.return_1y_pct)}</b></div><div><span>{c.mer}</span><b>{fmtPct(x.mer_pct,2)}</b></div><div><span>{c.risk}</span><b>{x.risk_level || '—'}</b></div><div><span>{c.yield}</span><b>{fmtPct(x.yield_pct,2)}</b></div><div><span>{c.aum}</span><b>{fmtCompact(x.aum)}</b></div></section>
+        <div className="detail-columns">
+          <section className="info-card"><h2>{c.overview}</h2><Info label={c.objective} value={x.profile_objective || x.description} /><Info label={c.benchmark} value={x.profile_benchmark} /><Info label={c.strategy} value={x.strategy || x.profile_management_style} /><Info label={c.issuer} value={x.issuer_name} /><Info label={c.region} value={x.region} /><Info label={c.currency} value={x.currency} /><Info label={c.inception} value={x.inception_date} /></section>
+          <section className="info-card"><h2>{c.performance}</h2><Metric label={c.return3y} value={fmtPct(x.return_3y_annualized_pct)} /><Metric label={c.return5y} value={fmtPct(x.return_5y_annualized_pct)} /><Metric label={c.volatility} value={fmtPct(x.volatility_1y_pct)} /><Metric label={c.drawdown} value={fmtPct(x.max_drawdown_1y_pct)} /><Metric label={c.sharpe} value={x.sharpe_ratio == null ? '—' : Number(x.sharpe_ratio).toFixed(2)} /><Metric label={c.beta} value={x.beta == null ? '—' : Number(x.beta).toFixed(2)} /></section>
+          <section className="info-card"><h2>{c.construction}</h2><Allocation label={c.equity} value={x.equity_pct} /><Allocation label={c.fixedIncome} value={x.fixed_income_pct} /><Info label={c.strategy} value={x.profile_portfolio_construction || x.profile_methodology} /><Info label={c.objective} value={x.profile_ideal_for} /></section>
+          <section className="info-card"><h2>{match ? c.dnaFit : c.keyRisks}</h2>{match ? <><h3>{c.whyFits}</h3>{why.length ? <ul>{why.map((v,i)=><li key={i}>{String(v)}</li>)}</ul> : <p className="muted">{match.explanation?.summary || match.summary || '—'}</p>}<h3>{c.watch}</h3>{watches.length ? <ul>{watches.map((v,i)=><li key={i}>{String(v)}</li>)}</ul> : <p className="muted">—</p>}</> : risks.length ? <ul>{risks.map((v,i)=><li key={i}>{String(v)}</li>)}</ul> : <p className="muted">{x.profile_ideal_for || '—'}</p>}</section>
         </div>
-        <div className="x-axis-label">{ui.tolerance}</div>
-      </div>
-      <div className="risk-values"><div><b>{Math.round(tolerance)}</b><span>{ui.riskTolerance}</span></div><div><b>{Math.round(capacity)}</b><span>{ui.riskCapacity}</span></div><div className="zone-read"><b>{archetype}</b><span>{ui.zone}</span></div></div>
-      <p className="map-note">{ui.mapNote}</p>
-    </section>
+      </>}
+    </main>;
+  }
 
-    <section className="behavior-section">
-      <div className="section-heading"><div><small>{ui.how}</small><h2>{ui.fingerprint}</h2></div></div>
-      <div className="grid"><article><small>{ui.decision}</small><h3>{localStyle(f.decision_style,decisionLabels)}</h3><p>{ui.decisionDesc}</p></article><article><small>{ui.pressure}</small><h3>{localStyle(f.pressure_style,pressureLabels)}</h3><p>{ui.pressureDesc}</p></article></div>
-    </section>
+  if (screen === 'compare') {
+    const selected = compareIds.map(id => catalog.find(x => x.id === id)).filter(Boolean);
+    const rows = [
+      [c.risk, x => x.risk_level || '—'], [c.return1y, x => fmtPct(x.return_1y_pct)], [c.return3y, x => fmtPct(x.return_3y_annualized_pct)], [c.mer, x => fmtPct(x.mer_pct,2)], [c.yield, x => fmtPct(x.yield_pct,2)], [c.volatility, x => fmtPct(x.volatility_1y_pct)], [c.drawdown, x => fmtPct(x.max_drawdown_1y_pct)], [c.sharpe, x => x.sharpe_ratio == null ? '—' : Number(x.sharpe_ratio).toFixed(2)], [c.aum, x => fmtCompact(x.aum)], [c.equity, x => fmtPct(x.equity_pct)], [c.fixedIncome, x => fmtPct(x.fixed_income_pct)], [c.dnaFit, x => matchMap.get(x.id) ? `${Math.round(Number(matchMap.get(x.id).match_score))}%` : '—'],
+    ];
+    content = <main className="page"><section className="page-heading"><div><span className="eyebrow">{c.compare}</span><h1>{c.compareTitle}</h1><p>{c.compareLead}</p></div>{selected.length ? <button className="secondary" onClick={() => setCompareIds([])}>{c.clear}</button> : null}</section>{selected.length < 2 ? <><EmptyState>{c.needTwo}</EmptyState><div className="comparison-picker">{catalog.slice(0,6).map(x => <button key={x.id} onClick={() => toggleCompare(x.id)}>{x.symbol} · {x.name}</button>)}</div></> : <div className="compare-table-wrap"><table className="compare-table"><thead><tr><th>{c.metric}</th>{selected.map(x => <th key={x.id}><b>{x.symbol}</b><span>{x.name}</span><button onClick={() => openInvestment(x)}>{c.view}</button></th>)}</tr></thead><tbody>{rows.map(([label,getter]) => <tr key={label}><td>{label}</td>{selected.map(x => <td key={x.id}>{getter(x)}</td>)}</tr>)}</tbody></table></div>}</main>;
+  }
 
-    <section className="insights-section">
-      <div className="insight-columns">
-        <article className="insight-card"><small>{ui.strengths}</small>{strengths.length?strengths.map((k,i)=><div className="trait" key={k}><div className="trait-title"><b>{localizedTrait(k,language)?.[0]||prettyTrait(k)}</b><span>{ui.strength}</span></div><p>{localizedTrait(k,language)?.[1]||traitDescription(k)}</p></div>):<p className="empty">{ui.emptyStrength}</p>}</article>
-        <article className="insight-card watch-card"><small>{ui.watch}</small>{watchouts.length?watchouts.map(k=><div className="trait" key={k}><div className="trait-title"><b>{localizedTrait(k,language)?.[0]||prettyTrait(k)}</b><span>{ui.watchLabel}</span></div><p>{localizedTrait(k,language)?.[1]||traitDescription(k)}</p></div>):<p className="empty">{ui.emptyWatch}</p>}</article>
-      </div>
-    </section>
+  if (screen === 'watchlist') content = <main className="page"><section className="page-heading"><div><span className="eyebrow">{c.watchlist}</span><h1>{c.watchlistTitle}</h1><p>{c.watchlistLead}</p></div></section>{!authSession?.user ? <div className="auth-gate"><p>{c.authNeeded}</p><button className="primary" onClick={() => { setAuthMode('signin'); setAuthOpen(true); }}>{c.signIn}</button><button className="secondary" onClick={() => { setAuthMode('signup'); setAuthOpen(true); }}>{c.signUp}</button></div> : watchlist.length ? <div className="investment-grid">{watchlist.map(w => { const item = catalog.find(x => x.id === w.investment_id) || w; return <InvestmentCard key={w.investment_id} item={{ ...item, id: w.investment_id }} />; })}</div> : <EmptyState>{c.emptyWatchlist}</EmptyState>}</main>;
 
-    <section className="character-card character-summary-card"><div className="character-summary-image">{characterAsset&&<img src={characterAsset} alt="" aria-hidden="true" />}</div><div className="character-summary-copy"><small>{ui.character}</small><h2>{archetypeDisplay||"The Investor"}</h2><div className="character-lines">{({
-      VAULT:["Protects what matters.","Moves carefully.","Plays the long game."],
-      ANCHOR:["Steady by nature.","Builds with patience.","Stays the course."],
-      COOLHAND:["Thinks before acting.","Sees the bigger picture.","Invests with purpose."],
-      SCOUT:["Always looking ahead.","Spots what others miss.","Learns as they go."],
-      MAVERICK:["Thinks differently.","Chooses their own path.","Finds a better way."],
-      STRIKER:["Spots the opening.","Acts with conviction.","Moves when it matters."],
-      HOTSHOT:["Wants more.","Embraces the challenge.","Pushes the limits."],
-      HIGHROLLER:["Thinks big.","Acts with conviction.","Puts capital to work."],
-      JACKPOT:["Sees what could be.","Dreams beyond the obvious.","Plays for bigger outcomes."]
-    }[archetype]||["Your investor character.","Built from your responses.","Distinctly yours."]).map((line,i)=><p key={i}>{line}</p>)}</div></div></section>
+  if (screen === 'profile') content = <main className="page profile-page"><section className="page-heading"><div><span className="eyebrow">{c.profile}</span><h1>{c.profileTitle}</h1><p>{c.profileLead}</p></div>{authSession?.user && <button className="secondary" onClick={signOut}>{c.signOut}</button>}</section>{!authSession?.user ? <div className="auth-gate"><p>{c.authNeeded}</p><button className="primary" onClick={() => setAuthOpen(true)}>{c.signIn}</button></div> : <div className="profile-grid"><section className="profile-card"><span>{c.account}</span><h2>{profileHome?.display_name || authSession.user.email}</h2><p>{authSession.user.email}</p><div className="profile-stats"><div><b>{profileHome?.watchlist_count ?? watchlist.length}</b><span>{c.savedItems}</span></div><div><b>{savedDna?.latest_assessment_id ? '1' : '0'}</b><span>{c.latestDna}</span></div></div></section><section className="profile-card dna-profile-card">{savedDna ? <><span>{c.latestDna}</span><h2>{ARCHETYPE[savedDna.archetype]?.[language] || savedDna.archetype}</h2><div className="risk-bars"><RiskBar label={c.riskTolerance} value={savedDna.risk_tolerance} /><RiskBar label={c.riskCapacity} value={savedDna.risk_capacity} /></div><Info label={c.decisionStyle} value={savedDna.decision_style} /><Info label={c.pressureStyle} value={savedDna.pressure_style} /><button className="primary" onClick={() => go('consent')}>{c.retake}</button></> : <><span>{c.latestDna}</span><h2>{c.noSavedDna}</h2><button className="primary" onClick={() => go('consent')}>{c.takeAssessment}</button></>}</section></div>}</main>;
 
+  if (screen === 'consent') content = <main className="assessment-shell"><section className="assessment-card consent-card"><Brand /><LanguagePicker language={language} setLanguage={setLanguage} /><span className="eyebrow">{c.before}</span><h1>{c.consentTitle}</h1><p>{c.consentBody}</p><div className="privacy-note"><b>{c.privacy}</b><span>{c.privacyBody}</span><small>{authSession?.user ? `${c.account}: ${authSession.user.email}` : c.anonymous}</small></div><button className="primary wide" disabled={busy} onClick={startAssessment}>{busy ? c.starting : `${c.start} →`}</button></section></main>;
 
-    {!result?.investment_context ? <section className="context-cta"><div><small>{ui.contextEyebrow}</small><h3>{ui.continueCard}</h3><p>{ui.contextLead}</p></div><button className="primary" onClick={()=>{setContextIdx(0);setError("");setScreen("context")}}>{ui.continueCta}</button></section> : <section className="context-summary"><div className="context-summary-head"><div><small>{ui.contextEyebrow}</small><h2>{ui.contextComplete}</h2></div><span className="complete-pill">✓ {ui.profileComplete}</span></div><div className="context-grid">{contextQuestions.map(q=>{const v=result.investment_context?.[q.id];let label=q.label[language]||q.label.en;let display=v;if(q.type==="amount") display=v==="prefer_not_to_say"?ui.preferNot:`$${Number(v).toLocaleString("en-CA",{minimumFractionDigits:2,maximumFractionDigits:2})} ${ui.amountCurrency}`;else if(q.type==="number") display=v?String(v):"—";else if(q.type==="text") display=v||"—";else {const o=q.options?.find(x=>x.value===v);display=o?(o[language]||o.en):"—";}return <div className="context-fact" key={q.id}><small>{label}</small><b>{display}</b></div>})}</div></section>}
-    <p className="disclaimer">Investing DNA is an educational assessment, not investment, financial or psychological advice. Your result is a snapshot of your responses at the time of assessment.</p>
-    <button className="primary" onClick={()=>window.print()}>{ui.print}</button>
-  </section></main>
+  if (screen === 'quiz') {
+    const q = questions[questionIndex];
+    const value = q ? answers[q.question_id] : undefined;
+    const opts = q ? optionArray(q, language) : [];
+    const isScale = q?.question_type === 'scale';
+    const progress = questions.length ? ((questionIndex + 1) / questions.length) * 100 : 0;
+    content = <main className="assessment-shell"><section className="assessment-card quiz-card"><div className="quiz-head"><Brand compact /><LanguagePicker language={language} setLanguage={setLanguage} /><span>{c.question} {questionIndex + 1} {c.of} {questions.length}</span></div><div className="progress"><i style={{ width: `${progress}%` }} /></div>{q ? <><span className="eyebrow">{sectionName(q.section, c)}</span><h1>{questionPrompt(q, language)}</h1>{isScale ? <div className="scale-block"><b>{value ?? 5}</b><input type="range" min="0" max="10" step="1" value={value ?? 5} onChange={e => saveAnswer(q.question_id, Number(e.target.value))} /><div><span>{c.notAtAll}</span><span>{c.extremely}</span></div></div> : <div className="answer-list">{opts.map((o, i) => { const ov = typeof o === 'object' ? (o.value ?? o.key ?? i) : o; const label = typeof o === 'object' ? (o.label ?? o.label_en ?? String(ov)) : String(o); return <button key={`${ov}-${i}`} className={value === ov ? 'selected' : ''} onClick={() => saveAnswer(q.question_id, ov)}><span>{String.fromCharCode(65+i)}</span><b>{label}</b>{value === ov && <em>✓</em>}</button>; })}</div>}<div className="quiz-footer"><button className="secondary" disabled={questionIndex === 0} onClick={() => setQuestionIndex(i => i - 1)}>← {c.back}</button>{questionIndex < questions.length - 1 ? <button className="primary" disabled={value === undefined} onClick={() => setQuestionIndex(i => i + 1)}>{c.next} →</button> : <button className="primary" disabled={value === undefined || busy} onClick={submitAssessment}>{busy ? c.analyzing : `${c.reveal} →`}</button>}</div></> : <div className="loading-panel">{c.loading}</div>}</section></main>;
+  }
+
+  if (screen === 'result') {
+    const r = result?.result || result || savedDna || {};
+    const f = result?.fingerprint || savedDna || {};
+    const archetype = r.archetype || savedDna?.archetype;
+    const strengths = normalizeJsonList(f.strengths || savedDna?.strengths);
+    const watchouts = normalizeJsonList(f.watchouts || savedDna?.watchouts);
+    const image = archetype ? `/characters/${String(archetype).toLowerCase()}.png` : null;
+    content = <main className="assessment-shell result-shell"><section className="result-card"><div className="result-top"><div><Brand compact /><span className="eyebrow">{c.resultEyebrow}</span><h1>{ARCHETYPE[archetype]?.[language] || archetype || c.profileTitle}</h1></div>{image && <img src={image} alt="" />}</div><section><h2>{c.riskProfile}</h2><div className="risk-result-grid"><RiskBar label={c.riskTolerance} value={r.risk_tolerance} /><RiskBar label={c.riskCapacity} value={r.risk_capacity} /></div></section><section><h2>{c.fingerprint}</h2><div className="fingerprint-grid"><div><span>{c.decisionStyle}</span><b>{f.decision_style || '—'}</b></div><div><span>{c.pressureStyle}</span><b>{f.pressure_style || '—'}</b></div></div></section><section className="insight-grid"><div><h2>{c.strengths}</h2>{strengths.length ? <ul>{strengths.map((x,i)=><li key={i}>{String(x).replaceAll('_',' ')}</li>)}</ul> : <p>—</p>}</div><div><h2>{c.watchouts}</h2>{watchouts.length ? <ul>{watchouts.map((x,i)=><li key={i}>{String(x).replaceAll('_',' ')}</li>)}</ul> : <p>—</p>}</div></section><div className="result-actions"><button className="primary" onClick={() => go('context')}>{c.completeContext} →</button><button className="secondary" onClick={() => { setSortBy('match'); go('explore'); }}>{c.seeMatches} →</button>{!assessmentSession?.account_linked && <button className="secondary accent" onClick={requestSaveDna}>{c.saveAndReturn}</button>}</div><p className="disclaimer">{c.educational}</p></section></main>;
+  }
+
+  if (screen === 'context') content = <main className="assessment-shell"><section className="assessment-card context-card"><div className="quiz-head"><Brand compact /><LanguagePicker language={language} setLanguage={setLanguage} /></div><span className="eyebrow">{c.dna}</span><h1>{c.contextTitle}</h1><p>{c.contextLead}</p><div className="context-grid"><Field label={c.firstName}><input value={context.first_name} onChange={e => setContext(v => ({ ...v, first_name: e.target.value }))} /></Field><Field label={c.age}><input type="number" min="18" max="100" value={context.age} onChange={e => setContext(v => ({ ...v, age: e.target.value }))} /></Field><Field label={c.amountOptional}><input type="number" min="0" value={context.amount_to_invest} onChange={e => setContext(v => ({ ...v, amount_to_invest: e.target.value }))} placeholder="CAD" /></Field><ContextSelect label={c.goal} field="goal" value={context.goal} setContext={setContext} c={c} /><ContextSelect label={c.horizon} field="time_horizon" value={context.time_horizon} setContext={setContext} c={c} /><ContextSelect label={c.liquidity} field="liquidity_need" value={context.liquidity_need} setContext={setContext} c={c} /><ContextSelect label={c.requiredReturn} field="required_return" value={context.required_return} setContext={setContext} c={c} /><ContextSelect label={c.lossImpact} field="loss_consequence" value={context.loss_consequence} setContext={setContext} c={c} /><ContextSelect label={c.experience} field="experience" value={context.experience} setContext={setContext} c={c} /></div><div className="result-actions"><button className="primary" disabled={busy} onClick={saveContext}>{busy ? c.analyzing : c.finishContext}</button><button className="secondary" onClick={() => go('result')}>{c.skipContext}</button></div></section></main>;
+
+  return <div className={`platform-app ${language === 'fa' ? 'rtl' : ''}`}>
+    {!['consent','quiz','result','context'].includes(screen) && nav}
+    {content}
+    {(error || notice) && <div className={`toast ${error ? 'error' : 'success'}`}><span>{error || notice}</span><button onClick={() => { setError(''); setNotice(''); }}>×</button></div>}
+    {compareIds.length > 0 && !['compare','quiz','result','context','consent'].includes(screen) && <button className="compare-float" onClick={() => go('compare')}>{c.compare} · {compareIds.length}</button>}
+    {authOpen && <div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setAuthOpen(false); }}><section className="auth-modal"><button className="modal-close" onClick={() => setAuthOpen(false)}>×</button><Brand compact /><span className="eyebrow">{c.optionalAccount}</span><h2>{authMode === 'signin' ? c.authTitleIn : c.authTitleUp}</h2><form onSubmit={submitAuth}><label>{c.email}<input type="email" required value={authEmail} onChange={e => setAuthEmail(e.target.value)} /></label><label>{c.password}<input type="password" minLength="6" required value={authPassword} onChange={e => setAuthPassword(e.target.value)} placeholder={c.passwordHint} /></label><button className="primary wide" disabled={busy}>{busy ? c.analyzing : authMode === 'signin' ? c.submitIn : c.submitUp}</button></form><button className="text-button" onClick={() => setAuthMode(m => m === 'signin' ? 'signup' : 'signin')}>{authMode === 'signin' ? c.switchUp : c.switchIn}</button></section></div>}
+  </div>;
 }
+
+function Info({ label, value }) { return <div className="info-row"><span>{label}</span><b>{value || '—'}</b></div>; }
+function Metric({ label, value }) { return <div className="metric-row"><span>{label}</span><b>{value}</b></div>; }
+function Allocation({ label, value }) { const n = Math.max(0, Math.min(100, Number(value) || 0)); return <div className="allocation"><div><span>{label}</span><b>{value == null ? '—' : `${n.toFixed(0)}%`}</b></div><div className="allocation-track"><i style={{ width: `${n}%` }} /></div></div>; }
+function RiskBar({ label, value }) { const n = Math.max(0, Math.min(100, Number(value) || 0)); return <div className="risk-bar"><div><span>{label}</span><b>{n.toFixed(0)}</b></div><div><i style={{ width: `${n}%` }} /></div></div>; }
+function Field({ label, children }) { return <label className="field"><span>{label}</span>{children}</label>; }
+function ContextSelect({ label, field, value, setContext, c }) { return <Field label={label}><select value={value} onChange={e => setContext(v => ({ ...v, [field]: e.target.value }))}>{CONTEXT_OPTIONS[field].map(([v,key]) => <option key={v} value={v}>{c[key]}</option>)}</select></Field>; }
