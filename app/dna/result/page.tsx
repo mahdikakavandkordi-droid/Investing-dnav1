@@ -13,19 +13,33 @@ function normalizeMatches(payload?:MatchPayload|null):MatchItem[]{
 
 export default function Result(){
  const [dna,setDna]=useState<DNA|null>(null),[report,setReport]=useState<DNA|null>(null),[matches,setMatches]=useState<MatchPayload|null>(null),[pending,setPending]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
+ const [email,setEmail]=useState(''),[sendingEmail,setSendingEmail]=useState(false),[emailMessage,setEmailMessage]=useState('');
  useEffect(()=>{let active=true;(async()=>{
   const session=supabase?(await supabase.auth.getSession()).data.session:null;
   const local=readDraft(session?.user.id||null);
   if(local?.result){if(active){setDna(local.result.result);setReport(local.result.report?.report||null);setMatches(local.result.match||null);setPending(!local.result.account_linked);}return;}
-  if(session){const state=await rpc<AppState>('get_current_investor_app_state');if(active){setDna(state.dna);setReport(state.report);setMatches(state.matches||null);}}
+  if(session){const state=await rpc<AppState>('get_current_investor_app_state');if(active){setDna(state.dna);setReport(state.report);setMatches(state.matches||null);setPending(false);}}
  })().catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});return ()=>{active=false}},[]);
  const topMatches=useMemo(()=>normalizeMatches(matches).slice(0,3),[matches]);
  const hasContext=!!report?.investment_context;
 
+ async function emailSaveLink(e:React.FormEvent){
+   e.preventDefault();if(!supabase||sendingEmail||!pending)return;
+   setSendingEmail(true);setEmailMessage('');setError('');
+   try{
+     const redirect=new URL('/profile',location.origin);redirect.searchParams.set('save','dna');
+     const {error}=await supabase.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:true,emailRedirectTo:redirect.toString()}});
+     if(error)throw error;
+     setEmailMessage('Check your email. Open the secure link in this browser to save your Investor DNA.');
+   }catch(e){setError(e instanceof Error?e.message:'Unable to send the secure email link.');}
+   finally{setSendingEmail(false);}
+ }
+
  if(loading)return <main className="result-page"><div className="container result-container"><div className="result-loading-card"><h1>Building your Investor DNA report…</h1><p className="muted">Turning your answers into a profile you can actually use.</p></div></div></main>;
- if(!dna)return <main className="result-page"><div className="container result-container"><div className="result-loading-card"><h1>{error?'Could not load your DNA':'Your DNA starts here'}</h1>{error?<p role="alert">{error}</p>:<p>No completed assessment is available on this browser. Sign in to view a saved result.</p>}<div className="actions"><Link className="btn primary" href="/dna/assessment">Start / resume assessment</Link><Link className="btn" href="/profile">Sign in</Link>{error&&<button className="btn" onClick={()=>location.reload()}>Retry</button>}</div></div></div></main>;
+ if(!dna)return <main className="result-page"><div className="container result-container"><div className="result-loading-card"><h1>{error?'Could not load your DNA':'Your guest report has expired'}</h1>{error?<p role="alert">{error}</p>:<p>Guest reports are one-time previews and are not kept in this browser after a refresh. Create or sign in to an account to keep your Investor DNA.</p>}<div className="actions"><Link className="btn primary" href="/dna/assessment">Take the assessment</Link><Link className="btn" href="/profile?mode=signup">Create free account</Link><Link className="btn" href="/profile">Sign in</Link>{error&&<button className="btn" onClick={()=>location.reload()}>Retry</button>}</div></div></div></main>;
 
  return <main className="result-page"><div className="container result-container">
+   {pending&&<section className="notice guest-report-warning"><strong>One-time guest report</strong><p>This report disappears if you refresh, close, or leave this page. Save it with an account or email link if you want to keep it.</p></section>}
    <DnaSummary dna={dna} report={report}/>
 
    <section className="result-next-card result-context-cta">
@@ -44,6 +58,7 @@ export default function Result(){
      <div className="matches-more"><Link className="btn primary" href="/match">See all DNA matches</Link></div>
    </section>}
 
-   {pending?<section className="result-save-card"><div><strong>Keep your Investor DNA</strong><p>This result currently lives only in this browser. Create a free account to save the profile, future reassessments, matches and watchlist.</p></div><div className="result-actions"><Link className="btn primary" href="/profile?mode=signup">Create free account</Link><Link className="btn" href="/profile">Sign in</Link></div></section>:<section className="result-save-card"><div><strong>Your Investor DNA is saved.</strong><p>You can return to it from your profile and use it across Match, Explore and your watchlist.</p></div><div className="result-actions"><Link className="btn primary" href="/profile">My profile</Link><Link className="btn" href="/explore">Explore investments</Link></div></section>}
+   {pending?<section className="result-save-card guest-save-card"><div className="guest-save-copy"><div className="eyebrow">Keep this report</div><strong>Don’t lose your Investor DNA</strong><p>Your guest report is not stored after refresh. Choose either option below if you want to come back to it.</p><div className="result-actions"><Link className="btn primary" href="/profile?mode=signup">Create free account</Link><Link className="btn" href="/profile">Already have an account? Sign in</Link></div></div><form className="guest-email-form" onSubmit={emailSaveLink}><label htmlFor="save-email">Or send me a secure save link</label><div className="guest-email-row"><input id="save-email" className="field" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/><button className="btn" disabled={sendingEmail||!supabase}>{sendingEmail?'Sending…':'Email me the link'}</button></div><p className="fine muted">Opening the link creates a free passwordless account and attaches this assessment to it. We are not emailing a PDF yet.</p>{emailMessage&&<p className="notice" role="status">{emailMessage}</p>}</form></section>:<section className="result-save-card"><div><strong>Your Investor DNA is saved.</strong><p>You can return to it from your profile and use it across Match, Explore and your watchlist.</p></div><div className="result-actions"><Link className="btn primary" href="/profile">My profile</Link><Link className="btn" href="/explore">Explore investments</Link></div></section>}
+   {error&&<p className="notice" role="alert">{error}</p>}
  </div></main>;
 }
