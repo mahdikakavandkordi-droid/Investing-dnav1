@@ -17,6 +17,6 @@ function eventFor(path:string):{event:ProductEvent;investment_id?:string}|null{
 }
 export function ProductAnalytics(){const pathname=usePathname();
  useEffect(()=>{if(!sessionStorage.getItem(START_KEY)){sessionStorage.setItem(START_KEY,'1');void trackSessionStart()}},[]);
- useEffect(()=>{const item=eventFor(pathname);if(item)void trackProductEvent(item.event,{route:pathname,investment_id:item.investment_id})},[pathname]);
+ useEffect(()=>{const item=eventFor(pathname);if(item)void trackProductEvent(item.event,{route:pathname,investment_id:item.investment_id});if(pathname==='/profile'&&new URLSearchParams(location.search).get('mode')==='signup')void trackProductEvent('signup_requested',{route:'/profile',metadata:{source:'signup_route'}})},[pathname]);
  return null;
 }
