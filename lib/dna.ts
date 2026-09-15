@@ -118,24 +118,62 @@ export type Submission = {
 };
 
 export type AppState = {has_profile:boolean;assessment_id?:string;dna:DNA|null;report:DNA|null;matches?:MatchPayload};
-export type Draft = {version:1;createdAt:number;ownerId:string|null;session:{assessment_id:string;session_token:string;account_linked?:boolean;language_code?:'en'|'fr'|'fa'};answers:Record<string,string>;index:number;result?:Submission};
-export const DRAFT_KEY = "investing-dna:draft:v1";
+export type AssessmentSession={assessment_id:string;session_token:string;account_linked?:boolean;language_code?:'en'|'fr'|'fa'};
+export type Draft = {version:1;createdAt:number;ownerId:string|null;session:AssessmentSession;answers:Record<string,string>;index:number;result?:Submission};
+export type ClaimTicket={version:1;createdAt:number;session:AssessmentSession};
+
+export const DRAFT_KEY = "investing-dna:draft:v2";
+const LEGACY_DRAFT_KEY = "investing-dna:draft:v1";
+const CLAIM_KEY = "investing-dna:claim:v1";
 const MAX_AGE = 24 * 60 * 60 * 1000;
 let memory:Draft|null = null;
 
-export function clearDraft() { memory=null; try { localStorage.removeItem(DRAFT_KEY); } catch {} }
+function validAge(createdAt:number){return Number.isFinite(createdAt)&&createdAt<=Date.now()&&Date.now()-createdAt<=MAX_AGE;}
+function removeStoredDraft(){try{localStorage.removeItem(DRAFT_KEY);localStorage.removeItem(LEGACY_DRAFT_KEY);}catch{}}
+
+export function clearClaimTicket(){try{localStorage.removeItem(CLAIM_KEY);}catch{}}
+export function clearDraft() { memory=null; removeStoredDraft(); clearClaimTicket(); }
+
+export function readClaimTicket():ClaimTicket|null {
+  try{
+    const raw=localStorage.getItem(CLAIM_KEY);if(!raw)return null;
+    const ticket=JSON.parse(raw) as ClaimTicket;
+    if(ticket?.version!==1||!validAge(ticket.createdAt)||!ticket.session?.assessment_id||!ticket.session?.session_token){clearClaimTicket();return null;}
+    return ticket;
+  }catch{clearClaimTicket();return null;}
+}
+
 export function readDraft(ownerId:string|null):Draft|null {
   let d:Draft|null=memory;
-  try { const raw=localStorage.getItem(DRAFT_KEY); if(raw) d=JSON.parse(raw); } catch { /* use memory when storage is blocked */ }
+  if(!d){
+    try { const raw=localStorage.getItem(DRAFT_KEY); if(raw) d=JSON.parse(raw); } catch { /* use memory when storage is blocked */ }
+  }
+  // v1 stored completed guest reports for 24h. Never restore those legacy results.
+  try{localStorage.removeItem(LEGACY_DRAFT_KEY);}catch{}
   if(!d) return null;
-  if(d.version!==1 || !Number.isFinite(d.createdAt) || Date.now()-d.createdAt>MAX_AGE || d.createdAt>Date.now() || !d.session?.assessment_id || !d.session?.session_token || !d.answers || typeof d.answers!=="object" || !Number.isInteger(d.index) || d.index<0) {clearDraft();return null;}
+  if(d.version!==1 || !validAge(d.createdAt) || !d.session?.assessment_id || !d.session?.session_token || !d.answers || typeof d.answers!=="object" || !Number.isInteger(d.index) || d.index<0) {clearDraft();return null;}
   if(d.ownerId && d.ownerId!==ownerId) return null;
   memory=d; return d;
 }
+
 export function writeDraft(d:Draft):boolean {
   memory=d;
-  try {localStorage.setItem(DRAFT_KEY,JSON.stringify(d));return true;} catch {return false;}
+  try {localStorage.setItem(DRAFT_KEY,JSON.stringify(d));localStorage.removeItem(LEGACY_DRAFT_KEY);return true;} catch {return false;}
 }
+
+// Completed guest results are deliberately memory-only. A refresh removes the report.
+// We keep only a short-lived claim ticket so an email/account flow can attach the assessment later.
+export function writeEphemeralResult(d:Draft):boolean {
+  memory=d;
+  let ok=true;
+  try{
+    removeStoredDraft();
+    if(d.result?.account_linked){localStorage.removeItem(CLAIM_KEY);}
+    else localStorage.setItem(CLAIM_KEY,JSON.stringify({version:1,createdAt:Date.now(),session:d.session} satisfies ClaimTicket));
+  }catch{ok=false;}
+  return ok;
+}
+
 export function answerRows(answers:Record<string,string>) {
   return Object.entries(answers).map(([question_id,value])=>({question_id,answer_value:{value}}));
 }
