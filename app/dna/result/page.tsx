@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
 import {supabase,rpc} from "@/lib/supabase";
+import {trackProductEvent} from "@/lib/analytics";
 import {readDraft,AppState,DNA,MatchItem,MatchPayload} from "@/lib/dna";
 import {DnaSummary} from "@/components/DnaSummary";
 
@@ -30,6 +31,7 @@ export default function Result(){
      const redirect=new URL('/profile',location.origin);redirect.searchParams.set('save','dna');
      const {error}=await supabase.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:true,emailRedirectTo:redirect.toString()}});
      if(error)throw error;
+     void trackProductEvent('secure_link_requested',{metadata:{source:'dna_result'}});
      setEmailMessage('Check your email. Open the secure link in this browser to save your Investor DNA.');
    }catch(e){setError(e instanceof Error?e.message:'Unable to send the secure email link.');}
    finally{setSendingEmail(false);}
@@ -58,6 +60,7 @@ export default function Result(){
    </section>}
 
    {pending?<section className="result-save-card guest-save-card"><div className="guest-save-copy"><div className="eyebrow">Keep this report</div><strong>Don’t lose your Investor DNA</strong><p>Your guest report is not stored after refresh. Choose either option below if you want to come back to it.</p><div className="result-actions"><Link className="btn primary" href="/profile?mode=signup">Create free account</Link><Link className="btn" href="/profile">Already have an account? Sign in</Link></div></div><form className="guest-email-form" onSubmit={emailSaveLink}><label htmlFor="save-email">Or send me a secure save link</label><div className="guest-email-row"><input id="save-email" className="field" type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/><button className="btn" disabled={sendingEmail||!supabase}>{sendingEmail?'Sending…':'Email me the link'}</button></div><p className="fine muted">Opening the link creates a free passwordless account and attaches this assessment to it. We are not emailing a PDF yet.</p>{emailMessage&&<p className="notice" role="status">{emailMessage}</p>}</form></section>:<section className="result-save-card"><div><strong>Your Investor DNA is saved.</strong><p>You can return to it from your profile and use it across Match, Explore and your watchlist.</p></div><div className="result-actions"><Link className="btn primary" href="/profile">My profile</Link><Link className="btn" href="/explore">Explore investments</Link></div></section>}
+   <section className="result-next-card"><div><div className="eyebrow">Pilot feedback</div><h2>Did the result actually make sense?</h2><p>Give us one minute of feedback. It helps us validate clarity and usefulness before launch.</p></div><Link className="btn" href="/feedback">Give pilot feedback</Link></section>
    {error&&<p className="notice" role="alert">{error}</p>}
  </div></main>;
 }
