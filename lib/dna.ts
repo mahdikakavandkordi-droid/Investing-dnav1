@@ -39,6 +39,49 @@ export type QualityProfile = {
   note?:string;
 };
 
+export type NarrativeProfile = {
+  archetype?:string;
+  archetype_name?:string;
+  character?:string;
+  summary?:string;
+  how_you_think?:string;
+  pressure_style?:string;
+  strength?:string;
+  blind_spot?:string;
+  decision_influence?:string;
+  methodology_note?:string|null;
+};
+
+export type InvestmentContextProfile = {
+  first_name?:string|null;
+  age?:number|null;
+  amount_to_invest?:number|null;
+  amount_currency?:string|null;
+  goal?:string|null;
+  time_horizon?:string|null;
+  liquidity_need?:string|null;
+};
+
+export type MatchItem = {
+  investment_id?:string;
+  symbol:string;
+  name?:string;
+  match_score:number;
+  fit_label?:string;
+  recommendation_tier?:string;
+  explanation?:{
+    why_it_fits?:string[];
+    strengths?:string[];
+    watchouts?:string[];
+  };
+};
+
+export type MatchPayload = {
+  results?:MatchItem[];
+  top_matches?:MatchItem[];
+  alternatives?:MatchItem[];
+};
+
 export type DNA = {
   archetype?:string;
   risk_tolerance?:number;
@@ -55,6 +98,8 @@ export type DNA = {
   strengths?:unknown;
   watchouts?:unknown;
   methodology_note?:string|null;
+  narrative?:NarrativeProfile;
+  investment_context?:InvestmentContextProfile|null;
 };
 
 export type Submission = {
@@ -62,6 +107,7 @@ export type Submission = {
   account_linked?:boolean;
   quality?:QualityProfile;
   report?:{report?:DNA};
+  match?:MatchPayload;
   fingerprint?:{
     decision_style?:string;
     pressure_style?:string;
@@ -71,8 +117,8 @@ export type Submission = {
   };
 };
 
-export type AppState = {has_profile:boolean;assessment_id?:string;dna:DNA|null;report:DNA|null};
-export type Draft = {version:1;createdAt:number;ownerId:string|null;session:{assessment_id:string;session_token:string;account_linked?:boolean};answers:Record<string,string>;index:number;result?:Submission};
+export type AppState = {has_profile:boolean;assessment_id?:string;dna:DNA|null;report:DNA|null;matches?:MatchPayload};
+export type Draft = {version:1;createdAt:number;ownerId:string|null;session:{assessment_id:string;session_token:string;account_linked?:boolean;language_code?:'en'|'fr'|'fa'};answers:Record<string,string>;index:number;result?:Submission};
 export const DRAFT_KEY = "investing-dna:draft:v1";
 const MAX_AGE = 24 * 60 * 60 * 1000;
 let memory:Draft|null = null;
