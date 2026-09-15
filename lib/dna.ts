@@ -69,17 +69,27 @@ export type MatchItem = {
   match_score:number;
   fit_label?:string;
   recommendation_tier?:string;
+  risk_band?:string;
   explanation?:{
+    summary?:string;
+    fit_label?:string;
     why_it_fits?:string[];
     strengths?:string[];
     watchouts?:string[];
+    scores?:Record<string,number>;
   };
+  strengths?:string[];
+  watchouts?:string[];
 };
 
 export type MatchPayload = {
+  model_version?:string;
+  universe_count?:number;
   results?:MatchItem[];
   top_matches?:MatchItem[];
   alternatives?:MatchItem[];
+  consider?:MatchItem[];
+  mismatch?:MatchItem[];
 };
 
 export type DNA = {
@@ -148,7 +158,6 @@ export function readDraft(ownerId:string|null):Draft|null {
   if(!d){
     try { const raw=localStorage.getItem(DRAFT_KEY); if(raw) d=JSON.parse(raw); } catch { /* use memory when storage is blocked */ }
   }
-  // v1 stored completed guest reports for 24h. Never restore those legacy results.
   try{localStorage.removeItem(LEGACY_DRAFT_KEY);}catch{}
   if(!d) return null;
   if(d.version!==1 || !validAge(d.createdAt) || !d.session?.assessment_id || !d.session?.session_token || !d.answers || typeof d.answers!=="object" || !Number.isInteger(d.index) || d.index<0) {clearDraft();return null;}
@@ -161,8 +170,6 @@ export function writeDraft(d:Draft):boolean {
   try {localStorage.setItem(DRAFT_KEY,JSON.stringify(d));localStorage.removeItem(LEGACY_DRAFT_KEY);return true;} catch {return false;}
 }
 
-// Completed guest results are deliberately memory-only. A refresh removes the report.
-// We keep only a short-lived claim ticket so an email/account flow can attach the assessment later.
 export function writeEphemeralResult(d:Draft):boolean {
   memory=d;
   let ok=true;
