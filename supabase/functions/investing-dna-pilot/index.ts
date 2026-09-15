@@ -13,6 +13,19 @@ const EVENT_NAMES = new Set([
 ]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+type QuestionBankRow = {
+  question_id: string;
+  section: string | null;
+  question_type: string;
+  prompt_en: string;
+  prompt_fr: string | null;
+  prompt_fa: string | null;
+  options: unknown[];
+  options_fr: unknown[] | null;
+  options_fa: unknown[] | null;
+  sort_order: number | null;
+};
+
 async function sha256(value: string) {
   const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -215,13 +228,19 @@ Deno.serve(async (req) => {
     if (action === 'questionnaire') {
       const language = langOf(assessment.language_code || participant.language_code);
       const { data: rows, error } = await admin.from('question_bank')
-        .select('question_id,version,section,construct,construct_role,question_type,prompt_en,prompt_fr,prompt_fa,options,options_fr,options_fa,sort_order,weight')
+        .select('question_id,section,question_type,prompt_en,prompt_fr,prompt_fa,options,options_fr,options_fa,sort_order')
         .eq('version', assessment.questionnaire_version).eq('active', true).order('sort_order');
       if (error) throw error;
-      const questions = (rows ?? []).map((x: any) => ({
-        ...x,
-        prompt: language === 'fr' ? (x.prompt_fr || x.prompt_en) : language === 'fa' ? (x.prompt_fa || x.prompt_en) : x.prompt_en,
-        options: language === 'fr' ? (x.options_fr?.length ? x.options_fr : x.options) : language === 'fa' ? (x.options_fa?.length ? x.options_fa : x.options) : x.options,
+
+      // The browser gets only fields required to render and submit the active
+      // questionnaire. Scoring weight, construct metadata, raw version fields
+      // and non-selected localized copy remain behind the service boundary.
+      const questions = (rows ?? []).map((row: QuestionBankRow) => ({
+        question_id: row.question_id,
+        section: row.section,
+        question_type: row.question_type,
+        prompt: language === 'fr' ? (row.prompt_fr || row.prompt_en) : language === 'fa' ? (row.prompt_fa || row.prompt_en) : row.prompt_en,
+        options: language === 'fr' ? (row.options_fr?.length ? row.options_fr : row.options) : language === 'fa' ? (row.options_fa?.length ? row.options_fa : row.options) : row.options,
       }));
       return json({ assessment_id: assessmentId, questionnaire_version: assessment.questionnaire_version, language_code: language, questions });
     }
