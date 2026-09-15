@@ -1,32 +1,269 @@
 "use client";
+
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {Instrument,searchInstruments,compareInstruments} from '@/lib/instruments';
+import {searchInstruments,compareInstruments} from '@/lib/instruments';
+import type {Instrument} from '@/lib/instruments';
 import {assetLabel,matchEligible,heroMetrics} from '@/lib/instrument-model';
 import {formatMetric,validId} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import type {AppState,MatchItem} from '@/lib/dna';
 
-function fitLabel(m?:MatchItem){return m?.explanation?.fit_label||m?.fit_label||m?.recommendation_tier?.replaceAll('_',' ')||'Not matched'}
-function pretty(value:unknown){if(value===null||value===undefined||value==='')return 'Not available';return String(value).replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());}
-function value(item:Instrument,key:string,suffix='',digits=2){const raw=(item as unknown as Record<string,unknown>)[key];if(raw===null||raw===undefined||raw==='')return 'Not available';if(typeof raw==='number')return formatMetric(raw,suffix,digits);return pretty(raw);}
-const SHARED:[keyof Instrument,string][]=[['capital_protection','Capital protection'],['liquidity_level','Liquidity'],['price_volatility','Price volatility'],['income_predictability','Income predictability'],['growth_participation','Growth participation'],['interest_rate_sensitivity','Interest-rate sensitivity'],['diversification_level','Diversification'],['complexity_level','Complexity']];
+const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
+ ['capital_protection','Capital protection'],
+ ['liquidity_level','Liquidity'],
+ ['price_volatility','Price volatility'],
+ ['income_predictability','Income predictability'],
+ ['growth_participation','Growth participation'],
+ ['interest_rate_sensitivity','Interest-rate sensitivity'],
+ ['diversification_level','Diversification'],
+ ['complexity_level','Complexity']
+];
 
+/** Structure-first comparison. Personalized fit is layered only onto ETFs. */
 export default function Compare(){
- const {user}=useAccount();const [items,setItems]=useState<Instrument[]>([]),[selected,setSelected]=useState<string[]>(['','','']),[rows,setRows]=useState<Instrument[]>([]),[state,setState]=useState<AppState|null>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState('');
- useEffect(()=>{let active=true;setLoading(true);const ids=new URLSearchParams(location.search).get('ids')?.split(',').filter(validId).slice(0,3)||[];if(ids.length)setSelected([ids[0]||'',ids[1]||'',ids[2]||'']);
- Promise.all([searchInstruments({limit:100}),user?rpc<AppState>('get_current_investor_app_state').catch(()=>null):Promise.resolve(null)]).then(([catalog,s])=>{if(active){setItems(catalog);setState(s);if(ids.length>=2)void run(ids)}}).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[user?.id]);
- const matches=useMemo(()=>new Map((state?.matches?.results||[]).map(m=>[m.symbol,m])),[state]);
- async function run(override?:string[]){const arr=(override||selected).filter(validId);if(arr.length<2){setError('Choose at least two investments to compare.');return;}setBusy(true);setError('');try{const data=await compareInstruments(arr);setRows(data);history.replaceState(null,'',`/compare?ids=${arr.join(',')}`)}catch(e){setError(e instanceof Error?e.message:'Could not compare these investments.')}finally{setBusy(false)}}
- function setSlot(index:number,id:string){setSelected(current=>current.map((x,i)=>i===index?id:x));}
- return <section className="section"><div className="container"><div className="eyebrow">Compare</div><h1>Compare Investment DNA side by side</h1><p className="muted">Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. Personalized DNA Match is shown only for ETFs.</p>
- {loading?<p>Loading comparison tools…</p>:<><div className="compare-picker">{selected.map((id,i)=><label key={i}>Investment {i+1}<select className="field" value={id} onChange={e=>setSlot(i,e.target.value)}><option value="">{i<2?'Choose an investment':'Optional third investment'}</option>{items.filter(x=>!selected.includes(x.id)||x.id===id).map(x=><option key={x.id} value={x.id}>{assetLabel(x.asset_type)} · {x.symbol?`${x.symbol} — `:''}{x.name}</option>)}</select></label>)}</div><div className="actions"><button className="btn primary" disabled={busy} onClick={()=>void run()}>{busy?'Comparing…':'Compare investments'}</button><Link className="btn" href="/explore">Back to Explore</Link></div></>}
- {error&&<p className="notice" role="alert">{error}</p>}
- {rows.length>=2&&<><div className="compare-grid">{rows.map(x=>{const canMatch=matchEligible(x.asset_type),m=canMatch?matches.get(x.symbol):undefined;const metrics=heroMetrics(x.asset_type);return <article className="compare-card" key={x.id}><div className="actions compact"><span className="pill">{assetLabel(x.asset_type)}</span>{x.symbol&&<span className="pill">{x.symbol}</span>}</div><h2>{x.name}</h2>{canMatch?(m?<div><div className="compare-score">{m.match_score==null?'Review':`${Math.round(m.match_score)}/100`}</div><strong>{fitLabel(m)}</strong><p className="fine muted">Personal ETF compatibility layer</p></div>:<div className="notice"><span>{user?'No ranked ETF fit available':'Sign in with saved DNA to add ETF fit'}</span></div>):<div className="notice"><span>Research profile · personalized Match not enabled for this asset type yet</span></div>}
- <h3>Shared Investment DNA</h3>{SHARED.map(([key,label])=><div className="compare-metric" key={String(key)}><span>{label}</span><strong>{pretty(x[key])}</strong></div>)}
- <h3>{assetLabel(x.asset_type)} facts</h3>{metrics.map(met=><div className="compare-metric" key={met.key}><span>{met.label}</span><strong>{value(x,met.key,met.suffix,met.digits)}</strong></div>)}
- {x.credit_exposure&&<div className="compare-metric"><span>Credit exposure</span><strong>{pretty(x.credit_exposure)}</strong></div>}{x.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(x.time_structure)}</strong></div>}
- {m?.explanation?.strengths?.length?<><strong>Why this ETF may fit</strong><ul className="compare-fit-list">{m.explanation.strengths.slice(0,2).map(t=><li key={t}>{t}</li>)}</ul></>:null}{m?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{m.explanation.watchouts.slice(0,2).map(t=><li key={t}>{t}</li>)}</ul></>:null}<Link className="btn" href={`/investment/${x.id}`}>Open research</Link></article>})}</div><p className="fine muted">Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.</p></>}
- </div></section>;
+ const {user}=useAccount();
+ const [items,setItems]=useState<Instrument[]>([]);
+ const [selected,setSelected]=useState<string[]>(['','','']);
+ const [rows,setRows]=useState<Instrument[]>([]);
+ const [state,setState]=useState<AppState|null>(null);
+ const [loading,setLoading]=useState(true);
+ const [busy,setBusy]=useState(false);
+ const [error,setError]=useState('');
+
+ useEffect(()=>{
+  let active=true;
+  setLoading(true);
+
+  const ids=readRequestedIds();
+  if(ids.length){
+   setSelected([ids[0]||'',ids[1]||'',ids[2]||'']);
+  }
+
+  const stateRequest=user
+   ? rpc<AppState>('get_current_investor_app_state').catch(()=>null)
+   : Promise.resolve(null);
+
+  Promise.all([searchInstruments({limit:100}),stateRequest])
+   .then(([catalog,appState])=>{
+    if(!active)return;
+    setItems(catalog);
+    setState(appState);
+    if(ids.length>=2)void runComparison(ids);
+   })
+   .catch(e=>{if(active)setError(e.message)})
+   .finally(()=>{if(active)setLoading(false)});
+
+  return ()=>{active=false};
+ },[user?.id]);
+
+ const matches=useMemo(
+  ()=>new Map((state?.matches?.results||[]).map(match=>[match.symbol,match])),
+  [state]
+ );
+
+ async function runComparison(override?:string[]){
+  const ids=(override||selected).filter(validId);
+  if(ids.length<2){
+   setError('Choose at least two investments to compare.');
+   return;
+  }
+
+  setBusy(true);
+  setError('');
+  try{
+   const data=await compareInstruments(ids);
+   setRows(data);
+   history.replaceState(null,'',`/compare?ids=${ids.join(',')}`);
+  }catch(e){
+   setError(e instanceof Error?e.message:'Could not compare these investments.');
+  }finally{
+   setBusy(false);
+  }
+ }
+
+ function setSlot(index:number,id:string){
+  setSelected(current=>current.map((value,currentIndex)=>currentIndex===index?id:value));
+ }
+
+ return <section className="section">
+  <div className="container">
+   <div className="eyebrow">Compare</div>
+   <h1>Compare Investment DNA side by side</h1>
+   <p className="muted">
+    Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. Personalized DNA Match is shown only for ETFs.
+   </p>
+
+   {loading
+    ? <p>Loading comparison tools…</p>
+    : <ComparisonPicker
+       items={items}
+       selected={selected}
+       busy={busy}
+       onSelect={setSlot}
+       onCompare={()=>void runComparison()}
+      />}
+
+   {error&&<p className="notice" role="alert">{error}</p>}
+
+   {rows.length>=2&&<>
+    <div className="compare-grid">
+     {rows.map(item=><ComparisonCard
+      key={item.id}
+      item={item}
+      userPresent={!!user}
+      match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}
+     />)}
+    </div>
+    <p className="fine muted">
+     Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.
+    </p>
+   </>}
+  </div>
+ </section>;
+}
+
+function ComparisonPicker({
+ items,
+ selected,
+ busy,
+ onSelect,
+ onCompare
+}:{
+ items:Instrument[];
+ selected:string[];
+ busy:boolean;
+ onSelect:(index:number,id:string)=>void;
+ onCompare:()=>void;
+}){
+ return <>
+  <div className="compare-picker">
+   {selected.map((id,index)=><label key={index}>
+    Investment {index+1}
+    <select className="field" value={id} onChange={event=>onSelect(index,event.target.value)}>
+     <option value="">{index<2?'Choose an investment':'Optional third investment'}</option>
+     {items
+      .filter(item=>!selected.includes(item.id)||item.id===id)
+      .map(item=><option key={item.id} value={item.id}>
+       {assetLabel(item.asset_type)} · {item.symbol?`${item.symbol} — `:''}{item.name}
+      </option>)}
+    </select>
+   </label>)}
+  </div>
+
+  <div className="actions">
+   <button className="btn primary" disabled={busy} onClick={onCompare}>
+    {busy?'Comparing…':'Compare investments'}
+   </button>
+   <Link className="btn" href="/explore">Back to Explore</Link>
+  </div>
+ </>;
+}
+
+function ComparisonCard({
+ item,
+ userPresent,
+ match
+}:{
+ item:Instrument;
+ userPresent:boolean;
+ match?:MatchItem;
+}){
+ const canMatch=matchEligible(item.asset_type);
+ const metrics=heroMetrics(item.asset_type);
+
+ return <article className="compare-card">
+  <div className="actions compact">
+   <span className="pill">{assetLabel(item.asset_type)}</span>
+   {item.symbol&&<span className="pill">{item.symbol}</span>}
+  </div>
+  <h2>{item.name}</h2>
+
+  <FitSummary canMatch={canMatch} match={match} userPresent={userPresent}/>
+
+  <h3>Shared Investment DNA</h3>
+  {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}>
+   <span>{label}</span>
+   <strong>{pretty(item[key])}</strong>
+  </div>)}
+
+  <h3>{assetLabel(item.asset_type)} facts</h3>
+  {metrics.map(metric=><div className="compare-metric" key={metric.key}>
+   <span>{metric.label}</span>
+   <strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong>
+  </div>)}
+
+  {item.credit_exposure&&<div className="compare-metric">
+   <span>Credit exposure</span>
+   <strong>{pretty(item.credit_exposure)}</strong>
+  </div>}
+  {item.time_structure&&<div className="compare-metric">
+   <span>Time structure</span>
+   <strong>{pretty(item.time_structure)}</strong>
+  </div>}
+
+  {match?.explanation?.strengths?.length?<>
+   <strong>Why this ETF may fit</strong>
+   <ul className="compare-fit-list">
+    {match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}
+   </ul>
+  </>:null}
+
+  {match?.explanation?.watchouts?.length?<>
+   <strong>What conflicts</strong>
+   <ul className="compare-fit-list">
+    {match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}
+   </ul>
+  </>:null}
+
+  <Link className="btn" href={`/investment/${item.id}`}>Open research</Link>
+ </article>;
+}
+
+function FitSummary({canMatch,match,userPresent}:{canMatch:boolean;match?:MatchItem;userPresent:boolean}){
+ if(!canMatch){
+  return <div className="notice">
+   <span>Research profile · personalized Match not enabled for this asset type yet</span>
+  </div>;
+ }
+
+ if(!match){
+  return <div className="notice">
+   <span>{userPresent?'No ranked ETF fit available':'Sign in with saved DNA to add ETF fit'}</span>
+  </div>;
+ }
+
+ return <div>
+  <div className="compare-score">{match.match_score==null?'Review':`${Math.round(match.match_score)}/100`}</div>
+  <strong>{fitLabel(match)}</strong>
+  <p className="fine muted">Personal ETF compatibility layer</p>
+ </div>;
+}
+
+function readRequestedIds(){
+ return new URLSearchParams(location.search)
+  .get('ids')
+  ?.split(',')
+  .filter(validId)
+  .slice(0,3) || [];
+}
+
+function fitLabel(match?:MatchItem){
+ return match?.explanation?.fit_label ||
+  match?.fit_label ||
+  match?.recommendation_tier?.replaceAll('_',' ') ||
+  'Not matched';
+}
+
+function displayValue(item:Instrument,key:string,suffix='',digits=2){
+ const raw=(item as unknown as Record<string,unknown>)[key];
+ if(raw===null||raw===undefined||raw==='')return 'Not available';
+ if(typeof raw==='number')return formatMetric(raw,suffix,digits);
+ return pretty(raw);
+}
+
+function pretty(value:unknown){
+ if(value===null||value===undefined||value==='')return 'Not available';
+ return String(value).replaceAll('_',' ').replace(/\b\w/g,char=>char.toUpperCase());
 }
