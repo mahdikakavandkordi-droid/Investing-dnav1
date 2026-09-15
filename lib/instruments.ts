@@ -86,6 +86,8 @@ export type Instrument=Investment&{
  deposit_as_of_date?:string|null;
 };
 
+export type SavedInstrument={investment_id:string;symbol:string;name:string;note?:string;created_at?:string};
+
 export function searchInstruments(args:{assetType?:string|null;search?:string|null;limit?:number}={}){
  return rpc<Instrument[]>('app_search_instruments',{
   p_asset_type:args.assetType??null,
@@ -96,3 +98,6 @@ export function searchInstruments(args:{assetType?:string|null;search?:string|nu
 
 export function getInstrument(id:string){return rpc<Instrument|null>('app_get_instrument',{p_investment_id:id});}
 export function compareInstruments(ids:string[]){return rpc<Instrument[]>('app_compare_instruments',{p_investment_ids:ids});}
+export function instrumentWatchlist(){return rpc<{items:SavedInstrument[]}>('app_watchlist',{p_action:'list'});}
+export function saveInstrument(id:string){return rpc<{item?:{investment_id:string}}>('app_watchlist',{p_action:'add',p_investment_id:id});}
+export function removeInstrument(id:string){return rpc<{removed:boolean}>('app_watchlist',{p_action:'remove',p_investment_id:id});}
