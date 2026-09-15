@@ -1,8 +1,16 @@
 "use client";
+
 import {useEffect,useState} from 'react';
 import type {Session,User} from '@supabase/supabase-js';
 import {supabase} from '@/lib/supabase';
 
+/**
+ * Browser auth-session hook.
+ *
+ * This exposes Supabase's current authenticated user to UI code. It is not an
+ * authorization layer: backend ownership still comes from validated auth/RLS
+ * and server-side profile resolution. See `docs/ARCHITECTURE.md`.
+ */
 export function useAccount(){
  const [user,setUser]=useState<User|null>(null),[loading,setLoading]=useState(true);
  useEffect(()=>{
