@@ -36,8 +36,8 @@ const MATRIX=[
 function band(value:unknown){
   const n=typeof value==='number'?value:NaN;
   if(!Number.isFinite(n))return 'Not available';
-  if(n<34)return 'Lower';
-  if(n<67)return 'Moderate';
+  if(n<40)return 'Lower';
+  if(n<70)return 'Moderate';
   return 'Higher';
 }
 function behaviorBand(key:string,value:unknown){
@@ -68,6 +68,26 @@ function formatContext(key:string,value:unknown){
   return maps[key]?.[String(value)]||humanize(String(value));
 }
 
+function standoutDecision(behavioral:Record<string,number>){
+  const candidates=[
+    {key:'decision_independence',low:'More socially responsive',high:'Independent-minded',lowText:'Other people’s excitement can pull your attention toward an investment before your own review is finished.',highText:'You tend to separate other people’s enthusiasm from your own investment decision.'},
+    {key:'long_term_orientation',low:'Performance-sensitive',high:'Long-term focused',lowText:'Recent winners and laggards can change how attractive an investment feels to you.',highText:'You tend to keep recent performance in perspective and stay focused on the longer-term case.'},
+    {key:'reference_flexibility',low:'Reference-sensitive',high:'Forward-looking',lowText:'The price you paid can remain influential when you decide what to do next.',highText:'You tend to reassess investments from today forward rather than staying anchored to the original purchase price.'},
+    {key:'evidence_discipline',low:'Conviction-led',high:'Evidence-led',lowText:'Once you like an idea, changing your view can take stronger evidence.',highText:'You are relatively willing to test a favored idea against new or conflicting evidence.'},
+  ];
+  const ranked=candidates.map(c=>({...c,value:Number(behavioral[c.key])})).filter(c=>Number.isFinite(c.value)).sort((a,b)=>Math.abs(b.value-50)-Math.abs(a.value-50));
+  const top=ranked[0];
+  if(!top||Math.abs(top.value-50)<15)return {label:'Balanced',text:'No single decision tendency dominates strongly. You appear to use a mix of your own criteria, evidence and experience.'};
+  return top.value<50?{label:top.low,text:top.lowText}:{label:top.high,text:top.highText};
+}
+function pressureInsight(value:unknown){
+  const n=typeof value==='number'?value:NaN;
+  if(!Number.isFinite(n))return {label:'Not enough data',text:'We do not have enough information yet to describe how market pressure may affect your decisions.'};
+  if(n>=70)return {label:'Composed',text:'Sharp market moves are less likely to pull you away from a plan you chose while calm.'};
+  if(n<40)return {label:'More emotion-sensitive',text:'Sharp market moves or regret may create a stronger urge to change course sooner than you intended.'};
+  return {label:'Measured',text:'Market stress may affect you at times, but it does not appear to dominate your decision process.'};
+}
+
 export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
   const behavioral=report?.behavioral_profile || dna.behavioral_profile || {};
   const experience=report?.experience_profile || dna.experience_profile;
@@ -79,7 +99,8 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
   const rt=dna.risk_tolerance??report?.risk_tolerance;
   const rc=dna.risk_capacity??report?.risk_capacity;
   const name=context?.first_name?.trim();
-  const consistency=quality?.consistency_label && quality.consistency_label!=='not_available' ? humanize(quality.consistency_label) : null;
+  const decision=standoutDecision(behavioral);
+  const pressure=pressureInsight(behavioral.emotional_decision_control);
 
   return <div className="dna-report">
     <section className={'dna-hero dna-'+archetype.toLowerCase()}>
@@ -89,7 +110,7 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
         <h1>{archetype}</h1>
         <h2>{narrative.character||meta.title}</h2>
         <p className="dna-tagline">{meta.tagline}</p>
-        {consistency&&<span className="consistency-pill">Profile confidence: {consistency}</span>}
+        {quality?.clarification_recommended&&<span className="consistency-pill">A few answers need a second look</span>}
       </div>
       <div className="dna-character" aria-hidden="true"><Image src={`/characters/${archetype.toLowerCase()}.png`} alt="" width={230} height={230} priority/></div>
     </section>
@@ -125,8 +146,8 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
       </div>
 
       <div className="decision-cards">
-        <div className="decision-card"><span className="decision-icon">↗</span><div><small>How you tend to decide</small><h3>{report?.decision_style||dna.decision_style||'Balanced'}</h3><p>{narrative.how_you_think||'You tend to combine your own criteria, evidence and experience rather than relying on one signal.'}</p></div></div>
-        <div className="decision-card"><span className="decision-icon">≈</span><div><small>When markets get stressful</small><h3>{report?.pressure_style||dna.pressure_style||'Measured'}</h3><p>{narrative.pressure_style||'Your response to market pressure appears mixed rather than strongly reactive or strongly composed.'}</p></div></div>
+        <div className="decision-card"><span className="decision-icon">↗</span><div><small>Your clearest decision tendency</small><h3>{decision.label}</h3><p>{decision.text}</p></div></div>
+        <div className="decision-card"><span className="decision-icon">≈</span><div><small>When markets get stressful</small><h3>{pressure.label}</h3><p>{pressure.text}</p></div></div>
       </div>
 
       <div className="strength-watch-grid">
@@ -139,8 +160,8 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
       <div className="eyebrow">03 · What this means</div>
       <h2>Your profile in plain English</h2>
       <p>{narrative.summary||meta.tagline}</p>
-      <p>{narrative.how_you_think}</p>
-      <p>{narrative.pressure_style}</p>
+      <p>{decision.text}</p>
+      <p>{pressure.text}</p>
     </section>
 
     {context&&<section className="report-section context-summary">
