@@ -20,7 +20,7 @@ On 2026-09-15, source control was reconciled with the live Supabase migration le
 - `20260915084213_assessment_v110_and_context.sql`
 - `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`
 
-These files were restored as historical source artifacts only. No migration was re-run as part of the repository repair.
+These files are historical source artifacts only. They were restored to source control and were not re-run against the database as part of the repository repair.
 
 ## Workflow for new changes
 
