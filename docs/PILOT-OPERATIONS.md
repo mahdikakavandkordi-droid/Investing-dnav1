@@ -22,7 +22,7 @@ Use `/pilot/cognitive` only.
 Database cohort: `COGNITIVE_V1_10`  
 Target: **12 participants**, recommended as 6 + review + 6.
 
-The dedicated route clears any development draft before routing into `COGNITIVE_V1_10` so regular DEV responses do not contaminate the cognitive cohort.
+The dedicated route requires a **moderator-only research invite code**, clears any development draft and then routes into `COGNITIVE_V1_10`, so regular DEV responses cannot silently contaminate the cognitive cohort. The raw code must not be committed to source control, embedded in a participant URL, posted publicly, or copied into analytics. The backend stores only its SHA-256 hash.
 
 See `docs/COGNITIVE-TEST-PROTOCOL.md` for the moderator procedure and revision rules.
 
@@ -130,7 +130,8 @@ Do not change the questionnaire merely to improve product funnel metrics.
 Before each moderated cognitive session:
 
 - open `/pilot/cognitive`
-- confirm the page shows `Cognitive research session · v1.10`
+- enter the moderator-only invite code privately; do not send a URL containing the code
+- confirm the next page shows `Cognitive research session · v1.10`
 - do not explain scoring or expected archetype
 - allow unaided completion first
 - run the cognitive debrief from the protocol
