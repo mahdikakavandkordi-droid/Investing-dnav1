@@ -41,7 +41,7 @@ The repository/onboarding cleanup is substantially complete:
 - repository version-hygiene rules now forbid convenience `old`/`backup`/parallel-version copies after migration of callers;
 - the questionnaire Edge Function now returns a narrow public DTO only (`question_id`, `section`, `question_type`, localized `prompt`, localized `options`); internal scoring weight, construct metadata, raw version fields and non-selected localized copy remain server-side;
 - contract tests lock the narrow questionnaire DTO so internal scoring fields cannot silently leak back to the browser;
-- the repository was reconciled with the live Supabase migration ledger for three already-applied migrations that had been missing from the active branch: `20260915084212_guarded_match_runs_v6.sql`, `20260915084213_assessment_v110_and_context.sql`, and `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`. They are historical source artifacts only and were not re-applied to the database.
+- live Supabase migration history was audited and three applied migrations missing from the active branch were identified for source-control restoration: `20260915084212_guarded_match_runs_v6.sql`, `20260915084213_assessment_v110_and_context.sql`, and `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`. These are applied historical artifacts, not obsolete duplicate implementations.
 
 Cross-asset research architecture remains in place:
 
@@ -57,17 +57,18 @@ Cross-asset research architecture remains in place:
 
 GitHub Actions run `35034668327` on head `d218d720d92715cbd0b76765eb66e8660cd043fd` completed successfully. It covered contracts, typecheck, build and the browser suites in CI, including the narrow questionnaire DTO contract test.
 
-Repository-only documentation/migration-history repair commits were added after that verified head. Confirm CI again on the final head before calling the branch engineering-green.
+Repository-only cleanup/history commits were added after that verified head. Confirm CI again on the final head before calling the branch engineering-green.
 
 The latest observed Vercel status remains blocked by the provider build-rate limit (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the current head is not deployment-verified until Vercel accepts a new build.
 
 ## Known high-priority technical follow-ups
 
-1. Continue classifying/fixing the launch-relevant Supabase Advisor backlog; do not blindly change security-definer views without tracing permission dependencies.
-2. Verify a real deployed magic-link round trip with an external inbox when hosting can build the final head.
-3. Keep source/as-of dates real; never manufacture freshness.
-4. Preserve historical questionnaire/scoring/Match data and applied migrations only where reproducibility requires them; do not reintroduce duplicate live implementations.
-5. Complete M4 human evidence gates: 6 cognitive sessions, review/revision decision, 6 further sessions, candidate freeze, then the 20–50 user product pilot.
+1. Finish the source-control reconciliation for the three live-applied migrations identified above and verify the final branch tree against the Supabase migration ledger.
+2. Continue classifying/fixing the launch-relevant Supabase Advisor backlog; do not blindly change security-definer views without tracing permission dependencies.
+3. Verify a real deployed magic-link round trip with an external inbox when hosting can build the final head.
+4. Keep source/as-of dates real; never manufacture freshness.
+5. Preserve historical questionnaire/scoring/Match data and applied migrations only where reproducibility requires them; do not reintroduce duplicate live implementations.
+6. Complete M4 human evidence gates: 6 cognitive sessions, review/revision decision, 6 further sessions, candidate freeze, then the 20–50 user product pilot.
 
 ## Where to read next
 
