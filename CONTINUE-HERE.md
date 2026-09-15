@@ -38,7 +38,9 @@ The repository/onboarding cleanup is substantially complete:
 - Investor DNA report presentation helpers moved to `lib/dna-presentation.ts`;
 - duplicate `FundConnection.tsx` was removed; `InstrumentConnection.tsx` is the single canonical implementation;
 - obsolete `docs/HARD-TEST-V1.9.md` was removed because its useful coverage is represented by current testing docs/milestone evidence;
-- repository version-hygiene rules now forbid convenience `old`/`backup`/parallel-version copies after migration of callers.
+- repository version-hygiene rules now forbid convenience `old`/`backup`/parallel-version copies after migration of callers;
+- the questionnaire Edge Function now returns a narrow public DTO only (`question_id`, `section`, `question_type`, localized `prompt`, localized `options`); internal scoring weight, construct metadata, raw version fields and non-selected localized copy remain server-side;
+- contract tests lock the narrow questionnaire DTO so internal scoring fields cannot silently leak back to the browser.
 
 Cross-asset research architecture remains in place:
 
@@ -52,19 +54,19 @@ Cross-asset research architecture remains in place:
 
 ## Verification status
 
-GitHub Actions run `35033432475` on head `a0fc03c7d16a8f4dde0496264e3e745984019763` completed successfully after the major readability refactors. It covered contracts, typecheck, build and the browser suites in CI.
+GitHub Actions run `35034668327` on head `d218d720d92715cbd0b76765eb66e8660cd043fd` completed successfully. It covered contracts, typecheck, build and the browser suites in CI, including the narrow questionnaire DTO contract test.
 
-Additional cleanup/deletion commits were made after that verified head. Confirm CI again on the final cleanup head before calling the branch engineering-green.
+The corresponding Vercel status is currently blocked by the provider build-rate limit (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the current head is not deployment-verified until Vercel accepts a new build.
 
-The most recent Vercel build previously observed was blocked by a provider `build-rate-limit`; that was not an application compile failure, but a final deployed-preview verification is still required when hosting accepts a build.
+Any commit after `d218d720d92715cbd0b76765eb66e8660cd043fd` must receive a fresh CI check before the branch is called engineering-green again.
 
 ## Known high-priority technical follow-ups
 
-1. Make the questionnaire Edge Function return an explicit public DTO and stop exposing internal `weight`/raw localized fields to the browser.
-2. Continue classifying/fixing the launch-relevant Supabase Advisor backlog; do not blindly change security-definer views without tracing permission dependencies.
-3. Verify a real deployed magic-link round trip with an external inbox when hosting can build the final head.
-4. Keep source/as-of dates real; never manufacture freshness.
-5. Preserve historical questionnaire/scoring/Match data and applied migrations only where reproducibility requires them; do not reintroduce duplicate live implementations.
+1. Continue classifying/fixing the launch-relevant Supabase Advisor backlog; do not blindly change security-definer views without tracing permission dependencies.
+2. Verify a real deployed magic-link round trip with an external inbox when hosting can build the final head.
+3. Keep source/as-of dates real; never manufacture freshness.
+4. Preserve historical questionnaire/scoring/Match data and applied migrations only where reproducibility requires them; do not reintroduce duplicate live implementations.
+5. Complete M4 human evidence gates: 6 cognitive sessions, review/revision decision, 6 further sessions, candidate freeze, then the 20–50 user product pilot.
 
 ## Where to read next
 
