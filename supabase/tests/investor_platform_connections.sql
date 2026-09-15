@@ -39,19 +39,28 @@ do $$ begin
  begin perform public.add_to_watchlist(null,null,null); raise exception 'Internal RPC unexpectedly exposed'; exception when insufficient_privilege then null; end;
 end $$;
 reset role;
--- A synthetic match verifies positive fit lookup without using a customer's data.
+
+-- A real synthetic v1.10 assessment verifies canonical positive fit lookup without customer data.
 select set_config('test.assessment',gen_random_uuid()::text,true);
-insert into public.assessments(id,profile_id,status,completed_at)
-select current_setting('test.assessment')::uuid,id,'completed',now() from public.profiles where user_id=current_setting('test.user_a')::uuid;
+insert into public.assessments(id,profile_id,assessment_version,questionnaire_version,model_version,scoring_version,status,language_code)
+select current_setting('test.assessment')::uuid,id,'v1.10-cognitive-candidate','v1.10-cognitive-candidate','dna-v1.10-research','dna-v1.10-research','in_progress','en'
+from public.profiles where user_id=current_setting('test.user_a')::uuid;
+insert into public.answers(assessment_id,question_id,answer_value)
+select current_setting('test.assessment')::uuid,q.question_id,
+ case when q.question_type='multi_choice' then jsonb_build_object('value',jsonb_build_array('funds')) else jsonb_build_object('value','D') end
+from public.question_bank q where q.version='v1.10-cognitive-candidate' and q.active=true;
+select public.calculate_investing_dna(current_setting('test.assessment')::uuid);
+insert into public.investment_context(assessment_id,goal,time_horizon,horizon_months,principal_required,investment_share,liquidity_need,experience)
+values(current_setting('test.assessment')::uuid,'growth','10_plus',144,'no','under_10','low','experienced');
 insert into public.investor_profiles(profile_id,latest_assessment_id)
-select id,current_setting('test.assessment')::uuid from public.profiles where user_id=current_setting('test.user_a')::uuid;
-insert into public.investment_match_results(assessment_id,investment_id,model_version,match_score)
-values(current_setting('test.assessment')::uuid,current_setting('test.fund')::uuid,'qa-rollback-only',82);
+select id,current_setting('test.assessment')::uuid from public.profiles where user_id=current_setting('test.user_a')::uuid
+on conflict(profile_id) do update set latest_assessment_id=excluded.latest_assessment_id;
+
 set local role authenticated;
 select set_config('request.jwt.claim.sub',current_setting('test.user_a'),true);
 do $$ declare v jsonb; begin
  v:=public.app_investment_fit(current_setting('test.fund')::uuid);
- if v->>'status'<>'available' or (v->'fit'->>'match_score')::numeric<>82 then raise exception 'Own DNA fit lookup failed'; end if;
+ if v->>'status'<>'available' or v->>'run_id' is null or v->'fit'->>'investment_id' is distinct from current_setting('test.fund') then raise exception 'Own canonical DNA fit lookup failed'; end if;
  begin perform 1 from public.v_investment_match_ranked limit 1; raise exception 'Raw match view exposed'; exception when insufficient_privilege then null; end;
 end $$;
 select set_config('request.jwt.claim.sub',current_setting('test.user_b'),true);
@@ -60,4 +69,4 @@ do $$ begin
 end $$;
 reset role;
 rollback;
-select 'PASS: public detail, unknown fund, anonymous denial, identity check, duplicate add, cross-account isolation, remove, internal RPC denied, positive fit, private fit isolation, raw view denied; fixtures rolled back' as verification;
+select 'PASS: public detail, unknown fund, anonymous denial, identity check, duplicate add, cross-account isolation, remove, internal RPC denied, canonical v1.10/v6 fit, private fit isolation, raw view denied; fixtures rolled back' as verification;
