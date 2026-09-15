@@ -59,14 +59,27 @@ export type InvestmentContextProfile = {
   amount_currency?:string|null;
   goal?:string|null;
   time_horizon?:string|null;
+  horizon_months?:number|null;
   liquidity_need?:string|null;
+  principal_required?:string|null;
+  investment_share?:string|null;
+};
+
+export type MatchVersions = {
+  questionnaire?:string|null;
+  investor_dna?:string|null;
+  scoring?:string|null;
+  match?:string|null;
+  fund_data?:string|null;
 };
 
 export type MatchItem = {
   investment_id?:string;
   symbol:string;
   name?:string;
-  match_score:number;
+  match_score:number|null;
+  eligibility?:string;
+  gate_codes?:string[];
   fit_label?:string;
   recommendation_tier?:string;
   risk_band?:string;
@@ -76,7 +89,7 @@ export type MatchItem = {
     why_it_fits?:string[];
     strengths?:string[];
     watchouts?:string[];
-    scores?:Record<string,number>;
+    scores?:Record<string,number|null>;
   };
   strengths?:string[];
   watchouts?:string[];
@@ -84,7 +97,15 @@ export type MatchItem = {
 
 export type MatchPayload = {
   model_version?:string;
+  run_id?:string;
+  status?:"review_required"|"context_required"|"no_suitable_options"|"available"|string;
+  confidence?:string;
+  data_version?:string;
+  data_as_of?:string|null;
+  versions?:MatchVersions;
   universe_count?:number;
+  eligible_count?:number;
+  constraints?:Record<string,unknown>;
   results?:MatchItem[];
   top_matches?:MatchItem[];
   alternatives?:MatchItem[];
