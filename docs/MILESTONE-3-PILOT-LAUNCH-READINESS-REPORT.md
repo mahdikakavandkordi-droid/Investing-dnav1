@@ -3,6 +3,8 @@
 **Date:** 15 September 2026  
 **Status:** Complete — controlled-pilot engineering acceptance gates passed.  
 **Verified implementation head:** `b7cd64794fab6ea32986a5ca8fb25759bc82e331`  
+**Acceptance CI run:** GitHub Actions `35023332068` — all jobs passed.  
+**Latest documented branch deployment:** Vercel status `success` / “Deployment has completed” on `302507c555d2bbced55bf210da76024b09a546db`.  
 **Canonical assessment:** `v1.10-cognitive-candidate` / `dna-v1.10-research`  
 **Canonical match model:** `investment-dna-match-v6`
 
@@ -253,11 +255,11 @@ The real database was queried at Milestone 3 closeout.
 
 These counts are deliberately reported as **pre-pilot operational state**, not evidence of product-market fit, reliability, validity or retention.
 
-## CI acceptance
+## CI acceptance — PASS
 
-The implementation head `b7cd64794fab6ea32986a5ca8fb25759bc82e331` triggered GitHub Actions run `35023332068` after migration-history reconciliation.
+Acceptance run: GitHub Actions `35023332068` on implementation head `b7cd64794fab6ea32986a5ca8fb25759bc82e331` after migration-history reconciliation.
 
-The milestone is accepted only if the standard pipeline remains green:
+All steps passed:
 
 - `npm ci`
 - `npm test`
@@ -267,15 +269,13 @@ The milestone is accepted only if the standard pipeline remains green:
 - `npm run test:flow`
 - `npm run test:funds`
 
-The prior M3 feature head `ea6c4d0c0c670a5af1a62946ae2c7d3b3a444739` passed the full pipeline, including both browser E2E suites, before the migration filename reconciliation. The final reconciliation changes migration filenames only; the closeout CI run is the acceptance run for the synchronized head.
+The prior M3 feature head `ea6c4d0c0c670a5af1a62946ae2c7d3b3a444739` also passed the full pipeline before the migration filename reconciliation. The synchronized implementation head is therefore the M3 engineering acceptance baseline.
 
-## Deployment evidence
+A subsequent documentation-only closeout head also received a successful Vercel deployment status; no runtime code was changed by the README/report closeout commits.
 
-Vercel’s GitHub status for the M3 feature head reported:
+## Deployment evidence — PASS
 
-- state: `success`
-- description: `Deployment has completed`
-- preview state: `Ready`
+Vercel’s GitHub status reports `success` with “Deployment has completed” for the latest documented closeout head `302507c555d2bbced55bf210da76024b09a546db`.
 
 The PR’s Vercel bot comment exposes a ready Preview deployment for the branch.
 
