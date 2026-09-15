@@ -7,7 +7,8 @@ Reusable product UI lives here. Components may own local interaction state, but 
 ### Investor/result presentation
 
 - `DnaSummary.tsx` — Investor DNA/result presentation.
-- other result/report components should remain presentation-focused and consume already-computed server/client contracts.
+- report components should remain presentation-focused and consume already-computed server/client contracts.
+- deterministic report-label/narrative helpers live in `lib/dna-presentation.ts`; do not rebuild those rules inside JSX.
 
 ### Investment research
 
@@ -19,8 +20,9 @@ Reusable product UI lives here. Components may own local interaction state, but 
 
 ### Account/retention
 
-- `InstrumentConnection.tsx` — generic saved-investment/watchlist connection and ETF-only fit composition where eligible.
-- `FundConnection.tsx` — legacy ETF-specific connection component retained for compatibility. Do not use it for new generic cross-asset work; prefer `InstrumentConnection.tsx`. Remove only after confirming no remaining route/test dependency.
+- `InstrumentConnection.tsx` — canonical saved-investment/watchlist connection and ETF-only fit composition where eligible.
+
+There is intentionally no parallel `FundConnection` implementation. If an ETF-only caller needs this behavior, use `InstrumentConnection` with the ETF asset type instead of creating another compatibility wrapper.
 
 ### App shell / telemetry
 
@@ -36,5 +38,6 @@ Reusable product UI lives here. Components may own local interaction state, but 
 4. Keep `null`/unavailable presentation distinct from numeric zero.
 5. Reusable display formatting belongs in a helper/module, not repeated inline across cards.
 6. If a component becomes route-specific orchestration rather than reusable UI, move that logic back toward the route or a dedicated hook/domain module.
+7. Do not keep `Old`, `Legacy`, `V2`, `Copy`, `Backup` or compatibility components after their last caller is migrated. Git history is the archive.
 
 See `app/README.md`, `lib/README.md` and `docs/ARCHITECTURE.md`.
