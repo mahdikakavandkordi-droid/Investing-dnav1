@@ -30,6 +30,7 @@ Repository-specific invariants:
 - Supabase migrations are append-only after application.
 - Do not claim a migration/deployment/test/pilot/compliance result unless it was actually verified.
 - Architecture/API/schema/test-gate changes require documentation updates in the same change.
+- Do not leave parallel `old`, `backup`, `copy`, `final-final`, `v2` or compatibility implementations after callers have moved. Git history is the archive. Keep numbered historical artifacts only when required for persisted model reproducibility, applied migrations or real milestone/research evidence.
 - PR #2 is intentionally draft; do not merge it without explicit instruction.
 
 For backend and verification details see `docs/DATABASE-AND-API.md` and `docs/TESTING.md`.
