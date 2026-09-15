@@ -1,50 +1,27 @@
-# Supabase migration history
+# Supabase migrations
 
-This directory is append-only live database history.
-
-## Naming
-
-Use:
-
-```text
-YYYYMMDDHHMMSS_descriptive_snake_case.sql
-```
-
-Prefer the migration version/name returned by the live migration system when a migration has already been applied.
+This directory is the append-only source-controlled history of database evolution for Investor DNA.
 
 ## Rules
 
-1. Never rewrite an already-applied migration to change current behavior.
-2. Fix mistakes with a new corrective migration.
-3. Inspect live state/migration history before applying; repository assumptions are not enough.
-4. A failed/timeout/502 apply call means state is unknown until verified.
-5. Keep RLS/grants/function security semantics explicit.
-6. Use an explicit `search_path` for privileged functions.
-7. Keep research source/as-of semantics truthful; do not manufacture freshness.
-8. Add or update a SQL regression when the migration changes a meaningful contract.
+1. Applied migrations are historical evidence. Do not delete, rename, squash, reorder, or silently rewrite them after they have reached a shared/live Supabase project.
+2. The filename version must match the version recorded in `supabase_migrations.schema_migrations` for an applied migration.
+3. If repository history and the live migration ledger drift, reconcile the repository to the live applied history before creating more migrations. Restoring a missing applied migration file is a source-control repair; do not re-apply it to the database.
+4. Create new schema changes as new migrations. Never edit an older applied migration to make the current schema look cleaner.
+5. Historical functions/models may appear inside old migrations even after newer migrations supersede them. That is expected and necessary for reproducibility; current behavior is defined by the full ordered migration chain, not by reading one historical file in isolation.
+6. Convenience copies such as `old`, `backup`, `v2-final`, or renamed duplicate migrations are not allowed. Versioned historical migrations are the exception because their exact identity matters.
+7. Before claiming a database change is applied, verify it against the project migration ledger and the resulting schema/behavior.
 
-## Reading the history
+## Current reconciliation note
 
-The migration directory contains several generations of the product. Do not infer current architecture from an early migration alone. Use these first:
+On 2026-09-15, source control was reconciled with the live Supabase migration ledger for these already-applied migrations that had been missing from the active branch:
 
-- `docs/ARCHITECTURE.md`
-- `docs/DATABASE-AND-API.md`
-- `docs/README.md`
+- `20260915084212_guarded_match_runs_v6.sql`
+- `20260915084213_assessment_v110_and_context.sql`
+- `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`
 
-Then use migrations to trace exactly how the current state evolved.
+These files were restored as historical source artifacts only. No migration was re-run as part of the repository repair.
 
-## Current major eras
+## Workflow for new changes
 
-The history broadly covers:
-
-- assessment / scoring / narrative foundations;
-- v1.x questionnaire and context evolution;
-- investment universe + research data;
-- suitability/Match iterations and canonicalization;
-- identity/account/watchlist persistence;
-- M1 engine trust;
-- M2 product research/read model;
-- M3 analytics/feedback/cognitive pilot;
-- M4 cross-asset research and RLS cleanup.
-
-Historical functions/models can remain for reproducibility even when browser execution is removed. Check grants and current canonical docs before deleting “old-looking” objects.
+Use the Supabase migration workflow described in `docs/DATABASE-AND-API.md`. Keep migrations focused, verify the resulting behavior, run relevant database regressions/advisors, and commit the new migration with the code/docs/tests it supports.
