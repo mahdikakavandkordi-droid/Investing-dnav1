@@ -4,6 +4,7 @@ export type Fund = Investment & {currency?:string;description?:string;issuer_nam
 export type InvestmentDna = {
  investment_id:string;symbol:string;name:string;asset_type?:string;category?:string;subcategory?:string;
  risk_band?:string;risk_score?:number;growth_score?:number;income_score?:number;stability_score?:number;diversification_score?:number;liquidity_score?:number;complexity_score?:number;
+ official_risk_rating?:string;official_risk_band_min?:number;official_risk_band_max?:number;official_risk_issuer?:string;official_risk_source_type?:string;official_risk_source_title?:string;official_risk_source_url?:string;official_risk_source_date?:string;official_risk_effective_date?:string;official_risk_methodology?:string;official_risk_verification_note?:string;official_risk_verified_at?:string;
  minimum_horizon_months?:number;concentration_level?:string;geographic_scope?:string;currency_exposure?:string;equity_pct?:number;fixed_income_pct?:number;mer_pct?:number;
  style_class?:string;objective_class?:string;ideal_investor?:unknown;best_use_cases?:unknown;key_tradeoffs?:unknown;explanation?:unknown;data_quality_status?:string;data_quality_score?:number;as_of_date?:string;
 };
