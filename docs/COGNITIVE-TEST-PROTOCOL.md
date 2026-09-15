@@ -1,14 +1,22 @@
-# Investing DNA Cognitive Test Protocol
+# Investing DNA Cognitive Test Protocol — v1.10
 
 ## Purpose
 
-Test whether real users understand **v1.9-cognitive-candidate** as intended before using responses for reliability, calibration or validation claims.
+Test whether real users understand **v1.10-cognitive-candidate / dna-v1.10-research** as intended before using responses for reliability, calibration or validation claims.
 
-This is not a score-validation study. The output is wording and response-design evidence.
+This is not a score-validation study. The output is wording, response-design and comprehension evidence.
+
+## Controlled research entry
+
+Use the dedicated route:
+
+`/pilot/cognitive`
+
+That route clears any existing local development draft and then starts the assessment with cohort `COGNITIVE_V1_10`. Do not recruit cognitive participants through the normal `/dna/assessment` development path because `DEV_V1_10` and cognitive-study observations must remain analytically separate.
+
+The database cohort target is **12 participants**.
 
 ## Sample
-
-Initial target: **12 participants**.
 
 Recommended structure:
 
@@ -29,7 +37,7 @@ Do not select people based on the risk/archetype result you want to obtain.
 
 ### Part A — Unaided completion
 
-Ask the participant to complete the assessment as naturally as possible.
+Ask the participant to complete the assessment as naturally as possible using the controlled cognitive route.
 
 Do not explain a question unless they cannot continue. Record:
 
@@ -58,6 +66,18 @@ Optional neutral probe:
 - “Was there anything in the wording that made one answer feel like the answer you were supposed to choose?”
 
 Do not ask “Did you understand it?” as the main comprehension test; people often say yes even when their interpretation differs from the intended construct.
+
+### Part C — Product-value debrief
+
+After the cognitive debrief, keep product feedback separate from question-comprehension feedback. Ask the participant to use the in-product `/feedback` form after seeing their result/Match experience, then probe verbally:
+
+- What did you think Investing DNA was trying to tell you?
+- Which part of the result felt most useful?
+- Which part felt least credible or most confusing?
+- Could you explain why a fund matched or conflicted with your DNA in your own words?
+- What would make you return to the product?
+
+Do not use positive product feedback as evidence that the questionnaire itself is valid.
 
 ## Special probes by layer
 
@@ -141,17 +161,6 @@ A difference in answers is not automatically an error. The cognitive interview s
 - wording ambiguity
 - a different construct being activated
 
-## Clarifier testing
-
-Clarifier version: **v1.9-cognitive-candidate-clarifiers**.
-
-During cognitive testing, present a clarifier only after the core assessment and only for research. Ask:
-
-- “Did this extra question make the earlier issue clearer?”
-- “Did it feel like it asked the same thing again, or did it help distinguish what you meant?”
-
-A clarifier should not enter adaptive production flow unless it adds useful disambiguation and does not introduce a new construct.
-
 ## Moderator rules
 
 - Stay neutral.
@@ -160,6 +169,7 @@ A clarifier should not enter adaptive production flow unless it adds useful disa
 - Do not tell a participant their archetype before the debrief if that could influence their explanations.
 - Record exact wording of confusion when possible.
 - Separate product/UI feedback from question-comprehension feedback.
+- Do not modify v1.10 wording silently after data collection begins. If a material item changes after Round 1, create a documented revised candidate for Round 2.
 
 ## Round summary
 
@@ -181,6 +191,7 @@ Decision values:
 
 Move to a real quantitative pilot when:
 
+- 12 planned cognitive sessions are completed or there is a documented reason to stop/revise early
 - no item has a repeated major interpretation problem
 - answer choices are understood as distinct
 - Risk Tolerance and Financial Capacity are not routinely confused
@@ -188,4 +199,8 @@ Move to a real quantitative pilot when:
 - the experience section is understood as experience, not risk appetite
 - remaining issues are minor enough to test statistically rather than rewrite immediately
 
-At that point, freeze a numbered pilot version and do not silently change wording inside the same version.
+At that point, freeze a numbered quantitative-pilot version and do not silently change wording inside the same version.
+
+## Evidence status
+
+Until these sessions are completed, v1.10 remains a **research candidate**. Engineering tests, funnel analytics and product feedback are not substitutes for psychometric or cognitive validation.
