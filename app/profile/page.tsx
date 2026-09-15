@@ -1,10 +1,11 @@
 "use client";
 
 import {useEffect,useState} from 'react';
+import type {FormEvent,ReactNode} from 'react';
 import Link from 'next/link';
 import {supabase,rpc,pilot} from '@/lib/supabase';
 import {readDraft,readClaimTicket,clearDraft} from '@/lib/dna';
-import type {AppState,ClaimTicket} from '@/lib/dna';
+import type {AppState,ClaimTicket,MatchItem} from '@/lib/dna';
 import {DnaSummary} from '@/components/DnaSummary';
 import {useAccount} from '@/lib/use-account';
 import {validId} from '@/lib/investments';
@@ -114,7 +115,7 @@ export default function Profile(){
   }
  },[autoSave,user?.id,pending?.session.assessment_id]);
 
- async function sendMagicLink(event:React.FormEvent){
+ async function sendMagicLink(event:FormEvent){
   event.preventDefault();
   if(!supabase||busy)return;
 
@@ -210,7 +211,7 @@ export default function Profile(){
  }
 
  const intentSaved=items.some(item=>item.investment_id===intent?.id);
- const closest=state?.matches?.top_matches?.[0]||state?.matches?.alternatives?.[0];
+ const closest:MatchItem|undefined=state?.matches?.top_matches?.[0]||state?.matches?.alternatives?.[0];
  const matchStatus=state?.matches?.status;
 
  return <section className="section">
@@ -272,7 +273,7 @@ function SignedInContent({
  state:AppState|null;
  items:SavedInstrument[];
  listError:string;
- closest:NonNullable<AppState['matches']>['results'] extends (infer T)[]|undefined ? T|undefined : never;
+ closest?:MatchItem;
  matchStatus?:string;
  busy:boolean;
  onSaveIntent:()=>void;
@@ -302,7 +303,7 @@ function SignedInContent({
 
   {state?.dna&&!pending&&<NextStep
    matchStatus={matchStatus}
-   closest={closest as any}
+   closest={closest}
    savedCount={items.length}
   />}
 
@@ -336,8 +337,8 @@ function SignedInContent({
  </>;
 }
 
-function NextStep({matchStatus,closest,savedCount}:{matchStatus?:string;closest?:any;savedCount:number}){
- let content:React.ReactNode;
+function NextStep({matchStatus,closest,savedCount}:{matchStatus?:string;closest?:MatchItem;savedCount:number}){
+ let content:ReactNode;
 
  if(matchStatus==='available'&&closest){
   content=<>
@@ -415,7 +416,7 @@ function SignedOutContent({
  canReturnToResult:boolean;
  onMode:(mode:'signin'|'signup')=>void;
  onEmail:(value:string)=>void;
- onSubmit:(event:React.FormEvent)=>void;
+ onSubmit:(event:FormEvent)=>void;
 }){
  return <>
   <p className="muted">{mode==='signup'
