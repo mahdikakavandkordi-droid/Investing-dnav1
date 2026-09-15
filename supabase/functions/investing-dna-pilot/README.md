@@ -28,9 +28,19 @@ Never treat a browser-provided `profile_id` as proof of ownership.
 
 ## Public DTO rule
 
-Return only fields the browser actually needs. Database/internal scoring configuration should not leak simply because a table row was spread into JSON.
+Return only fields the browser actually needs. Database/internal scoring configuration must not leak simply because a table row is convenient to spread into JSON.
 
-Known cleanup item: the questionnaire query currently selects internal `weight` plus raw locale columns before constructing the browser payload. Replace that with an explicit public DTO in a dedicated hardening change and keep `lib/dna.ts`/tests synchronized.
+The `questionnaire` action deliberately returns a narrow question DTO:
+
+- `question_id`
+- `section`
+- `question_type`
+- localized `prompt`
+- localized `options`
+
+The outer response still includes `assessment_id`, `questionnaire_version`, and `language_code` so the session remains reproducible. Internal question-bank fields such as scoring `weight`, construct metadata, row version, sort metadata, and non-selected locale copy are not part of the browser question DTO.
+
+`tests/contracts.mjs` guards this boundary so a future refactor cannot silently reintroduce row spreading/internal scoring fields.
 
 ## Analytics/privacy rule
 
