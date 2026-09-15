@@ -1,4 +1,5 @@
 import {createClient} from "@supabase/supabase-js";
+import {getBrowserSessionId,getVisitorId} from "@/lib/browser-session";
 
 const DEFAULT_SUPABASE_URL = "https://bxjjannguzzzqsamnhem.supabase.co";
 const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_p2fijbzQmFxdayOXr1C_fA_OMx4FepZ";
@@ -24,7 +25,7 @@ export async function pilot<T>(action:string, body:Record<string,unknown>={}):Pr
     response = await fetch(`${url}/functions/v1/investing-dna-pilot`, {
       method:"POST",
       headers,
-      body:JSON.stringify({action,...body}),
+      body:JSON.stringify({action,...body,browser_session_id:getBrowserSessionId(),visitor_id:getVisitorId()}),
       signal:AbortSignal.timeout(30000)
     });
   } catch {
