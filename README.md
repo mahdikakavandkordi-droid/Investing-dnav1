@@ -1,102 +1,142 @@
-# Investing DNA — trusted engine + connected product + controlled-pilot baseline
+# Investor DNA
 
-The Next.js application runs from the repository root and uses the existing Supabase project. Registration remains optional: visitors can browse funds and take the assessment before creating an account. Signed-in users can retain their Investor DNA, investment context, watchlist and returning-user state.
+Investor DNA is a Canadian investment-research platform that connects an investor profile to a structured investment research universe.
 
-## Current product baseline
+The current product is a **research/pilot system**, not a public investment-advice service and not a validated psychometric instrument.
 
-- Current research assessment: `v1.10-cognitive-candidate` / `dna-v1.10-research`.
-- Current canonical match engine: `investment-dna-match-v6`.
-- Fund View, Explore, Match, Screener, Compare, optional account, Profile and Watchlist are connected to the persisted platform layer.
-- Match is context-aware and can return `review_required`, `context_required`, `no_suitable_options` or `available` rather than forcing a recommendation.
-- Critical capacity/context gates cover essential-spending risk, insufficient emergency reserve, principal-protection needs and short horizons.
-- Match runs carry a run ID plus questionnaire, DNA, scoring, match and fund-data versions. Scoring-relevant fund-data changes invalidate the cached run.
-- Review-required match scores are stored as `NULL`, not a fabricated zero.
-- Historical match calculators remain for reproducibility but browser roles cannot invoke them directly.
-- Fund research separates verified facts/performance from partial holdings/exposure coverage; missing values remain missing rather than being shown as zero.
-- The current 40-investment universe has usable 1Y/3Y/5Y performance, MER and AUM coverage across all 40 rows; deeper exposure/holdings coverage remains intentionally partial and labelled.
-- Screener and Compare layer Investor DNA compatibility on top of fund facts rather than replacing those facts.
-- Guest results use a limited claim ticket so a completed assessment can be attached to an optional account through a magic-link flow without retaining the full completed draft in browser storage.
-- First-party pilot analytics now track the product funnel with random visitor/session identifiers and do not store email, name, IP address or questionnaire-answer text in analytics tables.
-- Structured pilot feedback captures ease, trust, usefulness, Match comprehension, return intent and optional open feedback.
-- `/pilot/cognitive` provides a clean, invite-gated `COGNITIVE_V1_10` research entry so development traffic does not contaminate the planned 12-person cognitive cohort.
-- Raw pilot analytics/feedback are not browser-readable or browser-writable; the Edge Function is the write boundary and founder summary views are service-role only.
-- GitHub CI verifies contracts, TypeScript, production build, the canonical assessment + feedback + cognitive flow, and the connected fund/product funnel.
+## Product vocabulary
 
-See:
+Use these terms consistently:
 
-- `docs/MILESTONE-1-ENGINE-TRUST-REPORT.md` — trusted-engine audit and safety/versioning evidence.
-- `docs/MILESTONE-2-PRODUCT-VALUE-REPORT.md` — connected product-value work, data coverage, browser/database regressions and remaining limits.
-- `docs/MILESTONE-3-PILOT-LAUNCH-READINESS-REPORT.md` — privacy-minimized analytics, structured feedback, controlled cognitive research, migration/CI/deployment evidence and pilot/public-launch gates.
-- `docs/COGNITIVE-TEST-PROTOCOL.md` — moderator protocol for v1.10 cognitive testing.
-- `docs/PILOT-OPERATIONS.md` — controlled-pilot operating rules and founder/admin summary queries.
+- **Investor DNA** — platform/product brand.
+- **Investing DNA** — investor assessment.
+- **Investment DNA** — structured profile of an investment.
+- **DNA Match** — personalized compatibility layer.
 
-## Run and deploy
+## Current engineering baseline
 
-Requires Node.js 22.18+. Copy `.env.example` to `.env.local`, supply the Supabase public/publishable key, then run `npm ci` and `npm run dev`. Never use a service-role key in public environment variables. See `DEPLOY.md`.
+- Next.js 16 / React 19 frontend.
+- Supabase Auth, Postgres, RPCs and one privileged assessment/pilot Edge Function.
+- Optional account: users can browse and complete the assessment without registration.
+- Current research assessment: `v1.10-cognitive-candidate`.
+- Current Investor DNA model: `dna-v1.10-research`.
+- Current canonical Match model: `investment-dna-match-v6`.
+- DNA Match is currently **ETF-only**.
+- Generic research universe currently contains **55 active instruments**:
+  - 40 ETFs
+  - 4 GICs
+  - 3 Government of Canada T-Bills
+  - 6 bonds
+  - 1 Commercial Paper research reference
+  - 1 ABCP research reference
+- Explore, generic Detail and Compare are cross-asset.
+- ETF Screener and personalized Match remain intentionally ETF-scoped.
+- Watchlist/Profile language and persistence are asset-neutral.
+- Portfolio Builder remains outside the current V1/M4 scope.
 
-The checked-in Supabase migration history is synchronized through `20260915204943_milestone_3_cognitive_invite_gate`, which has already been applied to the existing DNA project. Apply the migrations before deploying this frontend to a different backend.
+## Start here if you are joining the engineering team
 
-The live cognitive invite-code digest is operational configuration and is intentionally not stored in source control.
+Read these in order:
 
-Vercel Git integration creates deployments from repository commits. Deployment state is verified through the GitHub/Vercel commit status.
+1. [`docs/README.md`](docs/README.md) — documentation map and canonical-vs-historical distinction.
+2. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — end-to-end product/system architecture.
+3. [`docs/ENGINEERING-GUIDE.md`](docs/ENGINEERING-GUIDE.md) — coding, naming, security and Definition-of-Done rules.
+4. [`docs/DATABASE-AND-API.md`](docs/DATABASE-AND-API.md) — Supabase/API/trust-boundary map.
+5. [`docs/TESTING.md`](docs/TESTING.md) — verification layers and CI.
+6. The README inside the folder you are modifying (`app/`, `components/`, `lib/`, `supabase/`, `tests/`).
+7. [`CONTINUE-HERE.md`](CONTINUE-HERE.md) — immediate current state/blockers only.
+
+Historical milestone reports remain in `docs/` as evidence, but they are not the canonical architecture reference.
+
+## Repository map
+
+```text
+app/                Next.js routes and route-level orchestration
+components/         reusable UI/product components
+lib/                browser-side domain contracts, adapters and helpers
+docs/               canonical architecture + research/operating/history docs
+supabase/
+  functions/        privileged Edge Function boundary
+  migrations/       append-only database evolution
+  tests/            database/RLS/RPC regressions
+tests/              frontend contract + Playwright browser regressions
+.github/workflows/  CI
+```
+
+## Local setup
+
+Requires Node.js **22.18+**.
+
+```sh
+cp .env.example .env.local
+npm ci
+npm run dev
+```
+
+Environment variables:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+```
+
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` is accepted as a legacy public-key fallback. Never put a Supabase service-role key in a public/browser environment variable.
+
+See [`DEPLOY.md`](DEPLOY.md) for hosting/auth callback requirements.
 
 ## Verification
+
+Fast/client checks:
 
 ```sh
 npm test
 npm run typecheck
 npm run build
-npx playwright install chromium
-npm run test:flow
-npm run test:funds
 ```
 
-The browser runners start a local server on port 3001 with intercepted Supabase responses. They send no live emails and do not create production pilot evidence. Set `CHROME_BIN=/absolute/path/to/chrome` to use an existing browser. Screenshots go to ignored `tests/artifacts`.
+Browser regressions:
 
-Database regression files:
+```sh
+npm run test:flow
+npm run test:funds
+npm run test:m4
+npm run test:assets
+```
 
-- `supabase/tests/investor_platform_connections.sql` — account/fund isolation and canonical v1.10/v6 fit path.
-- `supabase/tests/milestone_1_engine_trust.sql` — canonical version/run behavior, fund-data invalidation, legacy-engine ACL, safety gates, null semantics, no-suitable state and sensitivity sanity checks.
-- `supabase/tests/milestone_2_product_value.sql` — canonical Screener/Compare performance, 40-row usable data coverage, fund-of-funds research context and public/private read boundaries.
-- `supabase/tests/milestone_3_pilot_readiness.sql` — pilot analytics/feedback constraints and anonymous read/write denial.
+Everything locally:
 
-The M1/platform and M3 suites use synthetic fixtures/mutations inside rollback transactions. The M2 product-value data suite is also executed inside a rollback transaction and is safe to rerun against the current database.
+```sh
+npm run test:all
+```
 
-## Scientific/validation status
+Playwright flows intercept Supabase calls and therefore do **not** prove live migrations, real email delivery or deployment health. Database regressions live in `supabase/tests/`.
 
-The v1.10 instrument is a structured **research candidate**, not a validated psychometric test. Engineering trustworthiness, a coherent product experience and pilot instrumentation are not the same as psychometric validation.
+## Architecture rules that must not be broken casually
 
-Still required before making validation claims:
+- Browser code does not calculate canonical Investor DNA or Match scores.
+- Browser-provided IDs are not proof of account/profile ownership.
+- Raw pilot analytics/feedback tables are not direct browser write targets.
+- Missing investment data remains unavailable/null, not zero.
+- Official/verified source data takes precedence over inferred data.
+- Do not manufacture current `as_of_date` values to make stale data appear fresh.
+- `public.investments` remains the canonical identity table across asset classes.
+- New asset classes extend the generic structure model plus specialized terms rather than adding page-specific condition chains.
+- Questionnaire/scoring/Match behavior is versioned; do not silently mutate an existing research version.
+- A code change that changes architecture/API/schema/test gates must update the canonical docs in the same change.
 
-1. cognitive testing,
-2. real-user quantitative pilot data,
-3. reliability/structure analysis,
-4. calibration and retest/criterion work.
+## Current milestone status
 
-The planned cognitive cohort is `COGNITIVE_V1_10`, target **12 participants**. Milestone 3 makes that study operationally safe to run; it does not claim that the study has already happened.
+- **M1 — Engine Trust:** complete.
+- **M2 — Product Value / connected research loop:** complete from engineering acceptance perspective.
+- **M3 — Controlled Pilot Readiness:** complete from engineering/operations perspective.
+- **M4 — Pilot Evidence & Pre-Launch Hardening:** active.
 
-See `docs/ASSESSMENT-METHODOLOGY.md` and `docs/COGNITIVE-TEST-PROTOCOL.md`.
+M4 still requires real human cognitive/product-pilot evidence, a real external email canary, remaining launch hardening and formal compliance/privacy review. Engineering work alone cannot close it.
 
-## Milestone status
+## Current deployment note
 
-- **M1 — Engine is trustworthy:** complete.
-- **M2 — Product is valuable/connected:** complete from engineering/product-flow acceptance perspective.
-- **M3 — Pilot & launch readiness:** complete from engineering and controlled-pilot-readiness perspective.
-- **Public launch:** not yet approved. Real participant evidence, an external deployed magic-link canary, compliance/legal review and remaining launch hardening are still gates.
+The current branch has had green GitHub CI for the cross-asset implementation. The most recent Vercel attempt was blocked by a provider **build-rate-limit**, not an application compile failure. Treat the latest commit as deployed only after Vercel accepts/builds it and the deployed URL is canary-tested.
 
-## Work after Milestone 3
+## Contribution rule
 
-The recommended next phase is **Milestone 4 — Pilot Evidence & Pre-Launch Hardening**, not feature expansion into Portfolio Builder.
-
-- Run the planned 12-person cognitive study and document repeated wording/construct issues.
-- Freeze any post-cognitive questionnaire revision under a new numbered version rather than silently changing v1.10.
-- Recruit the initial 20–50 product-pilot users and review funnel/trust/usefulness/return evidence in batches.
-- Verify a real deployed magic-link round trip with a controlled external inbox.
-- Classify and resolve or explicitly accept remaining Supabase security/performance advisor findings that matter for launch.
-- Complete normalized risk labels and continue deepening characteristics/exposure/holdings coverage across the current universe.
-- Complete privacy/terms/compliance wording and launch review before positioning compatibility as anything beyond research/education.
-- Keep Portfolio Builder out of V1 until the current profile → Match → research → save/return loop has real-user evidence.
-
-The questionnaire API still exposes internal question `weight` fields; use an explicit public DTO if those should remain server-only.
-
-The browser must not compute scores, override account ownership, write raw pilot tables or bypass server checks. Server authorization remains authoritative.
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before making non-trivial changes. The short version: put rules in the correct domain module, keep server trust server-side, test the boundary you changed, and update documentation at the same time.
