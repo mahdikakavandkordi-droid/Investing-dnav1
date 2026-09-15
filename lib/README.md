@@ -7,6 +7,12 @@
 ### `dna.ts`
 Owns client types for questions/results/Match payloads plus guest assessment draft and claim-ticket storage behavior. It does **not** own canonical scoring.
 
+### `assessment-copy.ts`
+Owns localized assessment UI copy and locale types. Keep wording/presentation text here instead of mixing it into assessment flow control.
+
+### `dna-presentation.ts`
+Owns deterministic report-presentation helpers such as archetype labels, behavior labels, context formatting and narrative display helpers. These are presentation rules, not canonical scoring rules.
+
 ### `instrument-model.ts`
 Canonical cross-asset taxonomy for display grouping, labels, hero metrics and current Match eligibility. Pages/components should not recreate these rules.
 
@@ -55,5 +61,7 @@ Avoid importing page components into `lib/` or moving server trust decisions int
 ## Refactor rule
 
 If a helper is used by more than one page and encodes a domain decision, move it here. If it is purely presentational, move it to `components/` instead.
+
+Do not keep parallel `foo-v2.ts`, `foo-old.ts`, `foo-backup.ts` or `foo-final.ts` implementations. Replace callers, delete the obsolete file, and rely on Git history. Numbered versions are appropriate only when the version itself is part of a persisted/reproducible product contract such as questionnaire/scoring/Match versions.
 
 See `docs/ARCHITECTURE.md` and `docs/ENGINEERING-GUIDE.md`.
