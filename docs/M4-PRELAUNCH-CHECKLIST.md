@@ -44,7 +44,7 @@ Engineering note: the service-side completed-guest claim/promotion path now has 
 
 - [x] M4 legacy Watchlist RLS policy cleanup applied and verified
 - [ ] Profile RLS init-plan optimization applied and verified
-- [ ] Launch-critical FK indexes applied and verified
+- [x] Launch-critical FK indexes applied and verified
 - [ ] Public SECURITY DEFINER views classified
 - [ ] Public privileged RPCs classified and hardened/accepted
 - [ ] Raw personal/account tables remain inaccessible cross-account
@@ -52,7 +52,7 @@ Engineering note: the service-side completed-guest claim/promotion path now has 
 - [ ] M2 regression PASS after hardening
 - [ ] M3 regression PASS after hardening
 - [ ] Security Advisor re-run and launch-relevant findings classified
-- [ ] Performance Advisor re-run and launch-relevant findings classified
+- [x] Performance Advisor re-run and launch-relevant findings classified
 
 ### Verified hardening progress in the current M4 batch
 
@@ -66,6 +66,9 @@ Engineering note: the service-side completed-guest claim/promotion path now has 
 - [x] Completed guest claim/promotion service path regression PASS with transaction rollback
 - [x] Portfolio Builder removed from current completion/context/account-state contracts while historical engine/migrations are preserved
 - [x] `m4_security_hardening.sql` PASS against the live project
+- [x] Performance Advisor `unindexed_foreign_keys` reduced from 18 to 0
+- [x] Performance Advisor `duplicate_index` reduced from 9 to 0 while preserving constraint-backed indexes
+- [x] `unused_index` findings intentionally deferred until real pilot traffic exists; newly-created required FK indexes must not be removed simply because no traffic has exercised them yet
 - [ ] Remaining `get_or_create_current_profile` / `is_current_profile` definer helpers reviewed with a real authenticated canary before changing their ownership semantics
 - [ ] 28 Security Advisor `SECURITY DEFINER` views classified individually; do not batch-convert without tracing underlying grants/RLS
 
@@ -115,4 +118,4 @@ At M4 closeout select exactly one:
 
 1. Real cognitive evidence and subsequent product-pilot evidence are not complete.
 2. Real external magic-link/account canary is not complete.
-3. Remaining security-view classification, final performance hardening and formal compliance/privacy review are not complete.
+3. Remaining security-view classification, real-traffic index observation and formal compliance/privacy review are not complete.
