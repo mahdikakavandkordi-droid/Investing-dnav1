@@ -1,4 +1,11 @@
 "use client";
-import {useEffect} from 'react';
+import {useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {clearDraft} from '@/lib/dna';
-export default function CognitivePilotEntry(){useEffect(()=>{clearDraft();location.replace('/dna/assessment?cohort=COGNITIVE_V1_10')},[]);return <section className="section"><div className="container narrow"><div className="card"><div className="eyebrow">Cognitive research session</div><h1>Preparing a fresh v1.10 assessment…</h1><p className="muted">This research entry point starts a clean session so previous development drafts do not contaminate the cognitive-study cohort.</p></div></div></section>}
+
+const ACCESS_KEY='investing-dna:cognitive-access:v1';
+export default function CognitivePilotEntry(){
+ const router=useRouter();const [code,setCode]=useState('');const [error,setError]=useState('');
+ function begin(e:React.FormEvent){e.preventDefault();const value=code.trim();if(!value){setError('Enter the moderator research invite code.');return;}try{sessionStorage.setItem(ACCESS_KEY,value);clearDraft();router.replace('/dna/assessment?cohort=COGNITIVE_V1_10')}catch{setError('This browser cannot start a controlled research session.')}}
+ return <section className="section"><div className="container narrow"><div className="card"><div className="eyebrow">Cognitive research session</div><h1>Start a clean v1.10 research assessment</h1><p>This route is reserved for moderated cognitive testing. The invite code keeps development traffic out of the 12-person research cohort.</p><form className="auth-form" onSubmit={begin}><label>Research invite code<input className="field" type="password" autoComplete="off" value={code} onChange={e=>setCode(e.target.value)} placeholder="Moderator code"/></label><button className="btn primary">Continue to research assessment</button>{error&&<p className="notice" role="alert">{error}</p>}</form><p className="fine muted">The code is kept only in this browser session long enough to start the research assessment. It is not included in the URL or analytics.</p></div></div></section>;
+}
