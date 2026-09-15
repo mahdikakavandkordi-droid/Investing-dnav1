@@ -3,6 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
+import {trackProductEvent} from '@/lib/analytics';
 import {Fit,watchlist,saveFund,removeFund,formatMetric} from '@/lib/investments';
 export function FundConnection({id}:{id:string}){
  const {user,loading}=useAccount();const [saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[ready,setReady]=useState(false),[fit,setFit]=useState<Fit|null>(null),[error,setError]=useState(''),[fitError,setFitError]=useState(''),[message,setMessage]=useState(''),[retry,setRetry]=useState(0);
@@ -11,8 +12,8 @@ export function FundConnection({id}:{id:string}){
  watchlist().then(d=>{if(active){setSaved(d.items.some(x=>x.investment_id===id));setReady(true)}}).catch(e=>{if(active)setError(e.message)});
  rpc<Fit>('app_investment_fit',{p_investment_id:id}).then(d=>{if(active)setFit(d)}).catch(e=>{if(active)setFitError(e.message)});
  return ()=>{active=false};},[id,user?.id,retry]);
- async function toggle(){if(lock.current||!user)return;lock.current=true;setBusy(true);setError('');setMessage('');const uid=user.id;
- try{if(saved){await removeFund(id)}else{const d=await saveFund(id);if(!d.item)throw new Error('Saving was not confirmed. Please try again.');}if(owner.current===uid){setSaved(!saved);setMessage(saved?'Removed from your watchlist.':'Saved to your watchlist.')}}catch(e){if(owner.current===uid)setError(e instanceof Error?e.message:'Could not update your watchlist.')}finally{lock.current=false;setBusy(false)}}
+ async function toggle(){if(lock.current||!user)return;lock.current=true;setBusy(true);setError('');setMessage('');const uid=user.id;const wasSaved=saved;
+ try{if(wasSaved){await removeFund(id)}else{const d=await saveFund(id);if(!d.item)throw new Error('Saving was not confirmed. Please try again.');}if(owner.current===uid){setSaved(!wasSaved);setMessage(wasSaved?'Removed from your watchlist.':'Saved to your watchlist.');void trackProductEvent(wasSaved?'watchlist_removed':'watchlist_saved',{investment_id:id})}}catch(e){if(owner.current===uid)setError(e instanceof Error?e.message:'Could not update your watchlist.')}finally{lock.current=false;setBusy(false)}}
  if(loading)return <div className="card"><p>Loading your account…</p></div>;
  if(!user)return <div className="card"><h2>Keep this fund on your radar</h2><p>Create a free account to save funds and return to your watchlist. Add your DNA when you are ready to see personal compatibility.</p><div className="actions"><Link className="btn primary" href={'/profile?mode=signup&investment='+id}>Create a free account</Link><Link className="btn" href={'/profile?investment='+id}>Sign in</Link></div><p className="muted fine">Browsing fund details and taking the assessment are available without an account.</p></div>;
  return <div className="card"><div className="eyebrow">Connected to your profile</div><h2>This fund and your DNA</h2>
