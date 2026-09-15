@@ -9,6 +9,7 @@ These tests verify database/RPC/RLS/data contracts against a real schema. They c
 - `milestone_2_product_value.sql` — research read models, data coverage and product-facing read boundaries.
 - `milestone_3_pilot_readiness.sql` — analytics/feedback constraints and browser denial boundaries.
 - `m4_cross_asset_research.sql` — 55-instrument cross-asset structure/data/source integrity and browser write denial.
+- `m4_security_hardening.sql` — M4 public RPC invoker boundaries, revoked legacy browser RPCs, frozen Portfolio Builder live contracts and rollback verification that a completed guest assessment can be claimed/promoted through the service path without browser `auth.uid()`.
 
 ## Rules
 
@@ -18,6 +19,7 @@ These tests verify database/RPC/RLS/data contracts against a real schema. They c
 4. Test null semantics for financial data when a missing value could be confused with zero.
 5. Test source/as-of fields for source-backed sample data.
 6. A passing browser mock is not a substitute for these tests after backend changes.
+7. Do not remove applied historical migrations merely because current regressions target newer behavior; migration history and current acceptance tests serve different purposes.
 
 ## Running
 
