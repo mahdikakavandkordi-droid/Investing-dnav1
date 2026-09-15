@@ -30,3 +30,6 @@ jobs:
       - run: npm run test:funds
         env:
           CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:m4
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
