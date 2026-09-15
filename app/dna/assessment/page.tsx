@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {supabase,pilot} from "@/lib/supabase";
-import {Question,Draft,Submission,answerRows,optionsFor,readDraft,writeDraft,writeEphemeralResult,clearDraft} from "@/lib/dna";
+import {Question,AnswerValue,Draft,Submission,answerRows,optionsFor,readDraft,writeDraft,writeEphemeralResult,clearDraft} from "@/lib/dna";
 
 type Locale='en'|'fr'|'fa';
 
@@ -61,9 +61,9 @@ export default function Assessment() {
       if(!supabase)throw new Error('The assessment service is not configured yet.');
       const {data:{session}}=await supabase.auth.getSession();
       const s=await pilot<Draft['session']>('start',{
-        cohort_code:'DEV_V1_9',
+        cohort_code:'DEV_V1_10',
         language_code:locale,
-        consent_version:`prepilot-v1.9-${locale}`
+        consent_version:`prepilot-v1.10-${locale}`
       });
       const next:Draft={version:1,createdAt:Date.now(),ownerId:session?.user.id||null,session:s,answers:{},index:0};
       persist(next);
@@ -78,7 +78,7 @@ export default function Assessment() {
     if(!draft || lock.current)return;
     lock.current=true;setBusy(true);setError('');
     try {
-      if(!questions.every(q=>draft.answers[q.question_id]!==undefined))throw new Error('Please answer every question before submitting.');
+      if(!questions.every(q=>Array.isArray(draft.answers[q.question_id])?(draft.answers[q.question_id] as string[]).length>0:draft.answers[q.question_id]!==undefined))throw new Error('Please answer every question before submitting.');
       await pilot('save_answers',{...draft.session,answers:answerRows(draft.answers)});
       const result=await pilot<Submission>('submit',draft.session);
       if(!result.result)throw new Error('The result is not available yet.');
@@ -93,6 +93,18 @@ export default function Assessment() {
   const q=questions[draft?.index||0];
   const chosen=q&&draft?.answers[q.question_id];
   const options=q?optionsFor(q):[];
+  const multiple=q?.question_type==='multi_choice';
+  const answered=Array.isArray(chosen)?chosen.length>0:chosen!==undefined;
+  function choose(value:string){
+    if(!draft||!q)return;
+    let next:AnswerValue=value;
+    if(multiple){
+      const previous=Array.isArray(chosen)?chosen:[];
+      next=value==='none'?['none']:previous.includes(value)?previous.filter(v=>v!==value):[...previous.filter(v=>v!=='none'),value];
+    }
+    persist({...draft,answers:{...draft.answers,[q.question_id]:next}});
+  }
+
   const current=(draft?.index||0)+1;
   const direction=locale==='fa'?'rtl':'ltr';
   const section=(q?.section&&t.sections[q.section as keyof typeof t.sections])||'Investor DNA';
@@ -112,12 +124,13 @@ export default function Assessment() {
       <div className="question-header"><div><div className="eyebrow">{section}</div><div className="question-count">{t.question} {current} / {questions.length}</div></div><div className="question-percent">{Math.round((current/questions.length)*100)}%</div></div>
       <progress aria-label="Assessment progress" max={questions.length} value={current}/>
       <h1 className="question-title">{q.prompt}</h1>
+      {multiple&&<p>{locale==='fa'?'همهٔ موارد مرتبط را انتخاب کن.':locale==='fr'?'Sélectionnez toutes les réponses pertinentes.':'Select all that apply.'}</p>}
       <div className="question-options" role="group" aria-label="Answer choices">
-        {options.map(o=><button aria-pressed={chosen===o.value} className={'option '+(chosen===o.value?'active':'')} key={o.value} disabled={busy} onClick={()=>persist({...draft,answers:{...draft.answers,[q.question_id]:o.value}})}><span>{o.label}</span></button>)}
+        {options.map(o=><button aria-pressed={Array.isArray(chosen)?chosen.includes(o.value):chosen===o.value} className={'option '+((Array.isArray(chosen)?chosen.includes(o.value):chosen===o.value)?'active':'')} key={o.value} disabled={busy} onClick={()=>choose(o.value)}><span>{o.label}</span></button>)}
       </div>
       <div className="question-actions">
         <button className="btn" disabled={busy||draft.index===0} onClick={()=>persist({...draft,index:draft.index-1})}>{t.back}</button>
-        {draft.index<questions.length-1?<button className="btn primary" disabled={busy||chosen===undefined} onClick={()=>persist({...draft,index:draft.index+1})}>{t.next}</button>:<button className="btn primary" disabled={busy||chosen===undefined} onClick={finish}>{busy?t.calculating:t.result}</button>}
+        {draft.index<questions.length-1?<button className="btn primary" disabled={busy||!answered} onClick={()=>persist({...draft,index:draft.index+1})}>{t.next}</button>:<button className="btn primary" disabled={busy||!answered} onClick={finish}>{busy?t.calculating:t.result}</button>}
       </div>
       <p className="muted fine question-hint">{t.hint}</p>
       {error&&<p role="alert" className="notice">{error}</p>}

@@ -1,3 +1,4 @@
+import {finiteSignal} from '@/lib/match';
 import type {InvestmentDna} from "@/lib/investments";
 
 type SignalKey='growth_score'|'income_score'|'stability_score'|'diversification_score';
@@ -7,7 +8,7 @@ const AXES:[SignalKey,string,string][]=[
   ['stability_score','Stability orientation','How strongly the structure leans toward a steadier, more defensive mix.'],
   ['diversification_score','Exposure breadth','Breadth across asset classes and meaningful geographic regions — not the number of individual holdings.'],
 ];
-function n(value:unknown){const x=Number(value);return Number.isFinite(x)?Math.max(0,Math.min(100,x)):null;}
+const n=finiteSignal;
 function band(key:SignalKey,value:unknown){
   const x=n(value);if(x===null)return 'Not available';
   if(key==='growth_score') return x<40?'Lower':x<75?'Moderate':'Higher';
@@ -18,7 +19,7 @@ function band(key:SignalKey,value:unknown){
 function dateLabel(value?:string){if(!value)return null;const d=new Date(`${value}T00:00:00`);return Number.isNaN(d.valueOf())?value:new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric'}).format(d);}
 
 export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
-  const official=dna.official_risk_rating||dna.risk_band;
+  const official=dna.official_risk_source_url?dna.official_risk_rating:undefined;
   const sourceDate=dateLabel(dna.official_risk_source_date);
   const equity=n(dna.equity_pct);
   const fixed=n(dna.fixed_income_pct);
@@ -40,7 +41,7 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
       <div className="official-risk-copy">
         <span className="official-risk-kicker">Official risk rating</span>
         <strong>{official||'Not available'}</strong>
-        <p>{dna.official_risk_issuer?`${dna.official_risk_issuer} reports this rating in its official disclosure.`:'Official issuer risk data is not available for this investment yet.'}</p>
+        <p>{official&&dna.official_risk_issuer?`${dna.official_risk_issuer} reports this rating in its official disclosure.`:'Official issuer risk data is not available for this investment yet.'}</p>
       </div>
       {dna.official_risk_source_url&&<div className="official-risk-source">
         <span>Source: {dna.official_risk_issuer||dna.official_risk_source_type||'Official issuer'}{sourceDate?` · ${sourceDate}`:''}</span>

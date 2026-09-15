@@ -3,13 +3,8 @@ import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
 import {supabase,rpc} from "@/lib/supabase";
 import {readDraft,AppState,DNA,MatchItem,MatchPayload} from "@/lib/dna";
+import {eligibleMatches,matchStatus,displayMatchScore,matchWatchouts} from '@/lib/match';
 import {DnaSummary} from "@/components/DnaSummary";
-
-function normalizeMatches(payload?:MatchPayload|null):MatchItem[]{
-  if(!payload)return [];
-  if(Array.isArray(payload.results))return [...payload.results].sort((a,b)=>(b.match_score||0)-(a.match_score||0));
-  return [...(payload.top_matches||[]),...(payload.alternatives||[])].sort((a,b)=>(b.match_score||0)-(a.match_score||0));
-}
 
 export default function Result(){
  const [dna,setDna]=useState<DNA|null>(null),[report,setReport]=useState<DNA|null>(null),[matches,setMatches]=useState<MatchPayload|null>(null),[pending,setPending]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
@@ -20,8 +15,9 @@ export default function Result(){
   if(local?.result){if(active){setDna(local.result.result);setReport(local.result.report?.report||null);setMatches(local.result.match||null);setPending(!local.result.account_linked);}return;}
   if(session){const state=await rpc<AppState>('get_current_investor_app_state');if(active){setDna(state.dna);setReport(state.report);setMatches(state.matches||null);setPending(false);}}
  })().catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});return ()=>{active=false}},[]);
- const topMatches=useMemo(()=>normalizeMatches(matches).slice(0,3),[matches]);
- const hasContext=!!report?.investment_context;
+ const topMatches=useMemo(()=>eligibleMatches(matches).slice(0,3),[matches]);
+ const hasContext=!!matches?.context_applied;
+ const status=matchStatus(matches);
 
  async function emailSaveLink(e:React.FormEvent){
    e.preventDefault();if(!supabase||sendingEmail||!pending)return;
@@ -46,13 +42,14 @@ export default function Result(){
      <Link className="btn primary" href="/dna/context">{hasContext?'Edit investment context':'Add investment context'}</Link>
    </section>
 
+   {matches&&matches.status!=='available'&&<section className="report-section notice"><h2>{status.title}</h2><p>{status.body}</p>{matches.constraints?.reasons?.map(x=><p key={x}>{x}</p>)}</section>}
    {topMatches.length>0&&<section className="report-section matches-section">
      <div className="eyebrow">05 · From DNA to discovery</div>
      <h2>Investments worth exploring</h2>
      <p className="report-lede">These are compatibility signals based on your DNA{hasContext?' and the context you added':''}. They are not buy recommendations.</p>
      <div className="match-preview-grid">{topMatches.map(m=>{
-       const why=m.explanation?.strengths?.[0]||m.explanation?.why_it_fits?.[0]||m.explanation?.watchouts?.[0];
-       return <article className="match-preview-card" key={m.investment_id||m.symbol}><div className="match-preview-top"><span className="pill">{m.symbol}</span><strong>{Math.round(m.match_score||0)}<small>/100</small></strong></div><h3>{m.name||m.symbol}</h3><p className="match-fit-label">{m.fit_label||m.recommendation_tier?.replaceAll('_',' ')||'Compatibility signal'}</p>{why&&<p className="muted">{why}</p>}{m.investment_id?<Link className="btn" href={`/investment/${m.investment_id}`}>See why it fits</Link>:<Link className="btn" href="/match">See my matches</Link>}</article>;
+       const why=matchWatchouts(m)[0]||m.explanation?.strengths?.[0]||m.strengths?.[0];
+       return <article className="match-preview-card" key={m.investment_id||m.symbol}><div className="match-preview-top"><span className="pill">{m.symbol}</span><strong>{displayMatchScore(m)}<small>/100</small></strong></div><h3>{m.name||m.symbol}</h3><p className="match-fit-label">{m.fit_label||m.recommendation_tier?.replaceAll('_',' ')||'Compatibility signal'}</p>{why&&<p className="muted">{why}</p>}{m.investment_id?<Link className="btn" href={`/investment/${m.investment_id}`}>See why it fits</Link>:<Link className="btn" href="/match">See my matches</Link>}</article>;
      })}</div>
      <div className="matches-more"><Link className="btn primary" href="/match">See all DNA matches</Link></div>
    </section>}
