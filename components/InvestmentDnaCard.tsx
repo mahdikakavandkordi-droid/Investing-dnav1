@@ -1,13 +1,20 @@
 import type {InvestmentDna} from "@/lib/investments";
 
-const AXES:[keyof InvestmentDna,string,string][]=[
+type SignalKey='growth_score'|'income_score'|'stability_score'|'diversification_score';
+const AXES:[SignalKey,string,string][]=[
   ['growth_score','Growth orientation','How strongly the fund’s strategic asset mix leans toward long-term growth.'],
   ['income_score','Income orientation','How strongly income is part of the fund’s intended role.'],
   ['stability_score','Stability orientation','How strongly the structure leans toward a steadier, more defensive mix.'],
-  ['diversification_score','Exposure breadth','How broadly the fund spreads exposure across asset classes and meaningful geographic regions.'],
+  ['diversification_score','Exposure breadth','Breadth across asset classes and meaningful geographic regions — not the number of individual holdings.'],
 ];
 function n(value:unknown){const x=Number(value);return Number.isFinite(x)?Math.max(0,Math.min(100,x)):null;}
-function band(value:unknown){const x=n(value);if(x===null)return 'Not available';if(x<40)return 'Lower';if(x<70)return 'Moderate';return 'Higher';}
+function band(key:SignalKey,value:unknown){
+  const x=n(value);if(x===null)return 'Not available';
+  if(key==='growth_score') return x<40?'Lower':x<75?'Moderate':'Higher';
+  if(key==='income_score') return x<20?'Lower':x<60?'Moderate':'Higher';
+  if(key==='stability_score') return x<35?'Lower':x<70?'Moderate':'Higher';
+  return x<45?'Lower':x<75?'Moderate':'Higher';
+}
 function dateLabel(value?:string){if(!value)return null;const d=new Date(`${value}T00:00:00`);return Number.isNaN(d.valueOf())?value:new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric'}).format(d);}
 
 export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
@@ -15,10 +22,12 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
   const sourceDate=dateLabel(dna.official_risk_source_date);
   const equity=n(dna.equity_pct);
   const fixed=n(dna.fixed_income_pct);
+  const explanation=(dna.explanation&&typeof dna.explanation==='object'?dna.explanation:null) as null|{signal_inputs?:{meaningful_geographic_regions?:number}};
+  const regions=Number(explanation?.signal_inputs?.meaningful_geographic_regions);
   const inputs=[
     equity!==null?`${Math.round(equity)}% equity`:null,
     fixed!==null?`${Math.round(fixed)}% fixed income`:null,
-    dna.geographic_scope||null,
+    Number.isFinite(regions)&&regions>0?`${regions} meaningful geographic region${regions===1?'':'s'}`:null,
     official?`Official risk: ${official}`:null,
   ].filter(Boolean).join(' · ');
 
@@ -42,8 +51,8 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
 
     <div className="investment-dna-subhead"><h3>Investment DNA signals</h3><p>These are broad research labels, not regulatory ratings or precise 0–100 measurements. Each label is generated from a fixed rule set using fund-structure data.</p></div>
     <div className="investment-dna-grid">
-      {AXES.map(([key,label,help])=>{const value=n(dna[key]);return <div className="investment-dna-axis" key={String(key)}>
-        <div className="investment-dna-axis-top"><span>{label}</span><strong>{value===null?'—':band(value)}</strong></div>
+      {AXES.map(([key,label,help])=>{const value=n(dna[key]);return <div className="investment-dna-axis" key={key}>
+        <div className="investment-dna-axis-top"><span>{label}</span><strong>{value===null?'—':band(key,value)}</strong></div>
         <p>{help}</p>
       </div>})}
     </div>
@@ -57,7 +66,8 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
         <p><strong>Income orientation:</strong> 80% comes from the fixed-income share and 20% from whether the fund’s stated objective explicitly includes income. Distribution frequency by itself does not raise this signal.</p>
         <p><strong>Stability orientation:</strong> 60% comes from fixed-income allocation and 40% from the inverse of the issuer’s official risk category.</p>
         <p><strong>Exposure breadth:</strong> 70% reflects the number of meaningful geographic regions and 30% reflects whether the strategic allocation spans both equities and fixed income.</p>
-        <p>We do not use the current holdings count here because our holdings coverage is not yet complete enough across every ETF. These labels support discovery and compatibility; they are not a recommendation to buy or sell.</p>
+        <p>The Lower / Moderate / Higher labels use fixed cut points specific to each axis; they are not market percentiles. We do not use current holdings count because holdings coverage is not yet complete enough across every ETF.</p>
+        <p>These labels support discovery and compatibility. They do not replace the issuer’s official risk rating and are not a recommendation to buy or sell.</p>
       </div>
     </details>
   </section>;
