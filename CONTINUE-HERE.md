@@ -40,7 +40,8 @@ The repository/onboarding cleanup is substantially complete:
 - obsolete `docs/HARD-TEST-V1.9.md` was removed because its useful coverage is represented by current testing docs/milestone evidence;
 - repository version-hygiene rules now forbid convenience `old`/`backup`/parallel-version copies after migration of callers;
 - the questionnaire Edge Function now returns a narrow public DTO only (`question_id`, `section`, `question_type`, localized `prompt`, localized `options`); internal scoring weight, construct metadata, raw version fields and non-selected localized copy remain server-side;
-- contract tests lock the narrow questionnaire DTO so internal scoring fields cannot silently leak back to the browser.
+- contract tests lock the narrow questionnaire DTO so internal scoring fields cannot silently leak back to the browser;
+- the repository was reconciled with the live Supabase migration ledger for three already-applied migrations that had been missing from the active branch: `20260915084212_guarded_match_runs_v6.sql`, `20260915084213_assessment_v110_and_context.sql`, and `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`. They are historical source artifacts only and were not re-applied to the database.
 
 Cross-asset research architecture remains in place:
 
@@ -56,9 +57,9 @@ Cross-asset research architecture remains in place:
 
 GitHub Actions run `35034668327` on head `d218d720d92715cbd0b76765eb66e8660cd043fd` completed successfully. It covered contracts, typecheck, build and the browser suites in CI, including the narrow questionnaire DTO contract test.
 
-The corresponding Vercel status is currently blocked by the provider build-rate limit (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the current head is not deployment-verified until Vercel accepts a new build.
+Repository-only documentation/migration-history repair commits were added after that verified head. Confirm CI again on the final head before calling the branch engineering-green.
 
-Any commit after `d218d720d92715cbd0b76765eb66e8660cd043fd` must receive a fresh CI check before the branch is called engineering-green again.
+The latest observed Vercel status remains blocked by the provider build-rate limit (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the current head is not deployment-verified until Vercel accepts a new build.
 
 ## Known high-priority technical follow-ups
 
