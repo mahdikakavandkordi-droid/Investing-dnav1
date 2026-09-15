@@ -38,9 +38,11 @@ This checklist separates engineering readiness from evidence and legal/complianc
 - [ ] Auth email/OTP rate limits reviewed
 - [ ] CAPTCHA/abuse-protection decision documented
 
+Engineering note: the service-side completed-guest claim/promotion path now has a real-database rollback regression and passes. That is not a substitute for the still-open external magic-link canary above.
+
 ## D. Database / security
 
-- [ ] M4 legacy Watchlist RLS policy cleanup applied and verified
+- [x] M4 legacy Watchlist RLS policy cleanup applied and verified
 - [ ] Profile RLS init-plan optimization applied and verified
 - [ ] Launch-critical FK indexes applied and verified
 - [ ] Public SECURITY DEFINER views classified
@@ -51,6 +53,21 @@ This checklist separates engineering readiness from evidence and legal/complianc
 - [ ] M3 regression PASS after hardening
 - [ ] Security Advisor re-run and launch-relevant findings classified
 - [ ] Performance Advisor re-run and launch-relevant findings classified
+
+### Verified hardening progress in the current M4 batch
+
+- [x] Missing live-applied migration source history reconciled back into the active branch without re-running those migrations
+- [x] Questionnaire browser DTO narrowed so scoring weight/internal localized fields stay server-side
+- [x] Public anonymous `SECURITY DEFINER` RPC findings reduced from 4 to 0 without breaking anonymous search/compare/DNA/fund-facts reads
+- [x] Authenticated browser-callable `SECURITY DEFINER` function findings reduced from 11 to 2
+- [x] Legacy `app_save_investment_context` and `get_investor_home` browser execution revoked
+- [x] Legacy direct `get_investment_recommendations` and `promote_assessment_to_current_dna` browser execution revoked
+- [x] Current account-state RPC moved behind private privileged implementation + public invoker wrapper
+- [x] Completed guest claim/promotion service path regression PASS with transaction rollback
+- [x] Portfolio Builder removed from current completion/context/account-state contracts while historical engine/migrations are preserved
+- [x] `m4_security_hardening.sql` PASS against the live project
+- [ ] Remaining `get_or_create_current_profile` / `is_current_profile` definer helpers reviewed with a real authenticated canary before changing their ownership semantics
+- [ ] 28 Security Advisor `SECURITY DEFINER` views classified individually; do not batch-convert without tracing underlying grants/RLS
 
 ## E. Product truthfulness / data
 
@@ -84,6 +101,8 @@ This checklist separates engineering readiness from evidence and legal/complianc
 - [ ] Final M4 head Vercel deployment PASS
 - [ ] Final branch ancestry/mergeability check
 
+Current hosting note: the latest observed Vercel attempt was blocked by the provider build-rate limit. That is not an application compile failure, but it is also not a deployment pass.
+
 ## Public-launch decision
 
 At M4 closeout select exactly one:
@@ -94,6 +113,6 @@ At M4 closeout select exactly one:
 
 ### Named blockers / accepted risks
 
-1.
-2.
-3.
+1. Real cognitive evidence and subsequent product-pilot evidence are not complete.
+2. Real external magic-link/account canary is not complete.
+3. Remaining security-view classification, final performance hardening and formal compliance/privacy review are not complete.
