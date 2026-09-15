@@ -12,7 +12,9 @@ Use the dedicated route:
 
 `/pilot/cognitive`
 
-That route clears any existing local development draft and then starts the assessment with cohort `COGNITIVE_V1_10`. Do not recruit cognitive participants through the normal `/dna/assessment` development path because `DEV_V1_10` and cognitive-study observations must remain analytically separate.
+The route requires a **moderator-only research invite code** before it will enter cohort `COGNITIVE_V1_10`. The raw code is operational research access, not participant data: do not commit it to source control, put it in a public URL, post it publicly, or place it in analytics/notes. The application keeps it only in session storage long enough to start the protected cohort, and the backend stores only its SHA-256 hash.
+
+After a valid code is entered, the route clears any existing local development draft and starts a fresh cognitive assessment. Do not recruit cognitive participants through the normal `/dna/assessment` development path because `DEV_V1_10` and cognitive-study observations must remain analytically separate.
 
 The database cohort target is **12 participants**.
 
@@ -163,6 +165,7 @@ A difference in answers is not automatically an error. The cognitive interview s
 
 ## Moderator rules
 
+- Keep the raw research invite code moderator-only; do not embed it in participant URLs or public messages.
 - Stay neutral.
 - Never praise a response as safer, smarter or more sophisticated.
 - Do not explain Investing DNA’s expected scoring before the session.
