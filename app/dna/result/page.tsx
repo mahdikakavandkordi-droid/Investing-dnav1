@@ -39,7 +39,6 @@ export default function Result(){
  if(!dna)return <main className="result-page"><div className="container result-container"><div className="result-loading-card"><h1>{error?'Could not load your DNA':'Your guest report has expired'}</h1>{error?<p role="alert">{error}</p>:<p>Guest reports are one-time previews and are not kept in this browser after a refresh. Create or sign in to an account to keep your Investor DNA.</p>}<div className="actions"><Link className="btn primary" href="/dna/assessment">Take the assessment</Link><Link className="btn" href="/profile?mode=signup">Create free account</Link><Link className="btn" href="/profile">Sign in</Link>{error&&<button className="btn" onClick={()=>location.reload()}>Retry</button>}</div></div></div></main>;
 
  return <main className="result-page"><div className="container result-container">
-   {pending&&<section className="notice guest-report-warning"><strong>One-time guest report</strong><p>This report disappears if you refresh, close, or leave this page. Save it with an account or email link if you want to keep it.</p></section>}
    <DnaSummary dna={dna} report={report}/>
 
    <section className="result-next-card result-context-cta">
