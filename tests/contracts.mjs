@@ -1,5 +1,17 @@
 import assert from 'node:assert/strict';
 import * as d from '../lib/dna.ts';
+import {finiteSignal,eligibleMatches,displayMatchScore,matchStatus} from '../lib/match.ts';
+for(const value of [null,undefined,true,false,' ',[],{},NaN,Infinity,-1,101]) assert.equal(finiteSignal(value),null);
+assert.equal(finiteSignal(0),0);
+assert.equal(finiteSignal('42'),42);
+const eligible={investment_id:'eligible',symbol:'OK',eligibility:'eligible',match_score:75};
+const blocked={investment_id:'blocked',symbol:'NO',eligibility:'review_required',match_score:99};
+assert.deepEqual(eligibleMatches({results:[blocked,eligible,{investment_id:'legacy',symbol:'OLD',match_score:100},{investment_id:'missing',symbol:'NA',eligibility:'eligible',match_score:null},eligible]}),[eligible]);
+assert.equal(displayMatchScore(blocked),'—');
+assert.equal(displayMatchScore({...eligible,match_score:0}),'0');
+assert.match(matchStatus({status:'context_required'}).title,/context/);
+assert.match(matchStatus({status:'no_suitable_options'}).title,/No suitable/);
+assert.deepEqual(d.answerRows({EX02:['cash','funds']}),[{question_id:'EX02',answer_value:{value:['cash','funds']}}]);
 const data=new Map();globalThis.localStorage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
 assert.deepEqual(d.answerRows({RC01:'A',RT01:'7'}),[{question_id:'RC01',answer_value:{value:'A'}},{question_id:'RT01',answer_value:{value:'7'}}]);assert.equal(d.optionsFor({question_type:'scale',options:[]}).length,11);assert.equal(d.score(undefined),'—');assert.equal(d.score(0),'0');
 const draft={version:1,createdAt:Date.now(),ownerId:null,session:{assessment_id:'id',session_token:'token'},answers:{RC01:'A'},index:0};d.writeDraft(draft);assert.equal(d.readDraft('user').session.assessment_id,'id');d.writeDraft({...draft,ownerId:'alice'});assert.equal(d.readDraft('bob'),null);d.writeDraft({...draft,createdAt:Date.now()-25*3600000});assert.equal(d.readDraft(null),null);assert.equal(data.size,0);localStorage.setItem=()=>{throw Error('blocked')};assert.equal(d.writeDraft(draft),false);assert.equal(d.readDraft(null).answers.RC01,'A');d.clearDraft();assert.equal(d.readDraft(null),null);

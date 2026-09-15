@@ -13,7 +13,7 @@ export type OfficialFundFacts = {
  summary?:string;objective?:string;asset_mix?:Record<string,number>;management_style?:string;distribution_policy?:string;
 };
 export type WatchItem = {investment_id:string;symbol:string;name:string;note?:string;created_at?:string};
-export type Fit = {status:'available'|'no_dna'|'unavailable';assessment_id?:string;fit?:{match_score:number;recommendation_tier:string;model_version:string;explanation?:{summary?:string;fit_label?:string;why_it_fits?:string[];strengths?:string[];watchouts?:string[]}}};
+export type Fit = {status:'available'|'no_dna'|'unavailable';assessment_id?:string;fit?:{match_score:number|null;eligibility?:string;fit_label?:string;run_id?:string;recommendation_tier:string;model_version:string;explanation?:{summary?:string;fit_label?:string;why_it_fits?:string[];strengths?:string[];watchouts?:string[]}}};
 export function formatMetric(value:unknown,suffix='',digits=2){
  if(value===null||value===undefined||value==='')return 'Not available';
  const n=Number(value);return Number.isFinite(n)?new Intl.NumberFormat('en-CA',{maximumFractionDigits:digits}).format(n)+suffix:'Not available';

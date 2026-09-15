@@ -15,7 +15,7 @@ const ARCHETYPES:Record<string,{title:string;tagline:string}>={
 
 const BEHAVIOR:Record<string,{label:string;help:string;high:string;mid:string;low:string}>={
   decision_independence:{label:'Decision independence',help:'How much you separate other people’s excitement from your own decision.',high:'Independent',mid:'Mixed',low:'More socially influenced'},
-  long_term_orientation:{label:'Long-term orientation',help:'How well you keep recent performance in perspective.',high:'Long-term focused',mid:'Mixed',low:'More performance-sensitive'},
+  long_term_orientation:{label:'Recent performance sensitivity',help:'How well you keep recent performance in perspective.',high:'Less performance-sensitive',mid:'Mixed',low:'More performance-sensitive'},
   reference_flexibility:{label:'Reference flexibility',help:'How easily you look past the price you paid and reassess from today.',high:'Flexible',mid:'Mixed',low:'More anchored to past prices'},
   evidence_discipline:{label:'Evidence discipline',help:'How willing you are to test your view against new evidence.',high:'Evidence-led',mid:'Mixed',low:'More conviction-led'},
   emotional_decision_control:{label:'Emotional decision control',help:'How well you keep stress and regret from taking over the decision.',high:'Composed',mid:'Mixed',low:'More emotion-sensitive'},
@@ -60,7 +60,7 @@ function formatContext(key:string,value:unknown){
 function standoutDecision(behavioral:Record<string,number>){
   const candidates=[
     {key:'decision_independence',low:'More socially responsive',high:'Independent-minded',lowText:'Other people’s excitement can pull your attention toward an investment before your own review is finished.',highText:'You tend to separate other people’s enthusiasm from your own investment decision.'},
-    {key:'long_term_orientation',low:'Performance-sensitive',high:'Long-term focused',lowText:'Recent winners and laggards can change how attractive an investment feels to you.',highText:'You tend to keep recent performance in perspective and stay focused on the longer-term case.'},
+    {key:'long_term_orientation',low:'Performance-sensitive',high:'Less performance-sensitive',lowText:'Recent winners and laggards can change how attractive an investment feels to you.',highText:'You tend to keep recent performance in perspective and stay focused on the longer-term case.'},
     {key:'reference_flexibility',low:'Reference-sensitive',high:'Forward-looking',lowText:'The price you paid can remain influential when you decide what to do next.',highText:'You tend to reassess investments from today forward rather than staying anchored to the original purchase price.'},
     {key:'evidence_discipline',low:'Conviction-led',high:'Evidence-led',lowText:'Once you like an idea, changing your view can take stronger evidence.',highText:'You are relatively willing to test a favored idea against new or conflicting evidence.'},
   ];
@@ -89,6 +89,7 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
   const name=context?.first_name?.trim();
   const decision=standoutDecision(behavioral);
   const pressure=pressureInsight(behavioral.emotional_decision_control);
+  const capacity=report?.capacity_profile||dna.capacity_profile;
 
   return <div className="dna-report">
     <section className={'dna-hero dna-'+archetype.toLowerCase()}>
@@ -103,6 +104,7 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
       <div className="dna-character" aria-hidden="true"><Image src={`/characters/${archetype.toLowerCase()}.png`} alt="" width={230} height={230} priority/></div>
     </section>
 
+    {capacity?.review_required&&<div role="status" className="notice"><strong>Review your financial capacity</strong><p>{capacity.reason}</p><p>Your capacity reflects this constraint; other positive answers cannot cancel it.</p></div>}
     <section className="report-section">
       <div className="eyebrow">01 · Your risk profile</div>
       <h2>Willingness and capacity are different.</h2>

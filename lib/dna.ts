@@ -1,3 +1,4 @@
+export type AnswerValue=string|string[];
 export type Question = {
   question_id:string;
   prompt:string;
@@ -12,6 +13,7 @@ export type ExperienceProfile = {
   role?:string;
   overall_score?:number;
   dimensions?:Record<string,number>;
+  owned_products?:string[];
 };
 
 export type QualityPair = {
@@ -60,13 +62,20 @@ export type InvestmentContextProfile = {
   goal?:string|null;
   time_horizon?:string|null;
   liquidity_need?:string|null;
+  horizon_months?:number|null;
+  principal_required?:string|null;
+  investment_share?:string|null;
 };
 
 export type MatchItem = {
   investment_id?:string;
   symbol:string;
   name?:string;
-  match_score:number;
+  match_score:number|null;
+  run_id?:string;
+  model_version?:string;
+  eligibility?:'eligible'|'context_required'|'review_required'|'limited';
+  official_risk_rating?:string;
   fit_label?:string;
   recommendation_tier?:string;
   risk_band?:string;
@@ -83,6 +92,10 @@ export type MatchItem = {
 };
 
 export type MatchPayload = {
+  run_id?:string;
+  status?:string;
+  context_applied?:boolean;
+  constraints?:{reasons?:string[];codes?:string[];equity_ceiling?:number;context_complete?:boolean};
   model_version?:string;
   universe_count?:number;
   results?:MatchItem[];
@@ -93,6 +106,7 @@ export type MatchPayload = {
 };
 
 export type DNA = {
+  capacity_profile?:{raw_index?:number;guarded_capacity?:number;review_required?:boolean;reason?:string};
   archetype?:string;
   risk_tolerance?:number;
   risk_capacity?:number;
@@ -129,7 +143,7 @@ export type Submission = {
 
 export type AppState = {has_profile:boolean;assessment_id?:string;dna:DNA|null;report:DNA|null;matches?:MatchPayload};
 export type AssessmentSession={assessment_id:string;session_token:string;account_linked?:boolean;language_code?:'en'|'fr'|'fa'};
-export type Draft = {version:1;createdAt:number;ownerId:string|null;session:AssessmentSession;answers:Record<string,string>;index:number;result?:Submission};
+export type Draft = {version:1;createdAt:number;ownerId:string|null;session:AssessmentSession;answers:Record<string,AnswerValue>;index:number;result?:Submission};
 export type ClaimTicket={version:1;createdAt:number;session:AssessmentSession};
 
 export const DRAFT_KEY = "investing-dna:draft:v2";
@@ -181,7 +195,7 @@ export function writeEphemeralResult(d:Draft):boolean {
   return ok;
 }
 
-export function answerRows(answers:Record<string,string>) {
+export function answerRows(answers:Record<string,AnswerValue>) {
   return Object.entries(answers).map(([question_id,value])=>({question_id,answer_value:{value}}));
 }
 export function score(value:unknown):string {
