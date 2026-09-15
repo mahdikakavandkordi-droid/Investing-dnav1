@@ -9,4 +9,4 @@ export async function trackProductEvent(event_name:ProductEvent,options:EventOpt
  const browser_session_id=getBrowserSessionId(),visitor_id=getVisitorId();if(!browser_session_id||!visitor_id)return false;
  try{const result=await pilot<{tracked:boolean}>('track_event',{event_name,browser_session_id,visitor_id,route:options.route||location.pathname,investment_id:options.investment_id||null,assessment_id:options.assessment_id||null,metadata:options.metadata||{}});return !!result.tracked}catch{return false}
 }
-export async function trackSessionStart(){if(typeof window==='undefined')return;const returning=isReturningVisitor();await trackProductEvent('app_session_started',{metadata:{returning}});if(returning)await trackProductEvent('profile_viewed',{metadata:{returning:true,source:'returning_session'}});markVisitorSeen()}
+export async function trackSessionStart(){if(typeof window==='undefined')return;const returning=isReturningVisitor();await trackProductEvent('app_session_started',{metadata:{returning}});markVisitorSeen()}
