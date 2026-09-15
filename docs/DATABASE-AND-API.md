@@ -73,12 +73,14 @@ These exist because fund holdings, MER, official ETF risk disclosures and relate
 
 ### 3.3 Match/account RPCs
 
-Examples include:
+Current account UI uses `get_current_investor_app_state` as its primary persisted Investor DNA/read-state contract. Match remains ETF-scoped.
 
-- `get_current_investor_app_state`
-- `app_investment_fit`
-- `app_watchlist`
-- profile/context helpers exposed through narrow wrappers.
+Legacy browser RPCs that are no longer part of the current product contract keep their historical function bodies when useful for reproducibility/internal service dependencies, but browser `EXECUTE` is revoked rather than leaving parallel live APIs. Current examples include:
+
+- `app_save_investment_context`
+- `get_investor_home`
+- `get_investment_recommendations`
+- `promote_assessment_to_current_dna`
 
 The Match system is currently ETF-scoped. Generic research APIs must not imply that every instrument has a personalized Match result.
 
@@ -117,14 +119,24 @@ For assessment actions after `start`:
 4. if assessment is linked to a profile, authenticated account ownership is also verified;
 5. only then may privileged operations run.
 
+For a completed guest DNA claim, the Edge Function first establishes the authenticated current profile, then the service-only claim path links the already-authorized assessment to that profile. Promotion of a claimed completed assessment uses the private service implementation `investor_private.promote_assessment_to_profile`; it does not rely on a browser `auth.uid()` surviving inside a service-role call.
+
 ### Public questionnaire DTO
 
-The questionnaire endpoint must return a narrow public DTO. Internal configuration fields such as scoring `weight` are server implementation details unless there is an explicit product reason to expose them.
+The questionnaire endpoint returns a narrow public DTO:
+
+- `question_id`
+- `section`
+- `question_type`
+- selected-language `prompt`
+- selected-language `options`
+
+Internal configuration such as scoring `weight`, construct metadata, raw questionnaire version fields and non-selected localized copies remain server-side.
 
 When this DTO changes, update:
 
 - `lib/dna.ts` `Question` type;
-- assessment browser tests;
+- assessment/browser contract tests;
 - this document.
 
 ## 5. Pilot analytics boundary
@@ -162,12 +174,38 @@ A Supabase Advisor warning is a signal to investigate, not permission to blindly
 - set an explicit safe `search_path`;
 - grant execution narrowly;
 - validate identifiers/ownership before privileged mutation;
-- prefer private implementation + narrow public wrapper when feasible;
+- prefer private implementation + narrow public `SECURITY INVOKER` wrapper when feasible;
 - add a regression around the permission boundary.
 
 Do not convert an existing view/function to `security invoker` without checking whether its underlying tables are intentionally hidden from browser roles.
 
-## 8. Migration policy
+### Current M4 hardening state
+
+The exposed public research boundary has been reduced deliberately:
+
+- `app_search_investments`, `app_compare_investments` and `app_get_investment_dna` are public invoker functions;
+- `app_get_official_fund_facts` is an invoker wrapper over a narrow private definer because its official-facts source table is intentionally RLS-protected;
+- `get_current_investor_app_state` is an authenticated invoker wrapper over a narrow private implementation;
+- unused legacy browser RPCs have browser execution revoked instead of being kept as parallel public APIs;
+- service account claim/promotion is separated from browser identity semantics and regression-tested with rollback fixtures.
+
+After this hardening pass, the Security Advisor public-function findings fell from four anonymous + eleven authenticated `SECURITY DEFINER` browser-callable functions to zero anonymous + two authenticated helpers. The remaining authenticated helpers are `get_or_create_current_profile` and `is_current_profile`; both participate in current auth/ownership semantics and are intentionally left for real-account canary verification rather than changed merely to zero an Advisor count.
+
+The Security Advisor still reports legacy/public `SECURITY DEFINER` views. They remain an explicit M4 backlog: classify their role, underlying table grants and browser dependency before changing them. Do not batch-convert them blindly.
+
+## 8. Portfolio Builder freeze
+
+Portfolio Builder/portfolio-construction expansion is frozen during M4. Historical functions, tables and migrations remain for reproducibility, but current product contracts must not execute the old builder merely as a side effect.
+
+Current live paths intentionally do **not** call `generate_portfolio_blueprints`:
+
+- assessment completion (`complete_dna_assessment`);
+- investment-context save (`service_save_investment_context`);
+- current account state (`investor_private.current_investor_app_state`).
+
+The active browser `AppState`/assessment/context contracts therefore do not return portfolio/blueprint keys. Service-only historical maintenance code may remain until a future Portfolio Builder milestone is intentionally reopened.
+
+## 9. Migration policy
 
 ### Append-only history
 
@@ -180,13 +218,15 @@ Once applied, a migration is historical evidence. Fixes go into a new migration.
 3. confirm the migration is not already partially applied;
 4. apply through the migration mechanism;
 5. verify post-state;
-6. check source file into `supabase/migrations/` using the live migration version/name.
+6. check the source file into `supabase/migrations/` using the live migration version/name.
 
 ### If tooling fails
 
 A timeout/502/connector error is **unknown state**, not success. Re-read live state before retrying.
 
-## 9. Data provenance contract
+Applied migration source must stay aligned with the live ledger. If a live-applied migration is missing from the active branch, restore the exact historical source under the live version/name; do not re-run it just to repair source control.
+
+## 10. Data provenance contract
 
 For investment research:
 
@@ -196,7 +236,7 @@ For investment research:
 - unavailable values remain null;
 - reference/educational instruments must be labeled as such and must not receive invented live yields/prices.
 
-## 10. Database regression suites
+## 11. Database regression suites
 
 Important SQL regressions live in `supabase/tests/` and include:
 
@@ -204,11 +244,14 @@ Important SQL regressions live in `supabase/tests/` and include:
 - Milestone 1 canonical engine/safety/version tests;
 - Milestone 2 product/research coverage tests;
 - Milestone 3 pilot privacy/read-write boundary tests;
-- Milestone 4 cross-asset architecture/data integrity tests.
+- Milestone 4 cross-asset architecture/data integrity tests;
+- Milestone 4 security/account hardening and Portfolio Builder freeze tests.
+
+`m4_security_hardening.sql` specifically uses transaction rollback to verify public invoker boundaries, revoked legacy browser RPCs, service claim/promotion of a completed guest assessment and absence of Portfolio Builder from live M4 contracts.
 
 See `docs/TESTING.md` and `supabase/README.md`.
 
-## 11. Change checklist for backend work
+## 12. Change checklist for backend work
 
 Before merging a backend change, answer:
 
