@@ -61,9 +61,9 @@ export default function Assessment() {
       if(!supabase)throw new Error('The assessment service is not configured yet.');
       const {data:{session}}=await supabase.auth.getSession();
       const s=await pilot<Draft['session']>('start',{
-        cohort_code:'DEV_V1_9',
+        cohort_code:'DEV_V1_10',
         language_code:locale,
-        consent_version:`prepilot-v1.9-${locale}`
+        consent_version:`prepilot-v1.10-${locale}`
       });
       const next:Draft={version:1,createdAt:Date.now(),ownerId:session?.user.id||null,session:s,answers:{},index:0};
       persist(next);
@@ -119,9 +119,9 @@ export default function Assessment() {
         <button className="btn" disabled={busy||draft.index===0} onClick={()=>persist({...draft,index:draft.index-1})}>{t.back}</button>
         {draft.index<questions.length-1?<button className="btn primary" disabled={busy||chosen===undefined} onClick={()=>persist({...draft,index:draft.index+1})}>{t.next}</button>:<button className="btn primary" disabled={busy||chosen===undefined} onClick={finish}>{busy?t.calculating:t.result}</button>}
       </div>
-      <p className="muted fine question-hint">{t.hint}</p>
+      <p className="question-hint">{t.hint}</p>
+      {warning&&<p className="muted fine">{warning}</p>}
       {error&&<p role="alert" className="notice">{error}</p>}
-      {warning&&<p role="status" className="notice">{warning}</p>}
-    </div>:<div className="assessment-card"><h1>{t.retryTitle}</h1><p className="muted">{t.retryBody}</p><div className="question-actions"><button className="btn" onClick={()=>location.reload()}>{t.retry}</button><button className="btn" onClick={()=>{clearDraft();setDraft(null);setError('')}}>{t.fresh}</button></div>{error&&<p role="alert" className="notice">{error}</p>}</div>}
+    </div>:<div className="assessment-card"><div className="eyebrow">{t.retryTitle}</div><h1>{t.retryBody}</h1><div className="actions"><button className="btn primary" onClick={()=>location.reload()}>{t.retry}</button><button className="btn" onClick={()=>{clearDraft();location.reload()}}>{t.fresh}</button></div></div>}
   </div></main>;
 }
