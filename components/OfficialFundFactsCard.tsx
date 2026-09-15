@@ -34,7 +34,6 @@ export function OfficialFundFactsCard({facts}:{facts:OfficialFundFacts}){
     </div>
 
     {facts.fee_source_note&&<p className="fine muted official-fee-note">{facts.fee_source_note}</p>}
-    <p className="official-source-line">Source: <a href={facts.product_url||facts.etf_facts_url} target="_blank" rel="noreferrer">{facts.source_name}</a>{facts.etf_facts_date?` · verified against ETF Facts ${niceDate(facts.etf_facts_date)}`:''}</p>
   </section>;
 }
 
