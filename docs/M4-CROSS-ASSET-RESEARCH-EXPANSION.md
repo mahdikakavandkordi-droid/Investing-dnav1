@@ -1,6 +1,6 @@
 # Milestone 4 — Cross-Asset Research Expansion
 
-Status: **implemented, under CI acceptance**  
+Status: **implemented; DB + CI accepted; Vercel preview redeploy blocked by account build-rate limit**  
 Date: 2026-09-15
 
 ## Why this exists
@@ -162,6 +162,8 @@ Verified:
 - CP/ABCP research references have no synthesized yield.
 - anon has read access through the intended research API but no direct insert privilege on research tables.
 
+A later corrective migration also removed synthetic freshness from the ETF shared structure layer. ETF structure dates now preserve the actual underlying Investment DNA source date; the verified range is 2026-01-23 through 2026-09-13.
+
 ## Security / RLS cleanup
 
 Migration `m4_watchlist_rls_cleanup` removed obsolete permissive Watchlist policies that incorrectly compared `profile_id` directly with `auth.uid()` alongside the canonical ownership policies. Profile policies now use the optimized `(select auth.uid())` form.
@@ -178,6 +180,31 @@ Live + checked into repository:
 - `20260915220231_m4_cross_asset_research_architecture.sql`
 - `20260915220937_m4_seed_cross_asset_research_samples.sql`
 - `20260915221557_m4_watchlist_rls_cleanup.sql`
+- `20260915221809_m4_fix_structure_freshness.sql`
+
+## Automated acceptance
+
+GitHub Actions final acceptance run on head `b74bb8802f34bb4f2a417f892bc3a2c1c56414f3`:
+- run `35030482391`
+- `npm ci` ✅
+- contract tests ✅
+- TypeScript ✅
+- production build ✅
+- canonical assessment browser flow ✅
+- connected ETF browser flow ✅
+- M4 launch/disclosure regression ✅
+- cross-asset browser regression (`test:assets`) ✅
+
+The earlier dedicated cross-asset fix head `da117ada9a26a4334a8d98d7865590d12ace9273` also completed a fully green CI run (`35030382852`).
+
+## Vercel deployment status
+
+The GitHub/Vercel integration did **not** execute a fresh preview build for final head `b74bb880...`. Its commit status is `failure` with target `upgradeToPro=build-rate-limit`, which is an account/build-rate quota condition rather than a Next.js build failure. GitHub CI independently completed the same production build successfully.
+
+Therefore:
+- code/build acceptance: **PASS**;
+- fresh Vercel preview deployment on final head: **BLOCKED BY VERCEL BUILD-RATE LIMIT**;
+- do not mark the final-head preview deployment as accepted until Vercel permits a build and reports success.
 
 ## Sources used for the first sample set
 
@@ -191,13 +218,17 @@ Live + checked into repository:
 - Bank of Canada commercial-paper reference: https://www.bankofcanada.ca/markets/market-operations-liquidity-provision/market-operations-programs-and-facilities/commercial-paper-purchase-program/
 - Canadian Fixed-Income Forum / Bank of Canada ABCP primer: https://www.bankofcanada.ca/2024/06/cfif-batvn-publishes-educational-primer-canadian-asset-backed-commercial-paper/
 
-## Acceptance gates
+## Acceptance status
 
-Before calling this expansion accepted:
-1. GitHub typecheck/build must pass.
-2. Existing assessment and ETF-connected browser flows must remain green.
-3. New `test:assets` cross-asset browser regression must pass.
-4. Vercel deployment status must be successful on the final head.
-5. Live DB regression must pass.
+Completed:
+1. GitHub typecheck/build passed.
+2. Existing assessment and ETF-connected browser flows remain green.
+3. `test:assets` cross-asset browser regression passed.
+4. Live DB regression passed.
+5. Source/freshness integrity checks passed.
+6. Watchlist/Profile RLS cleanup was applied and re-audited.
 
-This expansion does not close M4. Real cognitive testing, product pilot evidence, external-email canary and formal compliance/privacy review remain separate milestone gates.
+Blocked externally:
+7. Fresh Vercel deployment of the final head is blocked by Vercel's build-rate limit.
+
+This cross-asset implementation does not close M4. Real cognitive testing, product pilot evidence, external-email canary, remaining launch hardening and formal compliance/privacy review remain separate milestone gates.
