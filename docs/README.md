@@ -1,6 +1,6 @@
 # Investor DNA documentation map
 
-This directory contains two different kinds of documentation. Keep them separate when reading or changing the system.
+This directory contains three different kinds of documentation. Keep them separate when reading or changing the system.
 
 ## Canonical engineering documentation
 
@@ -35,13 +35,33 @@ These are active operating documents rather than source-code architecture:
 
 These files are evidence of what was tested or accepted at a point in time. They are **not the canonical architecture reference** when they conflict with current code or the engineering docs above.
 
-- `HARD-TEST-V1.9.md`
 - `MILESTONE-1-ENGINE-TRUST-REPORT.md`
 - `MILESTONE-2-PRODUCT-VALUE-REPORT.md`
 - `MILESTONE-3-PILOT-LAUNCH-READINESS-REPORT.md`
 - `M4-CROSS-ASSET-RESEARCH-EXPANSION.md`
 
-Do not silently rewrite historical reports to make them look current. Add a new report or update the canonical engineering documents instead.
+Do not silently rewrite historical reports to make them look current. Add a new report only when it records a real acceptance/evidence checkpoint; otherwise update the canonical engineering documentation.
+
+## Version hygiene
+
+Git history is the archive for ordinary source/docs. Do **not** keep convenience copies such as:
+
+- `*-old.*`
+- `*-backup.*`
+- `*-copy.*`
+- `*-final-final.*`
+- `*-v2.*` / `*-v3.*` when the number is not a persisted product contract
+
+Delete the superseded file after callers/references have moved to the canonical implementation.
+
+Versioned artifacts are retained only when the version is materially required for reproducibility or evidence, including:
+
+- applied Supabase migrations;
+- persisted questionnaire/scoring/Match versions;
+- controlled research protocols tied to the currently active research candidate;
+- milestone/evidence reports that document a real historical acceptance state.
+
+A historical convenience snapshot such as the former `HARD-TEST-V1.9.md` does not belong in the live tree once its useful content is covered by `TESTING.md` and milestone evidence.
 
 ## Documentation rule
 
