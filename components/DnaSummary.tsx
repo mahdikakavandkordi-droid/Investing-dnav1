@@ -21,12 +21,6 @@ const BEHAVIOR:Record<string,{label:string;help:string;high:string;mid:string;lo
   emotional_decision_control:{label:'Emotional decision control',help:'How well you keep stress and regret from taking over the decision.',high:'Composed',mid:'Mixed',low:'More emotion-sensitive'},
 };
 
-const EXPERIENCE_LABELS:Record<string,string>={
-  decision_experience:'Years making investment decisions',
-  product_exposure:'Range of investments used',
-  downturn_experience:'Experience through market declines',
-};
-
 const MATRIX=[
   ['COOLHAND','STRIKER','JACKPOT'],
   ['ANCHOR','MAVERICK','HIGHROLLER'],
@@ -44,11 +38,6 @@ function behaviorBand(key:string,value:unknown){
   const n=typeof value==='number'?value:NaN;const meta=BEHAVIOR[key];
   if(!meta||!Number.isFinite(n))return 'Not available';
   if(n>=70)return meta.high;if(n>=45)return meta.mid;return meta.low;
-}
-function experienceBand(value:unknown){
-  const n=typeof value==='number'?value:NaN;
-  if(!Number.isFinite(n))return 'Experience not available';
-  if(n<34)return 'Newer investor';if(n<67)return 'Some hands-on experience';return 'Experienced investor';
 }
 function relation(rt:unknown,rc:unknown){
   const a=typeof rt==='number'?rt:NaN,b=typeof rc==='number'?rc:NaN;
@@ -90,7 +79,6 @@ function pressureInsight(value:unknown){
 
 export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
   const behavioral=report?.behavioral_profile || dna.behavioral_profile || {};
-  const experience=report?.experience_profile || dna.experience_profile;
   const quality=report?.quality_profile || dna.quality_profile;
   const narrative=report?.narrative || dna.narrative || {};
   const context=report?.investment_context || dna.investment_context;
@@ -110,7 +98,7 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
         <h1>{archetype}</h1>
         <h2>{narrative.character||meta.title}</h2>
         <p className="dna-tagline">{meta.tagline}</p>
-        {quality?.clarification_recommended&&<span className="consistency-pill">A few answers need a second look</span>}
+        {quality?.clarification_recommended&&<span className="consistency-pill">A few answers point in different directions</span>}
       </div>
       <div className="dna-character" aria-hidden="true"><Image src={`/characters/${archetype.toLowerCase()}.png`} alt="" width={230} height={230} priority/></div>
     </section>
@@ -175,16 +163,6 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}) {
       </div>
     </section>}
 
-    <details className="result-details">
-      <summary>See the assessment details</summary>
-      <div className="details-body">
-        {experience&&<div className="detail-block"><h3>Investment experience</h3><p><strong>{experienceBand(experience.overall_score)}</strong></p><p className="muted fine">Experience helps us explain complexity. It does not raise or lower your risk-tolerance score.</p>{experience.dimensions&&Object.entries(experience.dimensions).map(([key,value])=><div className="fingerprint" key={key}><span>{EXPERIENCE_LABELS[key]||humanize(key)}</span><strong>{Number(value).toFixed(0)} / 3</strong></div>)}</div>}
-        {quality?.supported&&<div className="detail-block"><h3>Answer consistency</h3><p>{quality.clarification_recommended?'Some answers pointed in different directions. That lowers confidence in interpretation, but it does not change your risk score.':'Your paired answers were broadly consistent with one another.'}</p>{typeof quality.consistency_score==='number'&&<div className="fingerprint"><span>Research consistency signal</span><strong>{score(quality.consistency_score)} / 100</strong></div>}</div>}
-        <div className="detail-block"><h3>Behavior scores</h3>{Object.entries(behavioral).map(([key,value])=><div className="fingerprint" key={key}><span>{BEHAVIOR[key]?.label||humanize(key)}</span><strong>{score(value)} / 100</strong></div>)}</div>
-        <p className="notice">{narrative.methodology_note||report?.methodology_note||dna.methodology_note||'This assessment is a research-stage educational tool, not investment advice.'}</p>
-      </div>
-    </details>
-
-    <p className="muted fine result-disclaimer">Educational self-assessment only. This research candidate is not investment advice, and its cut points remain provisional until validation is complete.</p>
+    <p className="muted fine result-disclaimer">Educational self-assessment only. This research candidate is not investment advice.</p>
   </div>;
 }
