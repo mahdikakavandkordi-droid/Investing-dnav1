@@ -6,12 +6,22 @@ export default function Home(){
   <section className="hero">
    <div className="container">
     <div className="eyebrow">Investor DNA</div>
-    <h1>Know yourself.<br/>Understand your investments.</h1>
-    <p>Build your Investing DNA, then research how different investment structures fit the purpose and time horizon of your money.</p>
+    <h1>Know yourself.<br/>Then understand what fits.</h1>
+    <p>Start with how you handle risk. Add what this money is for. Then explore investments through a shared DNA language — from ETFs to GICs, T-Bills and bonds.</p>
     <div className="actions">
      <Link className="btn primary" href="/dna/assessment">Discover My Investing DNA</Link>
      <Link className="btn" href="/explore">Explore Investments</Link>
-     <Link className="btn" href="/profile?mode=signup">Create a free account</Link>
+    </div>
+    <p className="fine muted home-account-copy">
+     No account required to start. <Link href="/profile?mode=signup">Create one later if you want to save your DNA and watchlist →</Link>
+    </p>
+
+    <div className="home-belief">
+     <div className="home-belief-mark">✦</div>
+     <div>
+      <strong>Your risk profile and your money context are not the same thing.</strong>
+      <p>You can be comfortable with risk and still need a more stable structure for money you may need soon. Investor DNA keeps those decisions separate.</p>
+     </div>
     </div>
    </div>
   </section>
@@ -20,16 +30,16 @@ export default function Home(){
    <div className="container">
     <div className="grid3">
      <ValueCard
-      title="01 · Investing DNA"
-      copy="Map your risk tolerance, financial capacity and behavioral fingerprint."
+      title="01 · Know yourself"
+      copy="Understand your risk comfort, financial capacity, decision patterns and investing experience."
      />
      <ValueCard
-      title="02 · Investment DNA"
-      copy="Research ETFs and representative Canadian fixed-income, deposit and money-market structures using a common language."
+      title="02 · Add money context"
+      copy="Tell us the goal, time horizon, access needs and whether protecting principal matters for this pool of money."
      />
      <ValueCard
-      title="03 · DNA Match"
-      copy="Use personalized ETF compatibility today while non-ETF assets remain research-only until their Match models are separately validated."
+      title="03 · Research what fits"
+      copy="Compare Investment DNA across different structures. Personalized DNA Match is currently available for ETFs."
      />
     </div>
    </div>
