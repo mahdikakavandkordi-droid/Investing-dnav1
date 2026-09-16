@@ -1,6 +1,6 @@
 # Continue here — 2026-09-16
 
-This file is the short-lived project handoff snapshot. Canonical architecture belongs in `docs/ARCHITECTURE.md`; concrete navigation belongs in `docs/CODE-MAP.md`; intentional runtime removals belong in `docs/RUNTIME-RETIREMENTS.md`.
+This is the short-lived project handoff snapshot. Canonical architecture lives in `docs/ARCHITECTURE.md`; concrete route/runtime navigation lives in `docs/CODE-MAP.md`; product-journey invariants live in `docs/PRODUCT-UX.md`; intentional runtime removals live in `docs/RUNTIME-RETIREMENTS.md`.
 
 ## Current branch / PR
 
@@ -15,26 +15,87 @@ This file is the short-lived project handoff snapshot. Canonical architecture be
 - M3 Controlled Pilot Readiness: complete from engineering/operations perspective.
 - M4 Pilot Evidence & Pre-Launch Hardening: active and not closable by engineering alone.
 
-Still missing for M4 closeout: real cognitive participants, subsequent product-pilot evidence, external email/account canary, remaining launch hardening and formal Canadian compliance/privacy review.
+M4 still needs real cognitive participants, product-pilot evidence, an external magic-link/account canary, remaining launch hardening and formal Canadian compliance/privacy review.
 
 ## Current product shape
 
 - Platform brand: Investor DNA.
 - Assessment: Investing DNA (`v1.10-cognitive-candidate`, `dna-v1.10-research`).
 - Canonical Match: `investment-dna-match-v6`, currently ETF-only.
-- Generic research universe: 55 active instruments (40 ETF, 4 GIC, 3 T-Bill, 6 Bond, 1 CP reference, 1 ABCP reference).
-- Explore/Detail/Compare: cross-asset.
-- Screener/Match: ETF-scoped.
-- Watchlist/Profile: asset-neutral.
-- Portfolio Builder: frozen during M4 and no longer exists as a callable runtime subsystem. Only the historical `investment_portfolio_blueprints` table is retained, browser-inaccessible, with prior developer evidence.
+- Generic research universe: 55 active instruments: 40 ETF, 4 GIC, 3 T-Bill, 6 Bond, 1 Commercial Paper reference, 1 ABCP reference.
+- Explore / Detail / Compare: cross-asset.
+- Screener / Match: ETF-scoped.
+- Watchlist / Profile: asset-neutral.
+- Stocks remain intentionally out of the current M4 scope.
+- Portfolio Builder remains frozen and no longer exists as a callable runtime subsystem. Only historical evidence/data required for reproducibility is retained.
 
-## Canonical runtime boundaries
+## Product UX pass — current accepted journey
+
+A full audience-first polish pass was completed before further backend expansion. The current intended journey is:
+
+```text
+Landing
+ -> Investing DNA assessment
+ -> Result
+ -> Investment Context
+ -> ETF DNA Match
+ -> Explore / Detail / Compare
+ -> optional Watchlist / Account persistence
+```
+
+Canonical UX rules are in `docs/PRODUCT-UX.md`. The most important current invariants are:
+
+- deliver value before asking for an account;
+- guest users can complete the assessment and continue through same-session Result, Context, Match, Detail and Compare;
+- account creation is for persistence, Watchlist and returning later, not a gate in front of research value;
+- do not expose archetype outcomes before the assessment;
+- Investment Context is separate from Investor DNA and must not modify Risk Tolerance;
+- goal, time horizon, liquidity and principal-protection choices are explicit; do not preselect realistic answers;
+- canonical time-horizon buckets must match the backend contract;
+- missing/NULL Match scores remain unavailable/review, never `0/100`;
+- `review_required` pauses ranking and must not render a normal ranked ETF preview;
+- same-session guest ETF fit must not disappear when moving Match -> Detail or Match/Screener -> Compare;
+- full guest result state is intentionally ephemeral; a hard refresh may lose the unsaved full report while the narrow claim ticket remains available for optional account attachment.
+
+User-facing copy and hierarchy were also simplified across Landing, `/dna`, Result, Context, Match, Explore, Detail and Compare. Explore now includes client-side research search and uses the shared Investment DNA language rather than internal-model language.
+
+## Context backend correction discovered during UX review
+
+The UX pass exposed a real contract gap: Match v6 needs `principal_required` for complete money context, while the old form did not collect it consistently and signed-in returning users lacked a clean account-owned context update path.
+
+Current paths:
+
+```text
+guest same-session DNA
+ -> investing-dna-pilot / save_context
+ -> assessment_id + server-issued session token validation
+
+signed-in saved DNA
+ -> public.app_save_current_investment_context(...)
+ -> investor_private.save_current_investment_context(...)
+ -> ownership derived from auth.uid()
+```
+
+Applied/source-controlled migration:
+
+- `20260916004811_m4_current_account_context_rpc.sql`
+
+Live smoke verification confirms:
+
+- migration `20260916004811 / m4_current_account_context_rpc` exists in the migration ledger;
+- public `app_save_current_investment_context` exists and is `SECURITY INVOKER`;
+- anon execute: false;
+- authenticated execute: true;
+- private implementation exists;
+- live active research universe remains 55 instruments with the expected asset counts.
+
+## Current runtime boundaries
 
 ### Investing DNA assessment
 
-Browser routes call the `investing-dna-pilot` Edge Function for `start`, `questionnaire`, `save_answers`, `submit`, `save_context`, `claim_assessment`, `track_event` and `submit_feedback`.
+Browser routes call `investing-dna-pilot` for `start`, `questionnaire`, `save_answers`, `submit`, guest `save_context`, `claim_assessment`, `track_event` and `submit_feedback`.
 
-The public questionnaire DTO is deliberately narrow; scoring weight, construct metadata, raw alternate-language fields and internal version fields stay behind the service boundary.
+The public questionnaire DTO stays narrow; scoring weights, construct metadata and non-selected localized/internal model fields remain server-side.
 
 ### DNA Match
 
@@ -47,109 +108,83 @@ current app contracts
  -> match runs/results
 ```
 
-Retired live Match paths include v3, v4, v5, v5.1, the unversioned wrapper, old Investment DNA v1 view, and unused recommendation/explainability/intelligence/snapshot helpers. Historical Match result rows and applied migrations remain for audit/reproducibility.
+Retired v3/v4/v5/v5.1 and unused parallel Match/portfolio/app-shell paths remain retired. See `docs/RUNTIME-RETIREMENTS.md` before restoring anything created by an older migration.
 
-See `docs/RUNTIME-RETIREMENTS.md` before restoring anything created by an older migration.
+## Security / Advisor state
 
-## Recent engine / repository cleanup
-
-### Runtime retirement
-
-Applied and source-controlled retirement migrations:
-
-- `20260916000718_m4_retire_frozen_portfolio_runtime.sql`
-- `20260916001531_m4_retire_legacy_app_views_and_home.sql`
-- `20260916001822_m4_retire_legacy_match_runtimes.sql`
-- `20260916002108_m4_retire_unused_match_helpers.sql`
-- `20260916003509_m4_retire_stale_investment_intelligence_view.sql`
-
-Removed dead/parallel runtime includes:
-
-- Portfolio Builder generation/risk functions and views plus the empty risk-analysis table;
-- legacy `v_app_*`/current-DNA/home shell views and `get_investor_home()`;
-- Match v3/v4/v5/v5.1 and the unused unversioned Match wrapper;
-- `v_investment_dna_v1`;
-- unused Match recommendations/explainability/intelligence/snapshot/cleanup helpers plus the empty `investor_match_snapshots` table;
-- stale `v_investment_intelligence`, which had no live caller and still hard-coded `intelligence-v1.0` after the product moved to the v1.1 / Investment DNA v2 path.
-
-Current dependency-backed research paths such as `v_investment_catalog`, `v_investment_detail`, `v_investment_screener` and `v_investment_dna_v2` were explicitly retained.
-
-### Client/source cleanup
-
-- duplicate `FundConnection.tsx` removed; `InstrumentConnection.tsx` is canonical;
-- old ETF-specific Watchlist aliases/types were removed from `lib/investments.ts`; asset-neutral Watchlist lives in `lib/instruments.ts`;
-- browser `Question` type no longer advertises internal construct/scoring fields that the public API does not return;
-- unused `MatchContent` state prop removed;
-- obsolete `docs/HARD-TEST-V1.9.md` removed;
-- convenience `old`/`backup`/parallel-version copies are prohibited after callers migrate.
-
-### Hygiene enforcement
-
-Current CI includes contract tests, `tests/repo-hygiene.mjs`, normal TypeScript checking, `tsc --noEmit --noUnusedLocals --noUnusedParameters`, production build and all browser flow/fund/M4/cross-asset regressions.
-
-The hygiene guard now prevents current browser/Edge source from reintroducing the retired Portfolio, app-shell, Match and stale intelligence runtime names while still allowing immutable migration history to preserve them.
-
-## Verification status
-
-### Database
-
-- anonymous generic research search/detail/compare and ETF search/DNA/official-facts/research-context smoke tests passed after legacy-view retirement;
-- `supabase/tests/milestone_1_engine_trust.sql` requires legacy Match runtimes to be absent and canonical v6/current_match to be present;
-- final M1 engine trust regression passed on the live database after Match/runtime helper removals;
-- stale `v_investment_intelligence` retirement was schema-verified while current detail/screener/DNA-v2 views remained present;
-- synthetic DB regression data is transactionally rolled back.
-
-### GitHub CI
-
-- full CI run 200 passed on commit `eb874160a256749bf2ce789ffd45b18ab271b3f3`, including the unused-code gate and all browser suites;
-- additional migration/docs/hygiene commits were added after that success. Confirm CI on the eventual final head before calling the branch fully engineering-green.
-
-### Vercel
-
-The current Git integration is still being rejected by provider build-rate limiting (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the newest head is not deployment-verified until Vercel accepts a build.
-
-## Current Supabase Advisor state
-
-Latest security audit after runtime retirement:
+Latest post-UX backend security check:
 
 - anonymous browser-callable `SECURITY DEFINER` functions: 0;
 - authenticated browser-callable `SECURITY DEFINER` functions: 2:
   - `get_or_create_current_profile`
   - `is_current_profile`
-- `SECURITY DEFINER` views: 19 (down from 28 during this cleanup pass);
-- RLS-enabled/no-policy INFO findings: 32 (down from 33).
+- `SECURITY DEFINER` views: 19;
+- RLS-enabled/no-policy INFO findings: 32.
 
-Do not batch-convert the remaining 19 views to `security_invoker`. Dependency audit shows a mixture of current read-model views and useful diagnostics/operations views; each must be classified against grants/RLS/current callers before changing it.
+The new signed-in Context wrapper did **not** add a public definer function.
 
-Latest Performance Advisor currently reports only `unused_index` INFO findings (47). Because this is a young/pilot database, zero observed index usage is not enough reason to remove an index; trace expected query/FK workload first.
+Do not batch-convert the remaining 19 views to `security_invoker`; classify each against current callers, underlying grants and RLS semantics first.
+
+## Verification status
+
+### Database
+
+- live Context migration/permission smoke passed;
+- active research universe counts passed: ETF 40, GIC 4, T-Bill 3, Bond 6, Commercial Paper 1, ABCP 1;
+- prior M1/M4 security and runtime-retirement regressions remain the canonical DB proof set;
+- synthetic DB regression data is transactionally rolled back.
+
+### GitHub CI
+
+Full CI run **237** passed on commit:
+
+`58818e7484d3f75e021b08a6eb395739373a3d40`
+
+Passed gates:
+
+- contract tests;
+- repository hygiene;
+- TypeScript;
+- strict unused-code TypeScript gate;
+- optimized production build;
+- guest Investing DNA / Context / claim browser flow;
+- connected ETF / Match / Watchlist / Compare flow;
+- M4 launch/trust surfaces;
+- cross-asset Explore / Detail / Compare flow.
+
+This handoff update is a docs-only commit after that green run. Confirm CI on the final handoff head before calling the branch final-head green.
+
+### Vercel
+
+Git integration is still being rejected by provider build-rate limiting (`build-rate-limit`). GitHub production build is green, so this is not currently an application compile failure, but the newest head is not Vercel deployment-verified until the provider accepts a build.
 
 ## Documentation system
 
-Start here when returning to the codebase:
+Start here when returning:
 
 1. `README.md`
 2. `docs/README.md`
-3. `docs/CODE-MAP.md` — route → module → RPC/Edge → DB → test map
-4. `docs/ARCHITECTURE.md`
-5. `docs/ENGINEERING-GUIDE.md`
-6. `docs/DATABASE-AND-API.md`
-7. `docs/RUNTIME-RETIREMENTS.md` — what was intentionally removed and what replaced it
-8. `docs/TESTING.md`
-9. `docs/INVESTOR-DNA-ASSET-ARCHITECTURE.md`
-10. `docs/ASSESSMENT-METHODOLOGY.md`
-11. `docs/INVESTMENT-DNA-METHODOLOGY.md`
-
-Folder-level maps also exist under `app/`, `components/`, `lib/`, `supabase/`, `supabase/migrations/`, `supabase/tests/` and `tests/`.
+3. `docs/PRODUCT-UX.md` — audience journey and UX invariants
+4. `docs/CODE-MAP.md` — route -> module -> RPC/Edge -> DB -> test map
+5. `docs/ARCHITECTURE.md`
+6. `docs/ENGINEERING-GUIDE.md`
+7. `docs/DATABASE-AND-API.md`
+8. `docs/RUNTIME-RETIREMENTS.md`
+9. `docs/TESTING.md`
+10. `docs/INVESTOR-DNA-ASSET-ARCHITECTURE.md`
+11. `docs/ASSESSMENT-METHODOLOGY.md`
+12. `docs/INVESTMENT-DNA-METHODOLOGY.md`
 
 ## High-priority follow-ups
 
-1. Confirm final-head GitHub CI after the latest migration/docs/hygiene commits.
-2. Re-check final-head Vercel deployment once provider rate limiting permits a build.
-3. Classify the remaining 19 `SECURITY DEFINER` views individually; do not batch-change security mode without tracing grants/RLS/dependencies.
-4. Run a real external magic-link/account canary and use that real authenticated flow before changing the two remaining authenticated definer helpers solely to reduce Advisor counts.
-5. Keep source/as-of dates real; never manufacture freshness.
-6. Keep historical persisted model results/migrations only where reproducibility or evidence requires them; do not reintroduce duplicate live implementations.
-7. Complete M4 human evidence gates: 6 cognitive sessions, review/revision decision, 6 further sessions, candidate freeze, then the 20–50 user product pilot.
-8. Formal Canadian compliance/privacy review remains a launch gate.
+1. Confirm CI on this final handoff head.
+2. Re-check Vercel when provider rate limiting permits a deployment.
+3. Run a real external magic-link/account canary before changing the two remaining authenticated definer helpers merely to reduce Advisor counts.
+4. Classify the remaining 19 `SECURITY DEFINER` views individually; do not batch-change them.
+5. Start M4 human evidence: first 6 cognitive sessions, analyze, revise only if evidence requires it, then 6 more and candidate freeze.
+6. After cognitive freeze, run the planned 20–50 user product pilot.
+7. Formal Canadian compliance/privacy review remains a launch gate.
+8. Keep new non-ETF assets research-only for personalized Match until user evidence justifies asset-specific Match adapters.
+9. Keep Stocks out of the current scope; do not reopen them during M4.
 
 If this snapshot conflicts with current code or canonical engineering docs, update this snapshot rather than preserving stale handoff text.
