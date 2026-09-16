@@ -43,6 +43,29 @@ Landing
  -> optional Watchlist / Account persistence
 ```
 
+The Result / Context / Match portion is now implemented as one continuous journey rather than a Result -> Context -> Result loop:
+
+```text
+Result without context
+ -> Context (returnTo=/match)
+ -> Match
+```
+
+If context already exists, Result exposes the context-aware Match as the primary next step and keeps Edit Context secondary. Entering Context from Match also returns to Match after save.
+
+`returnTo` is restricted to known internal routes; arbitrary destinations are not accepted.
+
+## Journey continuity / My DNA hub
+
+Global `My DNA` still points to `/dna`, but `/dna` now acts as a continuity hub rather than always pretending the person is new.
+
+- if the same browser session still has a guest result in memory, the primary action becomes `View my current DNA`;
+- if a signed-in account has saved DNA, the primary action becomes `View my saved DNA`;
+- if neither exists, the normal `Start as guest` / account entry choices remain;
+- the pre-assessment explanatory copy remains neutral and unchanged, so this continuity work does not introduce archetype/result priming.
+
+Guest privacy semantics are intentionally unchanged: the full guest report is not persisted in localStorage just to make navigation easier. Same-session client navigation can recover the in-memory result, while a full reload does not turn the guest report into durable persistence.
+
 ## Match v7 — what changed
 
 M4 hard testing found that v6 was safe/consistent but collapsed several distinct money goals into almost the same fixed-income ordering.
@@ -175,32 +198,36 @@ Incomplete/stale ETF data is not converted into a fake score.
 
 - `supabase/tests/milestone_1_engine_trust.sql` — canonical v7/versioning/cache/safety/ETF-boundary checks.
 - `supabase/tests/m4_match_hard_stress.sql` — 18 adversarial v7 scenarios plus goal-differentiation assertions.
+- `tests/flow.cjs` — assessment recovery, Result -> Context -> Match continuity, guest `My DNA` hub continuity, account claim and pilot/browser contracts.
 - `tests/funds-flow.cjs` — browser E2E covering DNA-only -> Context save -> context-aware Match -> Detail -> Screener -> Compare, account/watchlist continuity, visible money-context summary and Goal Lens.
 - `docs/TESTING.md` — records browser coverage and the 168-scenario v6/v7 A-B acceptance evidence.
-- `docs/PRODUCT-UX.md` — canonical DNA-only/Review/numeric semantics, explanation hierarchy and current goal set.
+- `docs/PRODUCT-UX.md` — canonical DNA-only/Review/numeric semantics, journey continuity, explanation hierarchy and current goal set.
 - `docs/MATCH-UX-REVIEW.md` — user-facing Match v7 UX findings and implemented fixes.
 - `docs/INVESTMENT-DNA-METHODOLOGY.md` — canonical v7 / `goal-fit-v1` formulas and limitations.
 
 ## Browser E2E hardening result
 
-The connected Chrome/Playwright test now explicitly verifies:
+The connected Chrome/Playwright tests now explicitly verify:
 
 1. before context, Match/Screener/Detail show `DNA-only`, no numeric overall `/100` score and no false `Review` label;
 2. DNA-only Match cards do not expose context-aware component scores;
-3. Context exposes `Major purchase` and `Wealth preservation`;
-4. signed-in Context save sends the selected goal/horizon/liquidity/principal fields through the authenticated RPC;
-5. the same account/session becomes context-aware after save;
-6. Match visibly restates Major Purchase / More than 10 years / Low access need / no principal-protection requirement in the fixture;
-7. the canonical Goal Fit summary is visible under `How this goal changes Match`;
-8. the four plain-language component labels, watchout language and research CTA are present;
-9. the repeated generic available-card summary is absent;
-10. Match -> Detail and Screener -> Compare remain connected;
-11. account/watchlist retry and funnel analytics remain intact;
-12. mobile viewport remains free of horizontal overflow/runtime errors.
+3. Result without context points the user into Context with a safe `returnTo=/match` target;
+4. Context exposes `Major purchase` and `Wealth preservation`;
+5. guest and signed-in Context saves send goal/horizon/liquidity/principal fields through the correct ownership contract;
+6. after Context save, the user lands directly on `/match` instead of looping back through Result;
+7. safety-sensitive saved context can land directly in the review-required Match state without leaking a numeric score;
+8. the same account/session becomes context-aware after a normal valid context save;
+9. Match visibly restates Major Purchase / More than 10 years / Low access need / no principal-protection requirement in the fixture;
+10. the canonical Goal Fit summary is visible under `How this goal changes Match`;
+11. the four plain-language component labels, watchout language and research CTA are present;
+12. `My DNA` -> `/dna` exposes `View my current DNA` when a guest result still exists in memory and returns to Result without creating durable guest persistence;
+13. Match -> Detail and Screener -> Compare remain connected;
+14. account/watchlist retry and funnel analytics remain intact;
+15. mobile viewport remains free of horizontal overflow/runtime errors.
 
-Exact code/test head `6b685a1d418649d0fb660ded41c0d968c0f6649d` passed the full GitHub Actions verification: build, contract/hygiene/type checks, `test:flow`, `test:assessment`, expanded `test:funds`, `test:m4` and `test:assets`.
+Exact branch head `28201468c113610fbaa14bed8ba60170f2075c00` passed the full GitHub Actions verification after the journey/documentation updates: build, contract/hygiene/type checks, `test:flow`, `test:assessment`, `test:funds`, `test:m4` and `test:assets`.
 
-One intermediate `test:funds` failure was caused by a brittle case-sensitive text assertion against CSS-transformed `innerText`; the rendered UX was correct. The assertion was made presentation-safe and the full suite passed on the exact code/test head above.
+Several intermediate browser-test failures during the journey change were useful contract discoveries rather than hidden application-build failures: one assertion accidentally matched `/match` inside the Context query string, one asserted before the Match loading state settled, one attempted a full guest reload that correctly discarded the in-memory report, and one still expected the retired Context -> Result path. Those regressions were corrected to test the intended privacy and navigation contracts rather than weakening the product behavior.
 
 ## Security state
 
@@ -238,16 +265,18 @@ watchlist items: 0
 
 ## Deployment status
 
-Application code is engineering-green in GitHub CI, including localhost Next.js + real Chrome/Playwright flows. Vercel deployment of the latest branch remains blocked by the provider `build-rate-limit`; this is not an application build failure.
+GitHub CI is green for the latest verified branch head above, including localhost Next.js + real Chrome/Playwright flows.
 
-Because the site is not live yet, local/CI browser verification is the active development acceptance path. A deployed-preview canary still needs to be run separately when Vercel is available again.
+A fresh Vercel verification was attempted on 2026-09-16 after the journey changes, but the Vercel connector returned `403 Forbidden` and explicitly requires re-authentication for the project/team scope. Therefore the previous provider build-rate-limit observation should not be treated as the current verified deployment state.
+
+Until Vercel access is re-authenticated, local/CI browser verification remains the engineering acceptance path. A deployed-preview canary must still be run separately once connector access is restored.
 
 Do not claim Magic Link canary PASS until a real external inbox/link round trip succeeds.
 
 ## High-priority follow-ups
 
-1. Continue UX/product hardening with localhost/CI browser verification while Vercel is rate-limited.
-2. Re-run/confirm Vercel deployment after the provider build-rate-limit clears and exercise the real deployed preview.
+1. Re-authenticate the Vercel connection for the project scope, confirm the latest branch deployment and exercise the deployed preview.
+2. Continue targeted UX/product hardening in CI/local browser while deployment access is being restored.
 3. Run real external Magic Link Canary A/B.
 4. Run first 6 cognitive sessions.
 5. Analyze Round 1 and revise only on documented evidence triggers.
