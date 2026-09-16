@@ -30,18 +30,41 @@ jobs:
             echo "Missing VERCEL_PREVIEW_SHARE_TOKEN GitHub Actions secret"
             exit 2
           fi
-          echo "Waiting for ${TEST_ORIGIN}"
+
+          echo "Waiting for protected preview endpoint"
+          cookie_jar=/tmp/vercel-preview-cookies.txt
           for i in $(seq 1 30); do
-            code=$(curl -L -sS -o /tmp/preview.html -w '%{http_code}' "${TEST_ORIGIN}/dna/assessment" || true)
+            rm -f "${cookie_jar}"
+
+            # Bootstrap Vercel's protected-preview share session without exposing
+            # the token in repository code. The cookie jar is then reused for
+            # the actual readiness request.
+            curl -L -sS \
+              -c "${cookie_jar}" \
+              -b "${cookie_jar}" \
+              --get \
+              --data-urlencode "_vercel_share=${VERCEL_PREVIEW_SHARE_TOKEN}" \
+              -o /tmp/share-bootstrap.html \
+              "${TEST_ORIGIN}/" >/dev/null || true
+
+            code=$(curl -L -sS \
+              -c "${cookie_jar}" \
+              -b "${cookie_jar}" \
+              -o /tmp/preview.html \
+              -w '%{http_code}' \
+              "${TEST_ORIGIN}/dna/assessment" || true)
+
             if [ "$code" = "200" ]; then
-              echo "Preview endpoint is responding"
+              echo "Protected preview endpoint is responding"
               break
             fi
+
             echo "Attempt $i: HTTP ${code}"
             if [ "$i" = "30" ]; then
-              echo "Preview never became reachable"
+              echo "Protected preview never became reachable"
               exit 1
             fi
             sleep 4
           done
+
           node tests/run-deployed-preview-canary.cjs
