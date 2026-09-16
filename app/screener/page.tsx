@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {rpc} from '@/lib/supabase';
 import {formatMetric} from '@/lib/investments';
 import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
+import {readDraft} from '@/lib/dna';
 import type {Fund} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import type {AppState,MatchItem} from '@/lib/dna';
@@ -52,7 +53,20 @@ export default function Screener(){
  useEffect(()=>{
   let active=true;
   setState(null);
-  if(!user)return;
+
+  if(!user){
+   const local=readDraft(null);
+   if(local?.result){
+    setState({
+     has_profile:false,
+     assessment_id:local.session.assessment_id,
+     dna:local.result.result,
+     report:local.result.report?.report||local.result.result,
+     matches:local.result.match
+    });
+   }
+   return;
+  }
 
   rpc<AppState>('get_current_investor_app_state')
    .then(data=>{if(active)setState(data)})
@@ -172,7 +186,7 @@ function MatchStatus({
  return <div className="notice">
   <p>{userPresent
    ? 'Complete or save your Investing DNA to add personal compatibility to the ETF screener.'
-   : 'You can screen ETFs without an account. Sign in after completing Investing DNA to add your personal fit layer.'}</p>
+   : 'You can screen ETFs without an account. Complete Investing DNA to add your same-session compatibility layer; create an account only if you want to keep it across visits.'}</p>
  </div>;
 }
 
