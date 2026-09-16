@@ -34,6 +34,7 @@ const INITIAL_FORM:ContextForm={
 };
 
 const CURRENT_HORIZONS=['lt_1y','1_3y','3_5y','5_10y','gt_10y'] as const;
+const ALLOWED_RETURN_PATHS=new Set(['/dna/result','/match']);
 
 /**
  * Money/goal context kept separate from Investor DNA scoring.
@@ -95,6 +96,7 @@ export default function InvestmentContext(){
 
  const coreReady=!!form.goal&&!!form.time_horizon&&!!form.liquidity_need&&!!form.principal_required;
  const hasAssessment=!!draft?.result||!!accountAssessmentId;
+ const cancelTarget=editing?'/match':'/dna/result';
 
  async function save(){
   if(!hasAssessment||!coreReady)return;
@@ -131,7 +133,7 @@ export default function InvestmentContext(){
     writeEphemeralResult(next);
    }
 
-   router.push('/dna/result');
+   router.push(resolveReturnTarget(editing));
   }catch(e){
    setError(e instanceof Error?e.message:'Unable to save investment context.');
   }finally{
@@ -156,7 +158,7 @@ export default function InvestmentContext(){
     <button className="btn primary" disabled={busy||!coreReady} onClick={()=>void save()}>
      {busy?'Saving…':editing?'Update this context':'Use this context'}
     </button>
-    <Link className="btn" href="/dna/result">{editing?'Cancel':'Skip for now'}</Link>
+    <Link className="btn" href={cancelTarget}>{editing?'Cancel':'Skip for now'}</Link>
    </div>
    {!coreReady&&<p className="muted fine">Choose the four core context answers above to create a context-aware Match. Optional personal details can stay blank.</p>}
    <p className="muted fine">Context improves compatibility signals; it does not turn them into investment advice.</p>
@@ -273,4 +275,12 @@ function formFromContext(context:InvestmentContextProfile):ContextForm{
   liquidity_need:context.liquidity_need||'',
   principal_required:context.principal_required||''
  };
+}
+
+function resolveReturnTarget(editing:boolean){
+ if(typeof window==='undefined')return editing?'/match':'/dna/result';
+ const requested=new URLSearchParams(window.location.search).get('returnTo');
+ return requested&&ALLOWED_RETURN_PATHS.has(requested)
+  ? requested
+  : editing?'/match':'/dna/result';
 }
