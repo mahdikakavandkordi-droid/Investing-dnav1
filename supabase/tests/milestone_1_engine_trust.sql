@@ -32,18 +32,18 @@ end $$;
 
 create temp table m1_state(key text primary key,val text) on commit drop;
 
--- Legacy engines are historical/internal only.
-set local role anon;
+-- Legacy Match runtimes are retired, not parallel live implementations.
 do $$ begin
- begin perform public.calculate_investment_match_v51(gen_random_uuid()); raise exception 'legacy v5.1 unexpectedly callable by anon'; exception when insufficient_privilege then null; end;
- begin perform public.calculate_investment_match_v4(gen_random_uuid()); raise exception 'legacy v4 unexpectedly callable by anon'; exception when insufficient_privilege then null; end;
+ if to_regprocedure('public.calculate_investment_match_v3(uuid)') is not null then raise exception 'legacy Match v3 still exists'; end if;
+ if to_regprocedure('public.calculate_investment_match_v4(uuid)') is not null then raise exception 'legacy Match v4 still exists'; end if;
+ if to_regprocedure('public.calculate_investment_match_v5(uuid)') is not null then raise exception 'legacy Match v5 still exists'; end if;
+ if to_regprocedure('public.calculate_investment_match_v51(uuid)') is not null then raise exception 'legacy Match v5.1 still exists'; end if;
+ if to_regprocedure('public.calculate_investment_match(uuid)') is not null then raise exception 'unversioned Match wrapper still exists'; end if;
+ if to_regclass('public.v_investment_dna_v1') is not null then raise exception 'legacy Investment DNA v1 view still exists'; end if;
+ if to_regprocedure('public.calculate_investment_match_v6(uuid)') is null then raise exception 'canonical Match v6 missing'; end if;
+ if to_regprocedure('investor_private.current_match(uuid)') is null then raise exception 'canonical current_match missing'; end if;
+ if to_regclass('public.v_investment_dna_v2') is null then raise exception 'canonical Investment DNA v2 view missing'; end if;
 end $$;
-reset role;
-set local role authenticated;
-do $$ begin
- begin perform public.calculate_investment_match_v51(gen_random_uuid()); raise exception 'legacy v5.1 unexpectedly callable by authenticated'; exception when insufficient_privilege then null; end;
-end $$;
-reset role;
 
 -- Canonical run, explicit versions, stable reuse, and reader consistency.
 do $$ declare aid uuid; m1 jsonb; m2 jsonb; ex jsonb; intel jsonb; begin
