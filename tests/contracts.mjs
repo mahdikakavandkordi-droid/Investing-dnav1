@@ -35,6 +35,7 @@ assert.match(questionnaireBlock,/prompt: language === 'fr'/);
 assert.doesNotMatch(questionnaireBlock,/\.\.\.row/);
 assert.doesNotMatch(questionnaireBlock,/\.select\([^)]*weight/);
 assert.doesNotMatch(questionnaireBlock,/construct_role/);
+assert.match(edgeSource,/anonymous_code: participant\.anonymous_code/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
@@ -47,4 +48,9 @@ assert.match(profileSource,/history\.replaceState\(history\.state,''\s*,\s*url\.
 assert.match(profileSource,/access_token/);
 assert.match(profileSource,/refresh_token/);
 
-console.log('PASS assessment envelope, scale options, missing versus zero score, guest recovery/isolation, narrow questionnaire DTO, and explicit Magic Link callback hygiene');
+const assessmentSource=readFileSync(new URL('../app/dna/assessment/page.tsx',import.meta.url),'utf8');
+assert.match(assessmentSource,/COGNITIVE_V1_10/);
+assert.match(assessmentSource,/draft\.session\.anonymous_code/);
+assert.match(assessmentSource,/Research code:/);
+
+console.log('PASS assessment envelope, scale options, missing versus zero score, guest recovery/isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, and cognitive research-code continuity');
