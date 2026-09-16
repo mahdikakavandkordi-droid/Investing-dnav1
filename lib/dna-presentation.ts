@@ -51,8 +51,8 @@ export function behaviorBand(key:string,value:unknown){
 }
 
 export function riskRelationship(tolerance:unknown,capacity:unknown){
- const riskTolerance=typeof tolerance==='number'?tolerance:NaN;
- const riskCapacity=typeof capacity==='number'?capacity:NaN;
+ const riskTolerance=typeof tolerance==='number'?valueOrNan(tolerance):NaN;
+ const riskCapacity=typeof capacity==='number'?valueOrNan(capacity):NaN;
  if(!Number.isFinite(riskTolerance)||!Number.isFinite(riskCapacity))return '';
 
  const difference=riskCapacity-riskTolerance;
@@ -64,6 +64,8 @@ export function riskRelationship(tolerance:unknown,capacity:unknown){
  }
  return 'Your comfort with risk and your financial capacity are reasonably close to one another.';
 }
+
+function valueOrNan(value:number){return Number.isFinite(value)?value:NaN;}
 
 export function formatInvestmentContext(key:string,value:unknown){
  if(value===null||value===undefined||value==='')return 'Not provided';
@@ -95,6 +97,11 @@ export function formatInvestmentContext(key:string,value:unknown){
    high:'High — easy access matters',
    medium:'Medium — some access matters',
    low:'Low — can stay invested'
+  },
+  principal_required:{
+   yes:'Yes — full amount must be protected',
+   no:'No — market loss can be accepted at that time',
+   unsure:'Not sure yet'
   }
  };
  return maps[key]?.[String(value)]||humanize(String(value));
