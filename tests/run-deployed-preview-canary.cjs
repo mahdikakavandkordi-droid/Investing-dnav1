@@ -12,6 +12,7 @@ const sourcePath = path.join(__dirname, 'deployed-preview-flow.cjs');
 const source = fs.readFileSync(sourcePath, 'utf8');
 const marker = "  const response = await page.goto(ORIGIN + '/dna/assessment', { waitUntil: 'domcontentloaded' });";
 const screenerMarker = "  await page.goto(ORIGIN + '/screener');";
+const compareMarker = "  await page.getByRole('heading', { name: 'Compare Investment DNA side by side' }).waitFor();";
 
 if (!source.includes(marker)) {
   console.error('Deployed-preview canary bootstrap marker not found.');
@@ -20,6 +21,10 @@ if (!source.includes(marker)) {
 if (!source.includes(screenerMarker)) {
   console.error('Deployed-preview canary screener navigation marker not found.');
   process.exit(4);
+}
+if (!source.includes(compareMarker)) {
+  console.error('Deployed-preview canary compare marker not found.');
+  process.exit(5);
 }
 
 const bootstrap = [
@@ -43,10 +48,21 @@ const screenerNavigation = [
   "  await page.waitForURL(url => url.pathname === '/screener');"
 ].join('\n');
 
+// The deployed Compare route resolves its selected-instrument research
+// asynchronously after the shell/heading renders. Wait for both expected
+// comparison rows before reading the page body so network/render timing cannot
+// turn a healthy deployment into a false negative.
+const compareWait = [
+  compareMarker,
+  "  await page.getByText('ZAG', { exact: true }).first().waitFor();",
+  "  await page.getByText('VBAL', { exact: true }).first().waitFor();"
+].join('\n');
+
 const runtimePath = path.join(__dirname, '.deployed-preview-flow.runtime.cjs');
 const runtimeSource = source
   .replace(marker, bootstrap)
-  .replace(screenerMarker, screenerNavigation);
+  .replace(screenerMarker, screenerNavigation)
+  .replace(compareMarker, compareWait);
 fs.writeFileSync(runtimePath, runtimeSource, 'utf8');
 
 try {
