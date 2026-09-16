@@ -24,6 +24,8 @@ Target: **12 participants**, recommended as 6 + review + 6.
 
 The dedicated route requires a **moderator-only research invite code**, clears any development draft and then routes into `COGNITIVE_V1_10`, so regular DEV responses cannot silently contaminate the cognitive cohort. The raw code must not be committed to source control, embedded in a participant URL, posted publicly, or copied into analytics. The backend stores only its SHA-256 hash.
 
+After the protected session starts, the assessment displays the backend-generated pseudonymous research code (`P-...`). Copy that exact code into the cognitive worksheet before proceeding. That code, not a participant name or the moderator’s `C01`–`C12` sequence, is the canonical join key to the database record.
+
 See `docs/COGNITIVE-TEST-PROTOCOL.md` for the moderator procedure and revision rules.
 
 ### Product pilot
@@ -60,6 +62,27 @@ Tracked events:
 Raw analytics and feedback tables are not browser-readable or browser-writable. The Edge Function is the write boundary.
 
 ## Founder/admin summary queries
+
+These queries are for trusted database/admin use, not browser exposure.
+
+### Cognitive session lookup by pseudonymous research code
+
+Use the `P-...` value written on the worksheet. Do not join using a participant name or email.
+
+```sql
+select
+  p.anonymous_code as research_code,
+  a.id as assessment_id,
+  a.status,
+  a.started_at,
+  a.completed_at,
+  a.language_code,
+  a.questionnaire_version,
+  a.model_version
+from public.pilot_participants p
+join public.assessments a on a.pilot_participant_id = p.id
+where p.anonymous_code = 'P-XXXXXXXX';
+```
 
 ### Funnel totals
 
@@ -132,6 +155,9 @@ Before each moderated cognitive session:
 - open `/pilot/cognitive`
 - enter the moderator-only invite code privately; do not send a URL containing the code
 - confirm the next page shows `Cognitive research session · v1.10`
+- start the protected assessment
+- copy the displayed backend `P-...` Research code exactly into the worksheet
+- do not record unnecessary PII in the worksheet
 - do not explain scoring or expected archetype
 - allow unaided completion first
 - run the cognitive debrief from the protocol
