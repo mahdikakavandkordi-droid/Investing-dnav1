@@ -69,6 +69,21 @@ export default function Profile(){
   return ()=>{active=false};
  },[]);
 
+ // The implicit Magic Link flow returns access/refresh tokens in the URL
+ // fragment. Only remove that fragment after Supabase has established a real
+ // authenticated session. Safe query intent such as save=dna/investment= stays.
+ useEffect(()=>{
+  if(!user||!location.hash)return;
+  const fragment=new URLSearchParams(location.hash.slice(1));
+  const authKeys=[
+   'access_token','refresh_token','expires_in','expires_at','token_type','type',
+   'error','error_code','error_description'
+  ];
+  if(!authKeys.some(key=>fragment.has(key)))return;
+  const url=new URL(location.href);
+  history.replaceState(history.state,'',url.pathname+url.search);
+ },[user?.id]);
+
  // Load account state and the limited guest claim/recovery state whenever auth
  // identity changes or the user explicitly retries a failed account read.
  useEffect(()=>{
