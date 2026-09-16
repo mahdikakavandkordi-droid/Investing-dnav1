@@ -1,0 +1,43 @@
+name: Deployed Preview Canary
+
+on:
+  push:
+    branches:
+      - codex/platform-v4-account-continuity
+  workflow_dispatch:
+
+jobs:
+  preview-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - name: Confirm Chrome
+        run: test -x /usr/bin/google-chrome
+      - name: Wait for branch preview and run deployed flow
+        env:
+          TEST_ORIGIN: https://invasting-dna-agq7-git-codex-pla-e975cf-mahdikakavandkordi-9201.vercel.app
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set -e
+          echo "Waiting for ${TEST_ORIGIN}"
+          for i in $(seq 1 30); do
+            code=$(curl -L -sS -o /tmp/preview.html -w '%{http_code}' "${TEST_ORIGIN}/dna/assessment" || true)
+            if [ "$code" = "200" ]; then
+              echo "Preview is reachable"
+              break
+            fi
+            echo "Attempt $i: HTTP ${code}"
+            if [ "$i" = "30" ]; then
+              echo "Preview never became publicly reachable"
+              head -c 1000 /tmp/preview.html || true
+              exit 1
+            fi
+            sleep 4
+          done
+          node tests/deployed-preview-flow.cjs
