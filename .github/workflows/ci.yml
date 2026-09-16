@@ -19,6 +19,7 @@ jobs:
       - run: npm test
       - run: npm run test:hygiene
       - run: npm run typecheck
+      - run: npm run typecheck:hygiene
       - run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://dna-test.supabase.co
