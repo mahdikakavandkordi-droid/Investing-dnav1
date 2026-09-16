@@ -195,12 +195,14 @@ export type AssessmentSession = {
 // Guest recovery / claim state
 // ---------------------------------------------------------------------------
 
+export type AnswerValue = string|string[];
+
 export type Draft = {
   version: 1;
   createdAt: number;
   ownerId: string|null;
   session: AssessmentSession;
-  answers: Record<string,string>;
+  answers: Record<string,AnswerValue>;
   index: number;
   result?: Submission;
 };
@@ -342,7 +344,7 @@ export function writeEphemeralResult(d:Draft):boolean {
 // Small deterministic presentation / transport helpers
 // ---------------------------------------------------------------------------
 
-export function answerRows(answers:Record<string,string>){
+export function answerRows(answers:Record<string,AnswerValue>){
   return Object.entries(answers).map(([question_id,value])=>({
     question_id,
     answer_value:{value}
