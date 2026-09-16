@@ -307,7 +307,7 @@ const testAccess=[
  check('same-session guest can open full ETF DNA Match without creating an account');
 
  await page.getByRole('link',{name:'Add investment context'}).first().click();
- await page.waitForURL('**/dna/context');
+ await page.waitForURL('**/dna/context?returnTo=/match');
  await page.getByRole('heading',{name:'Tell us what this money is for.'}).waitFor();
  assert.equal(await page.getByLabel('Primary goal').inputValue(),'');
  assert.equal(await page.getByLabel('When might you first need this money?').inputValue(),'');
@@ -319,12 +319,16 @@ const testAccess=[
  await page.getByLabel('How important is quick access?').selectOption('medium');
  await page.getByLabel(/must the full amount be protected/i).selectOption('yes');
  await page.getByRole('button',{name:'Use this context'}).click();
- await page.waitForURL('**/dna/result');
+ await page.waitForURL('**/match');
  assert.equal(contextSaves,1);
- assert.match(await page.locator('body').innerText(),/This money now has context/);
- assert.match(await page.locator('body').innerText(),/DNA Match paused/i);
+ assert.match(await page.locator('body').innerText(),/Matching paused/i);
+ assert.match(await page.locator('body').innerText(),/Review this money before ranking ETFs/i);
  assert.doesNotMatch(await page.locator('body').innerText(),/82\/100/);
- check('investment context requires explicit core choices, sends principal protection, and respects review-required Match state');
+ check('investment context requires explicit core choices, sends principal protection, and returns directly to the review-required Match state');
+
+ await page.goto(ORIGIN+'/dna/result');
+ await page.getByRole('heading',{name:'Your money context is ready.'}).waitFor();
+ assert.match(await page.locator('body').innerText(),/DNA Match paused/i);
 
  const feedback=await ctx.newPage();
  await feedback.goto(ORIGIN+'/feedback');
