@@ -326,9 +326,11 @@ const testAccess=[
  assert.doesNotMatch(await page.locator('body').innerText(),/82\/100/);
  check('investment context requires explicit core choices, sends principal protection, and returns directly to the review-required Match state');
 
- await page.goto(ORIGIN+'/dna/result');
+ await page.getByRole('link',{name:'My DNA',exact:true}).click();
+ await page.waitForURL(url=>url.pathname==='/dna/result');
  await page.getByRole('heading',{name:'Your money context is ready.'}).waitFor();
  assert.match(await page.locator('body').innerText(),/DNA Match paused/i);
+ check('guest Result and Match stay connected within the same privacy-limited browser session');
 
  const feedback=await ctx.newPage();
  await feedback.goto(ORIGIN+'/feedback');
