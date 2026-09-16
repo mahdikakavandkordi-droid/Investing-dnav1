@@ -6,10 +6,10 @@ import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import {trackProductEvent} from '@/lib/analytics';
 import {readDraft} from '@/lib/dna';
+import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 import type {MatchItem} from '@/lib/dna';
 import {instrumentWatchlist,saveInstrument,removeInstrument} from '@/lib/instruments';
 import {matchEligible,assetLabel} from '@/lib/instrument-model';
-import {formatMetric} from '@/lib/investments';
 import type {Fit} from '@/lib/investments';
 
 /**
@@ -146,35 +146,39 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
 }
 
 function GuestEtfFit({match}:{match:MatchItem}){
- const label=match.explanation?.fit_label||match.fit_label||match.recommendation_tier?.replaceAll('_',' ')||'Compatibility signal';
+ const score=matchScorePresentation(match);
  const strengths=match.explanation?.strengths||match.strengths||[];
  const watchouts=match.explanation?.watchouts||match.watchouts||[];
 
  return <div className="guest-fit-block">
   <div className="eyebrow">Your current-session ETF match</div>
-  <div className="kpi">{match.match_score==null?'Review':`${Math.round(match.match_score)} / 100`}</div>
-  <strong>{label}</strong>
+  <div className="kpi">{score.text}</div>
+  <strong>{matchFitLabel(match)}</strong>
   {match.explanation?.summary&&<p>{match.explanation.summary}</p>}
   {strengths.length>0&&<p className="muted fine">Why it may fit: {strengths[0]}</p>}
   {watchouts.length>0&&<p className="muted fine">What to consider: {watchouts[0]}</p>}
-  <p className="muted fine">This is a compatibility signal from your current guest session, not a recommendation to buy.</p>
+  <p className="muted fine">{score.kind==='context_only'
+   ? 'This is a DNA-only comparison. Add investment context before treating it as a context-aware Match.'
+   : 'This is a compatibility signal from your current guest session, not a recommendation to buy.'}</p>
  </div>;
 }
 
 /** ETF-only fit presentation for persisted accounts. */
 function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
  if(fit?.status==='available'&&fit.fit){
-  const label=fit.fit.explanation?.fit_label||fit.fit.recommendation_tier.replaceAll('_',' ');
+  const score=matchScorePresentation(fit.fit);
   const watchouts=fit.fit.explanation?.watchouts?.filter(item=>typeof item==='string')||[];
   return <>
-   <div className="kpi">{fit.fit.match_score==null?'Review':formatMetric(fit.fit.match_score,' / 100',0)}</div>
-   <p>{label}</p>
+   <div className="kpi">{score.text}</div>
+   <p>{matchFitLabel(fit.fit)}</p>
    {fit.fit.explanation?.summary&&<p>{fit.fit.explanation.summary}</p>}
    {watchouts.length>0&&<>
     <h3>What to consider</h3>
     <ul>{watchouts.map((item,index)=><li key={index}>{item}</li>)}</ul>
    </>}
-   <p className="muted fine">Based on your saved DNA and available ETF data. A compatibility signal, not a recommendation to buy.</p>
+   <p className="muted fine">{score.kind==='context_only'
+    ? 'Add the goal, horizon, access and principal-protection needs for this money before a numeric Match score is shown.'
+    : 'Based on your saved DNA and available ETF data. A compatibility signal, not a recommendation to buy.'}</p>
   </>;
  }
 
