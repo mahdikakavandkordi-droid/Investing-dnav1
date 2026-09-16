@@ -32,7 +32,7 @@ end $$;
 
 create temp table m1_state(key text primary key,val text) on commit drop;
 
--- Legacy Match runtimes are retired, not parallel live implementations.
+-- Legacy Match runtimes/readers are retired, not parallel live implementations.
 do $$ begin
  if to_regprocedure('public.calculate_investment_match_v3(uuid)') is not null then raise exception 'legacy Match v3 still exists'; end if;
  if to_regprocedure('public.calculate_investment_match_v4(uuid)') is not null then raise exception 'legacy Match v4 still exists'; end if;
@@ -40,13 +40,19 @@ do $$ begin
  if to_regprocedure('public.calculate_investment_match_v51(uuid)') is not null then raise exception 'legacy Match v5.1 still exists'; end if;
  if to_regprocedure('public.calculate_investment_match(uuid)') is not null then raise exception 'unversioned Match wrapper still exists'; end if;
  if to_regclass('public.v_investment_dna_v1') is not null then raise exception 'legacy Investment DNA v1 view still exists'; end if;
+ if to_regprocedure('public.get_investment_recommendations(uuid,integer)') is not null then raise exception 'legacy recommendations reader still exists'; end if;
+ if to_regprocedure('public.get_explainable_match(uuid,integer)') is not null then raise exception 'legacy explainable reader still exists'; end if;
+ if to_regprocedure('public.get_investment_match_intelligence(uuid)') is not null then raise exception 'legacy intelligence reader still exists'; end if;
+ if to_regprocedure('public.capture_current_match_snapshot(uuid)') is not null then raise exception 'unused Match snapshot writer still exists'; end if;
+ if to_regprocedure('public.cleanup_match_result_versions(uuid,text)') is not null then raise exception 'unused Match cleanup helper still exists'; end if;
+ if to_regclass('public.investor_match_snapshots') is not null then raise exception 'empty legacy Match snapshot table still exists'; end if;
  if to_regprocedure('public.calculate_investment_match_v6(uuid)') is null then raise exception 'canonical Match v6 missing'; end if;
  if to_regprocedure('investor_private.current_match(uuid)') is null then raise exception 'canonical current_match missing'; end if;
  if to_regclass('public.v_investment_dna_v2') is null then raise exception 'canonical Investment DNA v2 view missing'; end if;
 end $$;
 
--- Canonical run, explicit versions, stable reuse, and reader consistency.
-do $$ declare aid uuid; m1 jsonb; m2 jsonb; ex jsonb; intel jsonb; begin
+-- Canonical run, explicit versions and stable reuse.
+do $$ declare aid uuid; m1 jsonb; m2 jsonb; begin
  aid:=pg_temp.m1_make_assessment('normal');
  m1:=investor_private.current_match(aid); m2:=investor_private.current_match(aid);
  if m1->>'model_version'<>'investment-dna-match-v6' then raise exception 'wrong canonical model'; end if;
@@ -54,9 +60,6 @@ do $$ declare aid uuid; m1 jsonb; m2 jsonb; ex jsonb; intel jsonb; begin
  if m1#>>'{versions,questionnaire}'<>'v1.10-cognitive-candidate' or m1#>>'{versions,investor_dna}'<>'dna-v1.10-research' then raise exception 'wrong questionnaire/DNA metadata'; end if;
  if m1->>'run_id' is distinct from m2->>'run_id' then raise exception 'unchanged inputs should reuse run'; end if;
  if (m1->>'eligible_count')::int<1 or m1->>'status'<>'available' then raise exception 'normal scenario expected available options'; end if;
- ex:=public.get_explainable_match(aid,5); intel:=public.get_investment_match_intelligence(aid);
- if ex->>'run_id' is distinct from m1->>'run_id' or ex->>'model_version'<>'investment-dna-match-v6' then raise exception 'explainable reader drift'; end if;
- if intel->>'run_id' is distinct from m1->>'run_id' or intel->>'model_version'<>'investment-dna-match-v6' then raise exception 'intelligence reader drift'; end if;
  insert into m1_state values('aid',aid::text),('old_run',m1->>'run_id'),('old_data_version',m1->>'data_version');
 end $$;
 
