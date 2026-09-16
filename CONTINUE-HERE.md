@@ -1,12 +1,13 @@
 # Continue here — 2026-09-16
 
-This is the short-lived project handoff snapshot. Canonical architecture lives in `docs/ARCHITECTURE.md`; concrete route/runtime navigation lives in `docs/CODE-MAP.md`; product-journey invariants live in `docs/PRODUCT-UX.md`; intentional runtime removals live in `docs/RUNTIME-RETIREMENTS.md`.
+This is the short-lived project handoff snapshot. Canonical architecture lives in `docs/ARCHITECTURE.md`; route/runtime navigation in `docs/CODE-MAP.md`; product-journey invariants in `docs/PRODUCT-UX.md`; intentional runtime removals in `docs/RUNTIME-RETIREMENTS.md`.
 
 ## Current branch / PR
 
 - branch: `codex/platform-v4-account-continuity`
 - PR: #2
-- PR remains open and draft; do not merge without an explicit merge decision.
+- PR is open, draft and mergeable.
+- Do not merge without an explicit merge decision.
 
 ## Milestone state
 
@@ -15,23 +16,21 @@ This is the short-lived project handoff snapshot. Canonical architecture lives i
 - M3 Controlled Pilot Readiness: complete from engineering/operations perspective.
 - M4 Pilot Evidence & Pre-Launch Hardening: active and not closable by engineering alone.
 
-M4 still needs real cognitive participants, product-pilot evidence, an external magic-link/account canary, remaining launch hardening and formal Canadian compliance/privacy review.
+M4 still needs real cognitive participants, later product-pilot evidence, a real external magic-link/account canary and formal Canadian compliance/privacy review.
 
 ## Current product shape
 
 - Platform brand: Investor DNA.
 - Assessment: Investing DNA (`v1.10-cognitive-candidate`, `dna-v1.10-research`).
 - Canonical Match: `investment-dna-match-v6`, currently ETF-only.
-- Generic research universe: 55 active instruments: 40 ETF, 4 GIC, 3 T-Bill, 6 Bond, 1 Commercial Paper reference, 1 ABCP reference.
+- Research universe: 55 active instruments — 40 ETF, 4 GIC, 3 T-Bill, 6 Bond, 1 Commercial Paper reference, 1 ABCP reference.
 - Explore / Detail / Compare: cross-asset.
 - Screener / Match: ETF-scoped.
 - Watchlist / Profile: asset-neutral.
-- Stocks remain intentionally out of the current M4 scope.
-- Portfolio Builder remains frozen and no longer exists as a callable runtime subsystem. Only historical evidence/data required for reproducibility is retained.
+- Stocks remain intentionally out of M4 scope.
+- Portfolio Builder remains frozen and is not a callable runtime subsystem.
 
-## Product UX pass — current accepted journey
-
-A full audience-first polish pass was completed before further backend expansion. The current intended journey is:
+## Accepted audience journey after UX polish
 
 ```text
 Landing
@@ -43,25 +42,25 @@ Landing
  -> optional Watchlist / Account persistence
 ```
 
-Canonical UX rules are in `docs/PRODUCT-UX.md`. The most important current invariants are:
+Canonical UX rules are in `docs/PRODUCT-UX.md`. Current invariants:
 
 - deliver value before asking for an account;
-- guest users can complete the assessment and continue through same-session Result, Context, Match, Detail and Compare;
-- account creation is for persistence, Watchlist and returning later, not a gate in front of research value;
-- do not expose archetype outcomes before the assessment;
-- Investment Context is separate from Investor DNA and must not modify Risk Tolerance;
-- goal, time horizon, liquidity and principal-protection choices are explicit; do not preselect realistic answers;
-- canonical time-horizon buckets must match the backend contract;
+- guest users can continue through same-session Result, Context, Match, Detail and Compare;
+- account creation is for persistence/Watchlist/return visits, not a prerequisite for research value;
+- do not expose archetype outcomes before assessment completion;
+- Investment Context is separate from Investor DNA and must not alter Risk Tolerance;
+- goal, time horizon, liquidity and principal-protection inputs are explicit with no realistic defaults;
+- canonical time-horizon buckets match the backend contract;
 - missing/NULL Match scores remain unavailable/review, never `0/100`;
-- `review_required` pauses ranking and must not render a normal ranked ETF preview;
-- same-session guest ETF fit must not disappear when moving Match -> Detail or Match/Screener -> Compare;
-- full guest result state is intentionally ephemeral; a hard refresh may lose the unsaved full report while the narrow claim ticket remains available for optional account attachment.
+- `review_required` pauses ranking and does not render a normal ranked ETF preview;
+- same-session guest ETF fit persists across Match -> Detail and Match/Screener -> Compare;
+- full guest result state is intentionally ephemeral; a hard refresh may lose the unsaved full result while the narrow claim ticket remains available for optional account attachment.
 
-User-facing copy and hierarchy were also simplified across Landing, `/dna`, Result, Context, Match, Explore, Detail and Compare. Explore now includes client-side research search and uses the shared Investment DNA language rather than internal-model language.
+Explore now has client-side research search and uses the shared Investment DNA language rather than internal-model language.
 
 ## Context backend correction discovered during UX review
 
-The UX pass exposed a real contract gap: Match v6 needs `principal_required` for complete money context, while the old form did not collect it consistently and signed-in returning users lacked a clean account-owned context update path.
+The UX pass exposed a real contract gap: Match v6 requires `principal_required` for complete money context, while the old UI did not collect it consistently and signed-in returning users lacked a clean account-owned context update path.
 
 Current paths:
 
@@ -80,26 +79,22 @@ Applied/source-controlled migration:
 
 - `20260916004811_m4_current_account_context_rpc.sql`
 
-Live smoke verification confirms:
+Live smoke verification confirmed:
 
-- migration `20260916004811 / m4_current_account_context_rpc` exists in the migration ledger;
+- migration ledger contains `20260916004811 / m4_current_account_context_rpc`;
 - public `app_save_current_investment_context` exists and is `SECURITY INVOKER`;
 - anon execute: false;
 - authenticated execute: true;
 - private implementation exists;
-- live active research universe remains 55 instruments with the expected asset counts.
+- active research universe remains 55 instruments with expected asset counts.
 
-## Current runtime boundaries
+## Runtime / security boundaries
 
-### Investing DNA assessment
+Assessment browser actions use `investing-dna-pilot` for `start`, `questionnaire`, `save_answers`, `submit`, guest `save_context`, `claim_assessment`, `track_event` and `submit_feedback`.
 
-Browser routes call `investing-dna-pilot` for `start`, `questionnaire`, `save_answers`, `submit`, guest `save_context`, `claim_assessment`, `track_event` and `submit_feedback`.
+The public questionnaire DTO stays narrow; scoring weights, construct metadata and non-selected/internal model fields remain server-side.
 
-The public questionnaire DTO stays narrow; scoring weights, construct metadata and non-selected localized/internal model fields remain server-side.
-
-### DNA Match
-
-The live Match chain is intentionally singular:
+The live Match chain remains singular:
 
 ```text
 current app contracts
@@ -108,64 +103,53 @@ current app contracts
  -> match runs/results
 ```
 
-Retired v3/v4/v5/v5.1 and unused parallel Match/portfolio/app-shell paths remain retired. See `docs/RUNTIME-RETIREMENTS.md` before restoring anything created by an older migration.
+Retired v3/v4/v5/v5.1 and unused parallel Match/portfolio/app-shell paths remain retired.
 
-## Security / Advisor state
-
-Latest post-UX backend security check:
+Latest security state:
 
 - anonymous browser-callable `SECURITY DEFINER` functions: 0;
-- authenticated browser-callable `SECURITY DEFINER` functions: 2:
-  - `get_or_create_current_profile`
-  - `is_current_profile`
+- authenticated browser-callable `SECURITY DEFINER` functions: 2 — `get_or_create_current_profile`, `is_current_profile`;
 - `SECURITY DEFINER` views: 19;
 - RLS-enabled/no-policy INFO findings: 32.
 
-The new signed-in Context wrapper did **not** add a public definer function.
-
-Do not batch-convert the remaining 19 views to `security_invoker`; classify each against current callers, underlying grants and RLS semantics first.
+The new signed-in Context wrapper did not add a public definer function. Do not batch-convert the remaining 19 views; classify each against callers, grants and RLS first.
 
 ## Verification status
 
 ### Database
 
-- live Context migration/permission smoke passed;
-- active research universe counts passed: ETF 40, GIC 4, T-Bill 3, Bond 6, Commercial Paper 1, ABCP 1;
-- prior M1/M4 security and runtime-retirement regressions remain the canonical DB proof set;
+- live Context migration/permission smoke: PASS;
+- active universe counts: PASS — ETF 40, GIC 4, T-Bill 3, Bond 6, Commercial Paper 1, ABCP 1;
+- prior M1/M4 security/runtime-retirement regressions remain the canonical DB proof set;
 - synthetic DB regression data is transactionally rolled back.
 
 ### GitHub CI
 
-Full CI run **237** passed on commit:
+Full final-head CI run **238** passed on commit:
 
-`58818e7484d3f75e021b08a6eb395739373a3d40`
+`562f3b7ea4503fd91c88eb4ed98f1d01466b96ef`
 
 Passed gates:
 
 - contract tests;
 - repository hygiene;
-- TypeScript;
-- strict unused-code TypeScript gate;
+- normal + strict unused-code TypeScript checks;
 - optimized production build;
 - guest Investing DNA / Context / claim browser flow;
 - connected ETF / Match / Watchlist / Compare flow;
 - M4 launch/trust surfaces;
 - cross-asset Explore / Detail / Compare flow.
 
-This handoff update is a docs-only commit after that green run. Confirm CI on the final handoff head before calling the branch final-head green.
-
 ### Vercel
 
-Git integration is still being rejected by provider build-rate limiting (`build-rate-limit`). GitHub production build is green, so this is not currently an application compile failure, but the newest head is not Vercel deployment-verified until the provider accepts a build.
+Vercel commit status on `562f3b7ea4503fd91c88eb4ed98f1d01466b96ef` is **SUCCESS**. The earlier provider build-rate-limit is no longer the current deployment state.
 
-## Documentation system
-
-Start here when returning:
+## Documentation order when returning
 
 1. `README.md`
 2. `docs/README.md`
-3. `docs/PRODUCT-UX.md` — audience journey and UX invariants
-4. `docs/CODE-MAP.md` — route -> module -> RPC/Edge -> DB -> test map
+3. `docs/PRODUCT-UX.md`
+4. `docs/CODE-MAP.md`
 5. `docs/ARCHITECTURE.md`
 6. `docs/ENGINEERING-GUIDE.md`
 7. `docs/DATABASE-AND-API.md`
@@ -177,14 +161,12 @@ Start here when returning:
 
 ## High-priority follow-ups
 
-1. Confirm CI on this final handoff head.
-2. Re-check Vercel when provider rate limiting permits a deployment.
-3. Run a real external magic-link/account canary before changing the two remaining authenticated definer helpers merely to reduce Advisor counts.
-4. Classify the remaining 19 `SECURITY DEFINER` views individually; do not batch-change them.
-5. Start M4 human evidence: first 6 cognitive sessions, analyze, revise only if evidence requires it, then 6 more and candidate freeze.
-6. After cognitive freeze, run the planned 20–50 user product pilot.
-7. Formal Canadian compliance/privacy review remains a launch gate.
-8. Keep new non-ETF assets research-only for personalized Match until user evidence justifies asset-specific Match adapters.
-9. Keep Stocks out of the current scope; do not reopen them during M4.
+1. Run a real external magic-link/account canary before changing the two remaining authenticated definer helpers merely to reduce Advisor counts.
+2. Classify the remaining 19 `SECURITY DEFINER` views individually; do not batch-change them.
+3. Start M4 human evidence: first 6 cognitive sessions, analyze, revise only if evidence requires it, then 6 more and candidate freeze.
+4. After cognitive freeze, run the planned 20–50 user product pilot.
+5. Formal Canadian compliance/privacy review remains a launch gate.
+6. Keep new non-ETF assets research-only for personalized Match until user evidence justifies asset-specific Match adapters.
+7. Keep Stocks out of the current M4 scope.
 
 If this snapshot conflicts with current code or canonical engineering docs, update this snapshot rather than preserving stale handoff text.
