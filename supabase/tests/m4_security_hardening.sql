@@ -28,6 +28,40 @@ begin
     raise exception 'Expected exposed research/app-state RPCs to be SECURITY INVOKER; % remain definer',bad_count;
   end if;
 
+  -- The five remaining core read-model views are read-only browser surfaces
+  -- while their SECURITY DEFINER boundary is being deliberately redesigned.
+  select count(*) into bad_count
+  from information_schema.role_table_grants g
+  where g.table_schema='public'
+    and g.table_name in (
+      'v_investment_catalog',
+      'v_investment_detail',
+      'v_investment_screener',
+      'v_investment_dna_v2',
+      'v_investment_latest_income'
+    )
+    and g.grantee in ('anon','authenticated')
+    and g.privilege_type<>'SELECT';
+  if bad_count<>0 then
+    raise exception 'Core read-model views expose % non-SELECT browser grants',bad_count;
+  end if;
+
+  select count(*) into bad_count
+  from information_schema.role_table_grants g
+  where g.table_schema='public'
+    and g.table_name in (
+      'v_investment_catalog',
+      'v_investment_detail',
+      'v_investment_screener',
+      'v_investment_dna_v2',
+      'v_investment_latest_income'
+    )
+    and g.grantee in ('anon','authenticated')
+    and g.privilege_type='SELECT';
+  if bad_count<>10 then
+    raise exception 'Expected SELECT-only access for 5 views x 2 browser roles; got % grants',bad_count;
+  end if;
+
   -- Retired browser RPCs stay in history but must not remain callable by browser roles.
   if has_function_privilege('anon','public.app_save_investment_context(uuid,jsonb)','execute')
      or has_function_privilege('authenticated','public.app_save_investment_context(uuid,jsonb)','execute') then
