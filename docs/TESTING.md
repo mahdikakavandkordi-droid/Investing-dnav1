@@ -54,6 +54,16 @@ npm run test:assets
 
 Covers v1.10 assessment recovery, answer persistence/back navigation, submit retry/result handling, feedback, mocked auth/claim continuity, cognitive invite behavior, privacy-safe events and browser runtime errors.
 
+It also protects the guest journey as a connected in-app flow:
+
+- Result points investment-context entry forward to Match through the allowlisted `returnTo=/match` path;
+- Context saves the four required money inputs and returns directly to Match;
+- a review-required Context result lands on the Match review state without leaking a numeric score;
+- global `My DNA` navigation reaches the neutral `/dna` hub, which exposes `View my current DNA` when a one-session guest result still exists;
+- following that in-app continuation returns to Result without persisting the full guest report in local storage.
+
+A deliberate full reload is different: a completed guest result is not promised across reloads. Persistent continuity belongs to the optional account flow.
+
 ### `test:funds`
 
 Covers ETF Detail research, retry/error state, account intent continuity, watchlist behavior, DNA Match presentation/navigation, Screener -> Compare, returning profile flow, analytics and mobile viewport.
@@ -64,7 +74,7 @@ The connected browser flow also protects the Match v7 context transition end to 
 - numeric overall Match scores remain absent before context is complete;
 - context-required rows must not be mislabeled as **Review**;
 - the Context form exposes `major_purchase` and `wealth_preservation` in addition to the other current v7 goals;
-- saving signed-in context keeps ownership server-scoped and transitions the same account/session into a numeric context-aware Match;
+- signed-in Context entry from Match carries `returnTo=/match`, keeps ownership server-scoped and returns the same account/session directly to a numeric context-aware Match after save;
 - Result, Match, investment Detail and Screener all use the same Match presentation semantics before and after that transition;
 - the resulting ETF selection still flows through Detail and Screener -> Compare.
 
