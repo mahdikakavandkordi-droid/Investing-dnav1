@@ -17,8 +17,9 @@ These files describe how the product works **now** and are the first place a new
 9. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
 10. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
 11. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
-12. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
-13. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
+12. [`AUTH-CANARY.md`](AUTH-CANARY.md) — real external Magic Link, account claim and persistence acceptance procedure. Browser mocks are not a substitute for this gate.
+13. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
+14. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
 
 Folder-level maps also exist in `app/README.md`, `components/README.md`, `lib/README.md`, `supabase/README.md` and `tests/README.md`.
 
@@ -33,6 +34,8 @@ These are active operating documents rather than source-code architecture:
 - `M4-PRELAUNCH-CHECKLIST.md`
 - `M4-COMPLIANCE-REVIEW-BRIEF.md`
 - `MILESTONE-4-PILOT-EVIDENCE-PLAN.md`
+
+For cognitive sessions, the backend-generated `P-...` research code shown by the protected assessment is the canonical pseudonymous join key between moderator notes and database evidence. The moderator invite code is a separate operational secret and must never be committed.
 
 ## Historical evidence and milestone reports
 
