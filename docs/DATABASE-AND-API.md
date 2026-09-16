@@ -1,55 +1,55 @@
 # Investor DNA database and API guide
 
 Status: canonical backend contract reference  
-Last reviewed: 2026-09-15
+Last reviewed: 2026-09-16
 
-This document explains how the browser is allowed to reach Supabase and where backend responsibilities live. It is a map, not a replacement for migration history.
+This document explains how the browser reaches Supabase and where backend responsibilities live. Migration history records how the schema got here; this document describes the current runtime.
 
 ## 1. Backend layers
 
 The backend has four conceptual layers:
 
 1. **identity / persisted entities** — users, profiles, assessments, investments, watchlists;
-2. **research/scoring models** — question bank, DNA results, Match results, investment research facts;
-3. **browser-facing read/write contracts** — RPCs and the pilot Edge Function;
-4. **service/admin operations** — privileged functions, pilot tables, source ingestion and validation data.
+2. **research/scoring models** — question bank, DNA results, Match results and investment research facts;
+3. **browser-facing contracts** — narrow RPCs and the assessment/pilot Edge Function;
+4. **private/service/admin implementation** — privileged ownership helpers, Match internals, ingestion, validation and pilot operations.
 
-The browser should depend on layer 3, not on arbitrary underlying tables.
+Browser code should depend on layer 3, not arbitrary tables or private implementation details.
 
-## 2. Core identity entities
+## 2. Identity and ownership
 
 ### Accounts and profiles
 
-Supabase Auth owns the authenticated user. `public.profiles.user_id` links product state to that auth identity.
+Supabase Auth owns the authenticated user. `public.profiles.user_id` links product state to that identity.
 
-Ownership rule: server code derives the current profile from authenticated identity. The browser must not be trusted to say which profile it owns.
+Ownership rule: server code derives the current profile from authenticated identity. A browser-supplied profile or assessment ID is never ownership proof.
 
 ### Assessments
 
-An assessment is a versioned run of the Investing DNA questionnaire. Important properties include questionnaire/model/scoring version, status, pilot participant/session linkage and optional profile ownership.
-
-A guest assessment is authorized by its server-issued session token. Once claimed, account ownership also applies.
+An assessment is a versioned Investing DNA run. A guest assessment is authorized by its server-issued session token. Once claimed, account ownership also applies.
 
 ### Investments
 
-`public.investments` is the canonical cross-asset identity table. Do not create a second identity table for each new asset class.
+`public.investments` is the canonical cross-asset identity table.
 
-Current asset-specific extensions include:
+Current extensions include:
 
-- `public.investment_structure_profiles` — shared cross-asset Investment DNA structure layer;
-- `public.investment_fixed_income_terms` — bond/T-Bill/money-market terms;
-- `public.investment_deposit_terms` — GIC/deposit terms;
-- existing ETF/fund research tables for performance, holdings, exposures, official facts and characteristics.
+- `investment_structure_profiles` — common cross-asset Investment DNA structure;
+- `investment_fixed_income_terms` — bond/T-Bill/money-market terms;
+- `investment_deposit_terms` — GIC/deposit terms;
+- ETF/fund research tables for performance, holdings, exposure, official facts and characteristics.
+
+Do not create a second identity table for each asset class.
 
 ### Watchlists
 
-Watchlists are account/profile owned and instrument-neutral. Public UI wording should use “investment”/“instrument” unless a screen is explicitly ETF-only.
+Watchlists are account/profile owned and asset-neutral. Public UI should say “investment” unless a surface is explicitly ETF-only.
 
 ## 3. Browser API families
 
-### 3.1 Generic research RPCs
+### 3.1 Generic cross-asset research
 
-These are the preferred cross-asset research contracts:
+Preferred browser contracts:
 
 - `app_search_instruments`
 - `app_get_instrument`
@@ -57,44 +57,56 @@ These are the preferred cross-asset research contracts:
 
 Client adapter: `lib/instruments.ts`.
 
-They expose the generic research catalog and asset-specific fields needed by Explore/Detail/Compare. They must preserve null/unavailable values rather than inventing zeros.
+These power Explore/Detail/Compare and preserve unavailable fields as null/unavailable rather than inventing zeros.
 
-### 3.2 ETF/fund-specific research RPCs
+### 3.2 ETF-specific research
 
-ETF-specific screens additionally use contracts such as:
+ETF-only research additionally uses:
 
 - `app_get_investment_dna`
 - `app_get_official_fund_facts`
 - `app_get_investment_research_context`
+- current ETF screener/search contract
 
 Client adapter: `lib/investments.ts`.
 
-These exist because fund holdings, MER, official ETF risk disclosures and related research do not make sense for every asset class.
+MER, holdings and ETF risk disclosures must not be projected onto GICs/bonds merely to reuse a UI shape.
 
-### 3.3 Match/account RPCs
+### 3.3 Account and Match
 
-Current account UI uses `get_current_investor_app_state` as its primary persisted Investor DNA/read-state contract. Match remains ETF-scoped.
+Primary persisted account state:
 
-Legacy browser RPCs that are no longer part of the current product contract keep their historical function bodies when useful for reproducibility/internal service dependencies, but browser `EXECUTE` is revoked rather than leaving parallel live APIs. Current examples include:
+- `get_current_investor_app_state()` — authenticated public invoker wrapper over private current-state logic.
 
-- `app_save_investment_context`
-- `get_investor_home`
-- `get_investment_recommendations`
-- `promote_assessment_to_current_dna`
+Current account-owned context write:
 
-The Match system is currently ETF-scoped. Generic research APIs must not imply that every instrument has a personalized Match result.
+- `app_save_current_investment_context(p_context jsonb)` — authenticated public `SECURITY INVOKER` wrapper;
+- `investor_private.save_current_investment_context(p_context jsonb)` — privileged implementation that derives the profile/current completed assessment from `auth.uid()` before delegating to the canonical context service.
 
-## 4. Edge Function contract
+Why this exists: a returning signed-in user can edit context without a guest session token, while the browser still cannot choose which account/assessment it owns.
+
+Canonical Match runtime:
+
+```text
+current app contracts
+ -> investor_private.current_match(assessment_id)
+ -> calculate_investment_match_v6(assessment_id)
+ -> current Match run/results
+```
+
+Match remains ETF-only. Legacy Match generations and parallel recommendation/explainability helpers were intentionally retired from runtime; see `RUNTIME-RETIREMENTS.md`.
+
+## 4. Assessment / pilot Edge Function
 
 Entry point:
 
 `supabase/functions/investing-dna-pilot/index.ts`
 
-Browser client:
+Browser transport:
 
 `lib/supabase.ts` -> `pilot(action, body)`
 
-Currently allowlisted action family:
+Allowlisted actions:
 
 - `start`
 - `questionnaire`
@@ -105,25 +117,25 @@ Currently allowlisted action family:
 - `track_event`
 - `submit_feedback`
 
-### Why the Edge Function exists
+### Guest assessment authorization
 
-Some operations require a server-held service role, session-token validation, pilot isolation or a write boundary that must not be exposed as direct browser table access.
-
-### Session/ownership flow
-
-For assessment actions after `start`:
+After `start`:
 
 1. browser sends `assessment_id` + server-issued `session_token`;
-2. Edge Function hashes the token;
-3. participant/assessment session is verified;
-4. if assessment is linked to a profile, authenticated account ownership is also verified;
+2. Edge Function hashes and verifies the token against the pilot participant;
+3. assessment linkage/status is checked;
+4. if the assessment is account-linked, authenticated ownership is also verified;
 5. only then may privileged operations run.
 
-For a completed guest DNA claim, the Edge Function first establishes the authenticated current profile, then the service-only claim path links the already-authorized assessment to that profile. Promotion of a claimed completed assessment uses the private service implementation `investor_private.promote_assessment_to_profile`; it does not rely on a browser `auth.uid()` surviving inside a service-role call.
+Guest `save_context` continues through this capability path.
 
-### Public questionnaire DTO
+### Account claim
 
-The questionnaire endpoint returns a narrow public DTO:
+For completed guest DNA claim, the Edge Function establishes the authenticated current profile, then invokes the service claim path. Promotion does not assume browser `auth.uid()` survives inside service-role execution.
+
+### Questionnaire DTO
+
+The browser receives only:
 
 - `question_id`
 - `section`
@@ -131,137 +143,135 @@ The questionnaire endpoint returns a narrow public DTO:
 - selected-language `prompt`
 - selected-language `options`
 
-Internal configuration such as scoring `weight`, construct metadata, raw questionnaire version fields and non-selected localized copies remain server-side.
+Scoring weights, construct configuration, internal versions and alternate-language raw fields stay server-side.
 
-When this DTO changes, update:
+## 5. Investment-context contract
 
-- `lib/dna.ts` `Question` type;
-- assessment/browser contract tests;
-- this document.
+Investor DNA and money context are deliberately separate.
 
-## 5. Pilot analytics boundary
+Core context fields required for a context-aware Match are:
 
-The browser calls `track_event` through the Edge Function. It does not write `pilot_product_events` directly.
+- `goal`
+- `time_horizon` or equivalent horizon months
+- `liquidity_need`
+- `principal_required`
 
-Current privacy-minimized identifiers:
+Canonical UI horizon buckets for new input:
 
-- random visitor ID;
-- random browser-session ID;
-- optional authenticated/profile/assessment/investment linkage where permitted.
+- `lt_1y`
+- `1_3y`
+- `3_5y`
+- `5_10y`
+- `gt_10y`
 
-The event metadata allowlist is deliberately narrow. Do not add arbitrary objects or questionnaire answer text to analytics metadata.
+Legacy persisted values can remain readable for backward compatibility, but new UI must not create overlapping convenience buckets such as `under_2`.
 
-Feedback is also an Edge Function write, with bounded fields and optional bounded open text.
+`principal_required` is not optional to Match completeness. The Match constraint engine treats a missing value as incomplete context; `yes`/`unsure` can trigger a principal-protection review gate.
 
-## 6. RLS and grants
+UI rules are documented in `PRODUCT-UX.md`: do not silently preselect the core context answers, and preload existing values when editing.
+
+## 6. Pilot analytics boundary
+
+The browser calls `track_event` through the Edge Function and does not write pilot event tables directly.
+
+Identifiers are privacy-minimized random visitor/browser-session IDs plus optional authenticated/profile/assessment/investment linkage where permitted. Metadata is allowlisted and bounded; questionnaire answer text must not be copied into analytics metadata.
+
+Feedback also uses the Edge write boundary.
+
+## 7. RLS, grants and privileged code
 
 Rules:
 
-- RLS stays enabled on user/account-owned data.
-- Authenticated policies should derive identity from `auth.uid()`/canonical ownership helpers.
-- Avoid duplicate permissive policies.
-- For frequently evaluated auth checks in RLS, prefer the optimized `(select auth.uid())` pattern when semantically equivalent.
-- Browser roles receive only the grants needed for browser-facing APIs.
-- Service-role-only tables may intentionally have no anon/authenticated policies.
+- keep RLS on user/account-owned data;
+- derive account ownership from authenticated identity;
+- avoid duplicate permissive policies;
+- give browser roles only required RPC/view access;
+- service/admin-only tables may intentionally expose no anon/authenticated policy;
+- a Supabase Advisor finding is a prompt to inspect semantics, not a target score to blindly zero.
 
-A Supabase Advisor warning is a signal to investigate, not permission to blindly change security semantics.
+For `SECURITY DEFINER` code:
 
-## 7. Security-definer functions/views
-
-`SECURITY DEFINER` is privileged code. Requirements:
-
-- use only when necessary;
+- use it only when elevated access is actually required;
 - set an explicit safe `search_path`;
-- grant execution narrowly;
-- validate identifiers/ownership before privileged mutation;
-- prefer private implementation + narrow public `SECURITY INVOKER` wrapper when feasible;
+- keep privileged implementation private where practical;
+- expose a narrow public `SECURITY INVOKER` wrapper;
+- validate ownership inside the privileged implementation;
 - add a regression around the permission boundary.
 
-Do not convert an existing view/function to `security invoker` without checking whether its underlying tables are intentionally hidden from browser roles.
+Do not convert current privileged views/functions to invoker without tracing underlying RLS/grants and real callers.
 
-### Current M4 hardening state
+## 8. Current M4 security state
 
-The exposed public research boundary has been reduced deliberately:
+After runtime/API hardening:
 
-- `app_search_investments`, `app_compare_investments` and `app_get_investment_dna` are public invoker functions;
-- `app_get_official_fund_facts` is an invoker wrapper over a narrow private definer because its official-facts source table is intentionally RLS-protected;
-- `get_current_investor_app_state` is an authenticated invoker wrapper over a narrow private implementation;
-- unused legacy browser RPCs have browser execution revoked instead of being kept as parallel public APIs;
-- service account claim/promotion is separated from browser identity semantics and regression-tested with rollback fixtures.
+- anonymous browser-callable `SECURITY DEFINER` functions: 0;
+- authenticated browser-callable public `SECURITY DEFINER` helpers remaining: 2 (`get_or_create_current_profile`, `is_current_profile`), pending real-account canary before changing semantics;
+- the account context public wrapper is `SECURITY INVOKER`; its privileged implementation is private and owner-derived;
+- legacy browser RPCs / old app shells / old Match engines were retired rather than left as parallel public paths;
+- Portfolio Builder callable runtime is retired during M4.
 
-After this hardening pass, the Security Advisor public-function findings fell from four anonymous + eleven authenticated `SECURITY DEFINER` browser-callable functions to zero anonymous + two authenticated helpers. The remaining authenticated helpers are `get_or_create_current_profile` and `is_current_profile`; both participate in current auth/ownership semantics and are intentionally left for real-account canary verification rather than changed merely to zero an Advisor count.
+Remaining `SECURITY DEFINER` views are classified individually. Some are active read-model/diagnostic dependencies and must not be batch-converted or deleted solely to reduce Advisor counts.
 
-The Security Advisor still reports legacy/public `SECURITY DEFINER` views. They remain an explicit M4 backlog: classify their role, underlying table grants and browser dependency before changing them. Do not batch-convert them blindly.
+## 9. Portfolio Builder freeze
 
-## 8. Portfolio Builder freeze
+Portfolio construction is outside current M4/V1 runtime.
 
-Portfolio Builder/portfolio-construction expansion is frozen during M4. Historical functions, tables and migrations remain for reproducibility, but current product contracts must not execute the old builder merely as a side effect.
+Callable builder/risk functions, old portfolio views and the empty risk-analysis runtime table were retired. Historical migrations remain, and `investment_portfolio_blueprints` retains historical developer rows as non-browser-accessible evidence.
 
-Current live paths intentionally do **not** call `generate_portfolio_blueprints`:
+No assessment/context/account-state path should execute Portfolio Builder as a side effect.
 
-- assessment completion (`complete_dna_assessment`);
-- investment-context save (`service_save_investment_context`);
-- current account state (`investor_private.current_investor_app_state`).
+## 10. Migration policy
 
-The active browser `AppState`/assessment/context contracts therefore do not return portfolio/blueprint keys. Service-only historical maintenance code may remain until a future Portfolio Builder milestone is intentionally reopened.
+Applied migrations are append-only historical evidence.
 
-## 9. Migration policy
+For a new database change:
 
-### Append-only history
+1. inspect live schema and migration ledger;
+2. trace current dependencies/grants;
+3. apply a focused migration;
+4. verify resulting behavior/permissions;
+5. run relevant Advisor/regression checks;
+6. add the migration source using the exact live ledger version/name;
+7. update canonical documentation if the runtime contract changed.
 
-Once applied, a migration is historical evidence. Fixes go into a new migration.
+A timeout/connector error is unknown state, not success. Re-read live state before retrying.
 
-### Before applying
+If an already-applied migration is missing from source control, restore its exact historical source without re-running it.
 
-1. inspect live migration history;
-2. inspect relevant live schema/policies/functions;
-3. confirm the migration is not already partially applied;
-4. apply through the migration mechanism;
-5. verify post-state;
-6. check the source file into `supabase/migrations/` using the live migration version/name.
-
-### If tooling fails
-
-A timeout/502/connector error is **unknown state**, not success. Re-read live state before retrying.
-
-Applied migration source must stay aligned with the live ledger. If a live-applied migration is missing from the active branch, restore the exact historical source under the live version/name; do not re-run it just to repair source control.
-
-## 10. Data provenance contract
+## 11. Data provenance
 
 For investment research:
 
-- identity can exist before all facts are available;
-- source-specific tables preserve source name/URL/date when relevant;
-- stale-but-real source dates remain stale-but-real;
-- unavailable values remain null;
-- reference/educational instruments must be labeled as such and must not receive invented live yields/prices.
+- identity may exist before all facts are available;
+- source name/URL/as-of date are preserved where relevant;
+- stale real dates stay stale real dates;
+- missing values stay null;
+- educational/reference instruments do not receive invented live yields/prices.
 
-## 11. Database regression suites
+## 12. Verification map
 
-Important SQL regressions live in `supabase/tests/` and include:
+Database regressions live in `supabase/tests/` and cover:
 
-- account/platform connection and ownership tests;
-- Milestone 1 canonical engine/safety/version tests;
-- Milestone 2 product/research coverage tests;
-- Milestone 3 pilot privacy/read-write boundary tests;
-- Milestone 4 cross-asset architecture/data integrity tests;
-- Milestone 4 security/account hardening and Portfolio Builder freeze tests.
+- account/profile/watchlist ownership;
+- M1 model/version/safety/null semantics;
+- M2 research/product read models;
+- M3 pilot privacy/write boundaries;
+- M4 cross-asset structure/source integrity;
+- M4 security/account/runtime-retirement boundaries.
 
-`m4_security_hardening.sql` specifically uses transaction rollback to verify public invoker boundaries, revoked legacy browser RPCs, service claim/promotion of a completed guest assessment and absence of Portfolio Builder from live M4 contracts.
+Browser flows prove client integration, not live database permissions. Real external email/account canary remains a separate M4 gate.
 
-See `docs/TESTING.md` and `supabase/README.md`.
+## 13. Backend change checklist
 
-## 12. Change checklist for backend work
-
-Before merging a backend change, answer:
+Before calling backend work complete, answer:
 
 - What is the browser-facing contract?
-- Is this generic or asset-specific?
+- Is it generic or asset-specific?
 - Who owns the data?
-- What role(s) can read/write/execute it?
-- Does it require service-role access?
-- How are IDs/session tokens validated?
+- Which roles can read/write/execute it?
+- Does privileged access remain private?
+- How are session/identity/IDs validated?
 - What is the null/missing-data behavior?
-- What version/source/as-of metadata is required?
-- Which SQL regression proves the boundary?
-- Which canonical doc needs updating?
+- What version/source/as-of metadata matters?
+- Which DB/browser regression proves the changed boundary?
+- Which canonical document changed with it?
