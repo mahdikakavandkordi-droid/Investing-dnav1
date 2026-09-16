@@ -51,8 +51,8 @@ export function behaviorBand(key:string,value:unknown){
 }
 
 export function riskRelationship(tolerance:unknown,capacity:unknown){
- const riskTolerance=typeof tolerance==='number'?valueOrNan(tolerance):NaN;
- const riskCapacity=typeof capacity==='number'?valueOrNan(capacity):NaN;
+ const riskTolerance=typeof tolerance==='number'?tolerance:NaN;
+ const riskCapacity=typeof capacity==='number'?capacity:NaN;
  if(!Number.isFinite(riskTolerance)||!Number.isFinite(riskCapacity))return '';
 
  const difference=riskCapacity-riskTolerance;
@@ -64,8 +64,6 @@ export function riskRelationship(tolerance:unknown,capacity:unknown){
  }
  return 'Your comfort with risk and your financial capacity are reasonably close to one another.';
 }
-
-function valueOrNan(value:number){return Number.isFinite(value)?value:NaN;}
 
 export function formatInvestmentContext(key:string,value:unknown){
  if(value===null||value===undefined||value==='')return 'Not provided';
