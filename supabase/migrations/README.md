@@ -31,10 +31,11 @@ On 2026-09-16, a dependency-audited cleanup retired parallel/dead runtime withou
 - `20260916001531_m4_retire_legacy_app_views_and_home.sql`
 - `20260916001822_m4_retire_legacy_match_runtimes.sql`
 - `20260916002108_m4_retire_unused_match_helpers.sql`
+- `20260916003509_m4_retire_stale_investment_intelligence_view.sql`
 
 The exact objects removed, replacements, verification, and intentionally retained historical data are documented in `docs/RUNTIME-RETIREMENTS.md`.
 
-In particular, older migrations still contain Portfolio Builder and Match v3/v4/v5/v5.1 definitions because that is their historical purpose. The current canonical Match runtime is v6 through `investor_private.current_match`; do not resurrect a superseded implementation merely because its creation SQL remains here.
+In particular, older migrations still contain Portfolio Builder, Match v3/v4/v5/v5.1 and the superseded `v_investment_intelligence` definition because that is their historical purpose. The current canonical Match runtime is v6 through `investor_private.current_match`, and current ETF Investment DNA signals come through `v_investment_dna_v2`; do not resurrect a superseded implementation merely because its creation SQL remains here.
 
 ## Workflow for new changes
 
