@@ -23,21 +23,25 @@ jobs:
         env:
           TEST_ORIGIN: https://invasting-dna-agq7-git-codex-pla-e975cf-mahdikakavandkordi-9201.vercel.app
           CHROME_BIN: /usr/bin/google-chrome
+          VERCEL_PREVIEW_SHARE_TOKEN: ${{ secrets.VERCEL_PREVIEW_SHARE_TOKEN }}
         run: |
           set -e
+          if [ -z "${VERCEL_PREVIEW_SHARE_TOKEN}" ]; then
+            echo "Missing VERCEL_PREVIEW_SHARE_TOKEN GitHub Actions secret"
+            exit 2
+          fi
           echo "Waiting for ${TEST_ORIGIN}"
           for i in $(seq 1 30); do
             code=$(curl -L -sS -o /tmp/preview.html -w '%{http_code}' "${TEST_ORIGIN}/dna/assessment" || true)
             if [ "$code" = "200" ]; then
-              echo "Preview is reachable"
+              echo "Preview endpoint is responding"
               break
             fi
             echo "Attempt $i: HTTP ${code}"
             if [ "$i" = "30" ]; then
-              echo "Preview never became publicly reachable"
-              head -c 1000 /tmp/preview.html || true
+              echo "Preview never became reachable"
               exit 1
             fi
             sleep 4
           done
-          node tests/deployed-preview-flow.cjs
+          node tests/run-deployed-preview-canary.cjs
