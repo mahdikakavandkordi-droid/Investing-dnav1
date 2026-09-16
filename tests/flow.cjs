@@ -320,9 +320,9 @@ const testAccess=[
  await page.getByLabel(/must the full amount be protected/i).selectOption('yes');
  await page.getByRole('button',{name:'Use this context'}).click();
  await page.waitForURL(url=>url.pathname==='/match');
+ await page.getByRole('heading',{name:'Review this money before ranking ETFs'}).waitFor();
  assert.equal(contextSaves,1);
  assert.match(await page.locator('body').innerText(),/Matching paused/i);
- assert.match(await page.locator('body').innerText(),/Review this money before ranking ETFs/i);
  assert.doesNotMatch(await page.locator('body').innerText(),/82\/100/);
  check('investment context requires explicit core choices, sends principal protection, and returns directly to the review-required Match state');
 
