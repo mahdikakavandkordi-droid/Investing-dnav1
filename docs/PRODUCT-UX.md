@@ -44,6 +44,19 @@ Core context fields are explicit user choices and must not be silently preselect
 - liquidity/access need;
 - whether principal protection is required at the point the money is needed.
 
+Current selectable goal set for Match v7 is:
+
+- general long-term growth;
+- retirement;
+- home purchase;
+- major purchase;
+- education;
+- regular investment income;
+- wealth preservation;
+- emergency reserve / near-term protection.
+
+The first seven are research goals. `emergency_reserve` is intentionally a safety-sensitive context and can pause ETF ranking because the current ETF universe does not establish principal protection.
+
 Optional personal details such as name, age or amount can stay blank.
 
 Changing context may change Match constraints but must not silently change the underlying Investor DNA score.
@@ -52,17 +65,24 @@ Changing context may change Match constraints but must not silently change the u
 
 If saved context exists, the edit flow must preload it. Never open an edit form with unrelated defaults that can overwrite persisted context.
 
+Legacy stored context values should remain visible on edit even when a newer UI uses a more precise label/value. Do not silently remap an old horizon into a different current bucket. The legacy `preservation` goal maps to the current `wealth_preservation` presentation because it represents the same broad intent; it must not be silently converted into `emergency_reserve`.
+
 Guests save through their short-lived assessment capability. Signed-in returning users save through an account-owned server contract that resolves the current assessment from authenticated identity; browser IDs are not ownership proof.
 
-## 5. Missing, gated and unavailable are not zero
+## 5. Missing, context-limited, gated and unavailable are not zero
 
 Never render a missing Match score, yield, return or research field as `0` merely because a UI formatter needs a number.
 
 Examples:
 
-- review-gated Match score -> `Review` / unavailable, not `0/100`;
+- `context_required` Match row -> `DNA-only`; the numeric overall Match score stays hidden until investment context is complete;
+- `review_required` Match row -> `Review` / unavailable, not `0/100`;
 - missing yield -> `Not available`, not `0%`;
 - missing source date -> unavailable/unknown, never manufactured freshness.
+
+`DNA-only` and `Review` are different states. `DNA-only` means the Investor DNA exists but the purpose/horizon/access/principal context is incomplete. `Review` means a safety or data-quality gate intentionally paused ranking. Do not use one label for the other.
+
+The same semantics must be used consistently on Result, Match, ETF Screener and investment Detail. Browser pages should consume the shared presentation helper rather than recreate null-score rules independently.
 
 ## 6. Match is compatibility, not a winner list
 
@@ -76,6 +96,8 @@ The UI must explain that a higher Match score means closer compatibility with th
 - a prediction of future performance.
 
 A valid no-match or review-required state is preferable to forcing a ranked option.
+
+When context is missing, avoid language such as `Closest match`, `top match` or numeric `/100` output. Use DNA-only comparison language until the context-aware state is available.
 
 ## 7. Cross-asset research is structure-first
 
@@ -108,9 +130,12 @@ High-value journey assertions include:
 - assessment starts without account creation;
 - same-session guest Result -> Match continuity works;
 - context core fields begin unselected unless previously saved;
+- every current Match v7 goal is reachable from the Context form;
 - `principal_required` reaches the server contract;
 - returning-account context edits use authenticated ownership;
-- review-gated Match score never appears as zero;
+- `context_required` rows show `DNA-only` and never expose a numeric overall Match score;
+- `review_required` rows show `Review` and never expose a fake zero score;
+- saving valid context transitions the same user/session from DNA-only to context-aware Match;
 - mobile navigation still exposes the core loop.
 
 See `docs/CODE-MAP.md`, `docs/TESTING.md` and `docs/DATABASE-AND-API.md` for implementation ownership.
