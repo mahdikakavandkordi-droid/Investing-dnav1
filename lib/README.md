@@ -13,6 +13,9 @@ Owns localized assessment UI copy and locale types. Keep wording/presentation te
 ### `dna-presentation.ts`
 Owns deterministic report-presentation helpers such as archetype labels, behavior labels, context formatting and narrative display helpers. These are presentation rules, not canonical scoring rules.
 
+### `match-presentation.ts`
+Owns deterministic browser presentation semantics for already-computed DNA Match rows. In particular, it keeps `context_required` (`DNA-only`), `review_required` (`Review`) and numeric context-aware scores distinct across Result, Match, Screener and investment Detail. It must never calculate or alter canonical Match scores.
+
 ### `instrument-model.ts`
 Canonical cross-asset taxonomy for display grouping, labels, hero metrics and current Match eligibility. Pages/components should not recreate these rules.
 
