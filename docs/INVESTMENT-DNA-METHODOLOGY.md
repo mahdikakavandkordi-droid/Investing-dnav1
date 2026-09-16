@@ -1,27 +1,39 @@
-# Investment DNA & Match Methodology
+# Investment DNA & DNA Match Methodology
 
-Status: research-stage / pre-validation product methodology
+Status: research-stage / pre-validation methodology  
+Last reviewed: 2026-09-16  
+Canonical Match: `investment-dna-match-v7`  
+Goal model: `goal-fit-v1`
 
-This document separates three things that must never be conflated in Investing DNA:
+This document separates three concepts that must not be conflated:
 
-1. **Official fund/ETF risk disclosure** — an issuer-reported Canadian risk category from the product's official disclosure.
-2. **Investment DNA signals** — Investing DNA's research-stage interpretation of the investment's role and structure.
-3. **Investor ↔ Investment Match** — a compatibility signal combining the investor profile, the investment context, official risk, and Investment DNA signals.
+1. **Official ETF risk disclosure** — issuer-reported Canadian risk category from official product disclosure.
+2. **Investment DNA** — Investor DNA's research-stage interpretation of an investment's structure and role.
+3. **DNA Match** — a compatibility signal between Investor DNA, the money context and an ETF's verified research profile.
 
-None of these outputs is a recommendation to buy or sell a security.
+These outputs are research/discovery signals, not a recommendation to buy or sell a security and not a regulatory suitability determination.
 
-## 1. Official risk is not an Investing DNA score
+## 1. Current product boundary
 
-For Canadian ETFs in the current research universe, the public-facing risk category must come from the issuer's current official disclosure or an official issuer risk-rating change notice. We store:
+The public research catalog is cross-asset, but personalized DNA Match is currently **ETF-only**.
 
-- official risk category
-- issuer
-- source document title
-- source URL
-- source date / effective date where available
-- verification timestamp
+- Research catalog: ETF, GIC, T-Bill, Bond, Commercial Paper and ABCP reference instruments.
+- Match universe: active ETFs in `public.v_investment_dna_v2` only.
+- Non-ETF instruments remain research-only until a separate compatibility model is designed and tested.
 
-The five Canadian categories are:
+The Match universe, Match payload `universe_count`, persisted Match result rows and fund-data fingerprint must all refer to the same ETF-only boundary.
+
+## 2. Official risk is not an Investment DNA score
+
+For ETFs in the current Match universe, the public-facing risk category comes from issuer disclosure or an official issuer risk-rating notice. Stored provenance includes:
+
+- official risk category;
+- issuer;
+- source title and URL;
+- source/effective date where available;
+- verification timestamp.
+
+Canadian issuer categories used by the engine are:
 
 - Low
 - Low to Medium
@@ -29,114 +41,225 @@ The five Canadian categories are:
 - Medium to High
 - High
 
-Investing DNA does **not** convert this public label into a fake consumer-facing score such as 60/100. Internally, the Match engine uses a categorical compatibility matrix because the Investor DNA risk-tolerance score and the issuer's regulatory risk category are different measurement systems.
+The engine does not present these labels as a fake regulatory 0–100 score. Match v7 uses an internal compatibility demand mapping only to compare the disclosed category with the lower of Risk Tolerance and Risk Capacity. That mapping is a research implementation detail, not an official rating conversion.
 
-## 2. Investment DNA signals
+## 3. Investment DNA signals
 
-Investment DNA adds interpretable product signals that official risk alone cannot express. Current research-stage dimensions are:
+Current verified ETF research signals include:
 
-- Growth orientation
-- Income orientation
-- Stability orientation
-- Diversification
-- Complexity
-- Equity exposure
-- Minimum suggested horizon
-- Concentration
-- Style / role
+- Growth orientation;
+- Income orientation;
+- Stability orientation;
+- Diversification / exposure breadth;
+- Liquidity;
+- Complexity;
+- Equity and fixed-income exposure;
+- minimum horizon research signal;
+- concentration/geography/style/objective metadata.
 
-These signals come from the product profile, target allocation, suitability metadata, and available verified fund data. They are not regulatory ratings and are explicitly labelled as Investing DNA research signals.
+The current `intelligence-v1.1` signal methodology is source-backed and versioned. Missing data remains unavailable; the engine must not manufacture zeroes or freshness.
 
-A higher score is not automatically better. For example, higher Growth can be useful for a long-horizon growth goal but inappropriate for a short-horizon capital-preservation goal.
+A higher signal is not intrinsically better. Its usefulness depends on the investor and the role of the money.
 
-## 3. Why official risk and market exposure are both used
+## 4. Safety and context gates are evaluated before ranking
 
-Official Canadian risk classifications are intentionally standardized and useful, but they can be broad. Two products with the same official risk category can have materially different asset mixes. For example, a balanced ETF and an 80% equity growth ETF can both sit in the same issuer-disclosed category.
+Match v7 preserves the v6 safety architecture. The engine first derives `investor_private.match_constraints(assessment_id)` from Investor DNA, critical financial answers and money context.
 
-Therefore Match v4.2 keeps the official risk category intact and adds a **separate proprietary Market Exposure Fit** based primarily on equity exposure. This is not presented as an official risk rating.
+Important stop/review conditions include:
 
-## 4. Match v4.2
+- essential spending or an important commitment could be disrupted by loss;
+- emergency reserve is critically short;
+- principal protection is required/uncertain for the money;
+- withdrawal horizon is under three years for the current ETF-only universe;
+- required financial/context inputs are missing;
+- current verified ETF data is incomplete;
+- unsupported product complexity or missing official risk data.
 
-Current research weights:
+`review_required` is a stop state. It produces no eligible/top Match and no numeric overall Match score.
 
-- 30% Official risk compatibility
-- 15% Market exposure fit
-- 20% Goal / investment role fit
-- 15% Time-horizon fit
-- 10% Access / stability fit
-- 5% Diversification
-- 5% Complexity vs investor experience
+Risk Capacity is a guardrail, never a reason to seek more risk. The exposure ceiling is bounded by the minimum of Risk Tolerance, Risk Capacity and the horizon ceiling.
 
-These weights are provisional and must be calibrated with real user and outcome research before any claim of validation.
+Current horizon ceilings are research rules:
 
-### Official risk compatibility
+- under 36 months: 0% equity and `short_horizon` review gate;
+- 36–<60 months: 40% equity;
+- 60–<120 months: 70% equity;
+- 120+ months: up to the Investor DNA risk/capacity ceiling.
 
-Investor Risk Tolerance is grouped provisionally as:
+## 5. Match v7 scoring structure
 
-- Low: <40
-- Moderate: 40–<70
-- High: >=70
+For complete money context, the current research score is:
 
-The engine uses a categorical matrix rather than subtracting the Investor DNA score from a regulatory risk label.
+```text
+20% Official Risk Fit
+40% Market Exposure Fit
+25% Goal Role Fit
+15% Exposure Breadth / Diversification
+```
 
-### Risk Capacity is a guardrail, not a target
+These weights remain research-stage and are not statistically validated suitability weights.
 
-Financial Risk Capacity never tells the engine to seek more risk simply because the user can afford it. It only restricts products whose official risk category and/or market exposure appear high relative to the user's financial capacity.
+### Official Risk Fit
+
+The engine compares the issuer-disclosed risk demand with the lower of the investor's Risk Tolerance and Risk Capacity. Capacity can only constrain the fit; it never raises the target risk.
 
 ### Market Exposure Fit
 
-Equity exposure is evaluated separately from official risk. Low Risk Tolerance receives progressively stronger caution as equity exposure increases. Low Financial Capacity also acts as an exposure guardrail.
+Equity exposure is compared with the current equity ceiling from Investor DNA plus withdrawal horizon. Exposure above the ceiling is penalized and cannot become eligible.
 
-Current engineering guardrails include caps for combinations such as:
+### Exposure Breadth
 
-- low capacity + very high equity exposure
-- low tolerance + 80–100% equity exposure
-- investment horizon materially shorter than the product's minimum-horizon signal
-- missing investment context (cannot receive the highest confidence tier)
+The current verified diversification signal is used as an interpretable breadth component. It is not a guarantee against loss.
 
-These are research rules, not regulatory suitability determinations.
+## 6. Goal Role Fit (`goal-fit-v1`)
 
-## 5. Investment context
+Match v6 treated several non-growth goals too similarly because they were primarily mapped to fixed-income share. Match v7 introduces a separately versioned Goal Fit layer that uses verified Investment DNA signals and, where appropriate, the time remaining until use of the money.
 
-Context is kept separate from Investor DNA. Current context inputs are:
+The goal function returns a 0–100 research-role score plus its component weights and a plain-language explanation.
 
-- Goal
-- Time horizon
-- Liquidity / access need
+### Growth
 
-Optional identity/reporting fields such as first name, age and amount do not alter the core Investor DNA score.
+```text
+100% Growth signal
+```
 
-## 6. Explainability requirements
+Risk and horizon are still enforced separately; the goal model cannot override those limits.
 
-Every Match should be able to explain at least:
+### Retirement
 
-- the issuer's official risk category
-- why that risk category is or is not broadly compatible with the investor
-- whether market exposure creates an additional caution
-- whether the investment role fits the user's goal
-- whether the stated horizon is long enough
-- whether access needs conflict with the product's stability profile
-- any meaningful complexity mismatch
+Retirement blends Growth, Stability and Income, with more Stability/Income weight as the withdrawal horizon shortens.
 
-The UI should prefer plain-language reasons over raw sub-scores.
+```text
+120+ months: 55% Growth / 25% Stability / 20% Income
+60–119 months: 40% Growth / 35% Stability / 25% Income
+36–59 months: 25% Growth / 45% Stability / 30% Income
+```
 
-## 7. Data provenance rule
+### Income
 
-No investment should display an `Official risk rating` unless the source is stored and traceable. If the current official disclosure cannot be verified, the UI should show official risk as unavailable rather than substitute an internal score.
+```text
+70% Income / 30% Stability
+```
 
-The current 16-ETF research universe has issuer-source metadata stored in `investment_official_risk_ratings`.
+The Income signal describes investment role; it is **not** a distribution/yield forecast.
 
-## 8. Validation status
+### Wealth Preservation
 
-Investment DNA and Match are currently engineering/research models. Synthetic and fixed-persona tests are used to detect collapse, impossible rankings, double-counting and guardrail failures. Synthetic tests do **not** establish investment suitability validity or psychometric validity.
+```text
+80% Stability / 20% Income
+```
 
-Before launch, the Match model should undergo:
+A high preservation score does not imply contractual principal protection. Principal-protection requirements remain a separate safety gate.
 
-- source freshness checks
-- scenario regression tests
-- expert review of guardrails and explanations
-- real-user comprehension testing
-- calibration on a substantially larger investment universe
-- Canadian securities/legal review of product wording and behavior
+### Education
 
-Version freeze for current demo work: `investment-dna-match-v4.2`.
+Education is horizon-sensitive so Growth matters more when the goal is distant and Stability matters more as use of the money approaches.
+
+```text
+120+ months: 55% Growth / 35% Stability / 10% Liquidity
+60–119 months: 45% Growth / 45% Stability / 10% Liquidity
+36–59 months: 20% Growth / 65% Stability / 15% Liquidity
+```
+
+The long-horizon blend was calibrated during M4 stress testing so a zero-equity ceiling does not create a false no-option state solely because Goal Fit is slightly below the generic role floor.
+
+### House Purchase
+
+```text
+120+ months: 45% Growth / 40% Stability / 15% Liquidity
+60–119 months: 25% Growth / 60% Stability / 15% Liquidity
+36–59 months: 10% Growth / 70% Stability / 20% Liquidity
+```
+
+### Major Purchase
+
+```text
+120+ months: 50% Growth / 35% Stability / 15% Liquidity
+60–119 months: 30% Growth / 55% Stability / 15% Liquidity
+36–59 months: 15% Growth / 65% Stability / 20% Liquidity
+```
+
+Unrecognized goals fall back to a neutral Growth/Stability blend and should be treated as a research-review condition before launch expansion.
+
+## 7. Eligibility and Match states
+
+After safety/data gates:
+
+- `review_required` — ranking is paused;
+- `context_required` — Investor DNA exists but the money context is incomplete;
+- `no_suitable_options` — no ETF in the current verified universe passes the current limits;
+- `available` — at least one ETF passes all current research limits.
+
+An ETF is not eligible when any of the following apply:
+
+- equity exposure exceeds the current ceiling;
+- Official Risk Fit is below 60;
+- overall Match score is below 70;
+- complete-context Goal Role Fit is below 40;
+- a safety/data review code is present.
+
+`Closer fit` currently begins at 85; other eligible rows are `Possible fit`.
+
+## 8. Incomplete context score policy
+
+When money context is incomplete, the engine can internally order DNA-only comparisons for continuity/research, but the consumer-facing canonical payload redacts the overall `/100` Match score.
+
+The public contract marks:
+
+```text
+status = context_required
+context_only_score_policy = hidden_until_context_complete
+```
+
+This prevents an internal DNA-only comparison value from being mistaken for a personalized Match score. Component research signals may still be shown with explicit limited-context wording.
+
+## 9. Explainability requirements
+
+A Match row should be able to explain:
+
+- official issuer risk and its compatibility with Investor DNA;
+- equity exposure versus the current ceiling;
+- goal-role score and the goal model used;
+- meaningful strengths and conflicts;
+- exposure breadth;
+- data/safety review gates;
+- what genuine input or product change could change the comparison.
+
+For Match v7, the explanation payload includes `goal_fit` with `model_version`, `score`, component weights and a goal-specific summary.
+
+## 10. Versioning and reproducibility
+
+Current versions:
+
+- questionnaire: `v1.10-cognitive-candidate`;
+- Investor DNA: `dna-v1.10-research`;
+- Investment DNA intelligence: `intelligence-v1.1`;
+- Match: `investment-dna-match-v7`;
+- Goal Fit: `goal-fit-v1`.
+
+`investment-dna-match-v6` is retained server-side as historical/reproducible behavior but is no longer the canonical current Match. Browser callers consume only the singular `investor_private.current_match()` chain through approved app contracts.
+
+Behavior-changing model revisions must receive a new version; historical versions must not be silently mutated.
+
+## 11. Validation status
+
+Match v7 passed engineering stress/regression acceptance, including:
+
+- ETF-only universe checks;
+- safety-gate invariants;
+- null-score review behavior;
+- horizon monotonicity;
+- low-tolerance/no-forced-match behavior;
+- goal differentiation A/B versus v6;
+- 168-scenario synthetic grid comparison with no safety/status regression after calibration.
+
+This does **not** establish psychometric validity, regulatory suitability validity or investment outcome validity.
+
+Before launch, Match still requires:
+
+- real-user comprehension testing;
+- expert review of goal assumptions and guardrails;
+- larger-universe calibration;
+- source-freshness monitoring;
+- Canadian securities/legal review of wording and behavior;
+- privacy/compliance review of the full product flow.
