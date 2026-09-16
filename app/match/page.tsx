@@ -6,6 +6,7 @@ import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import type {Fund} from '@/lib/investments';
 import {readDraft} from '@/lib/dna';
+import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
 
 type ConstraintShape={
@@ -187,7 +188,7 @@ function MatchContent({
        </div>
      : null}
 
-  {more.length>0&&match?.status!=='no_suitable_options'&&<MoreMatches rows={more} idBySymbol={idBySymbol}/>} 
+  {more.length>0&&match?.status!=='no_suitable_options'&&<MoreMatches rows={more} match={match} idBySymbol={idBySymbol}/>} 
 
   <div className="match-footer-actions">
    {compareIds.length>=2&&<Link className="btn primary" href={`/compare?ids=${compareIds.join(',')}`}>Compare these side by side</Link>}
@@ -223,7 +224,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
   return <div className="match-status-card">
    <div className="eyebrow">DNA-only view</div>
    <h2>Add the purpose of this money for a more useful match</h2>
-   <p>Your DNA is available, but goal, horizon, liquidity or principal-protection needs are still missing. Scores below are intentionally limited-context comparisons.</p>
+   <p>Your DNA is available, but goal, horizon, liquidity or principal-protection needs are still missing. Numeric Match scores stay hidden until that context is complete.</p>
    <Link className="btn primary" href="/dna/context">Add investment context</Link>
   </div>;
  }
@@ -243,9 +244,10 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
 
 function FeaturedMatches({featured,match,idBySymbol}:{featured:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>}){
  const noSuitable=match?.status==='no_suitable_options';
+ const contextOnly=match?.status==='context_required';
  return <section className="match-section">
-  <div className="eyebrow">{noSuitable?'Closest comparisons outside limits':'Closest alignment'}</div>
-  <h2>{noSuitable?'Why the nearest options still miss':'Start with these'}</h2>
+  <div className="eyebrow">{contextOnly?'DNA-only comparisons':noSuitable?'Closest comparisons outside limits':'Closest alignment'}</div>
+  <h2>{contextOnly?'Explore these before adding context':noSuitable?'Why the nearest options still miss':'Start with these'}</h2>
   <div className="match-dna-grid">
    {featured.map((item,index)=><MatchCard
     key={item.symbol}
@@ -262,22 +264,24 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
  const good=strengths(item);
  const watch=watchouts(item);
  const scores=breakdown(item);
+ const score=matchScorePresentation(item);
+ const contextOnly=match?.status==='context_required';
 
  return <article className="match-dna-card">
   <div className="match-card-top">
    <div>
     <span className="pill">{item.symbol}</span>
-    {index===0&&match?.status!=='no_suitable_options'&&<span className="match-rank">Closest match</span>}
+    {index===0&&match?.status!=='no_suitable_options'&&<span className="match-rank">{contextOnly?'DNA-only comparison':'Closest match'}</span>}
    </div>
    <div className="match-score">
-    <strong>{scoreValue(item)}</strong>
-    <span>{item.match_score==null?'':'/100'}</span>
+    <strong>{score.numericValue??score.text}</strong>
+    <span>{score.numericValue==null?'':'/100'}</span>
    </div>
   </div>
 
   <h3>{item.name||item.symbol}</h3>
   <div className="match-meta">
-   <span className="match-fit">{fitLabel(item)}</span>
+   <span className="match-fit">{matchFitLabel(item)}</span>
    {item.risk_band&&<span className="pill">Official risk: {item.risk_band}</span>}
   </div>
   {item.explanation?.summary&&<p className="match-summary">{item.explanation.summary}</p>}
@@ -309,20 +313,22 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
  </article>;
 }
 
-function MoreMatches({rows,idBySymbol}:{rows:MatchItem[];idBySymbol:Map<string,string>}){
+function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>}){
+ const contextOnly=match?.status==='context_required';
  return <section className="match-section match-more">
-  <div className="eyebrow">Also worth comparing</div>
-  <h2>Other compatible options</h2>
+  <div className="eyebrow">{contextOnly?'More DNA-only comparisons':'Also worth comparing'}</div>
+  <h2>{contextOnly?'Continue exploring the ETF universe':'Other compatible options'}</h2>
   <div className="match-more-grid">
    {rows.map(item=>{
     const id=idBySymbol.get(item.symbol);
+    const score=matchScorePresentation(item);
     return <article className="match-mini-card" key={item.symbol}>
      <div>
       <span className="pill">{item.symbol}</span>
       <h3>{item.name||item.symbol}</h3>
-      <p>{fitLabel(item)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
+      <p>{matchFitLabel(item)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
      </div>
-     <div className="match-mini-score">{scoreValue(item)}{item.match_score==null?null:<small>/100</small>}</div>
+     <div className="match-mini-score">{score.text}</div>
      {id&&<Link href={'/investment/'+id}>See details →</Link>}
     </article>;
    })}
@@ -339,20 +345,8 @@ function unique(items:MatchItem[]){
  });
 }
 
-function fitLabel(item:MatchItem){
- return item.explanation?.fit_label ||
-  item.fit_label ||
-  ({
-   top_match:'Closer fit',
-   alternative:'Possible fit',
-   consider:'DNA-only comparison',
-   mismatch:'Outside current fit limits'
-  }[item.recommendation_tier||'']||'Compatibility');
-}
-
 function strengths(item:MatchItem){return item.explanation?.strengths||item.strengths||[];}
 function watchouts(item:MatchItem){return item.explanation?.watchouts||item.watchouts||[];}
-function scoreValue(item:MatchItem){return item.match_score==null?'—':Math.round(item.match_score);}
 
 function constraintShape(match?:MatchPayload){
  return (match?.constraints||{}) as ConstraintShape;
