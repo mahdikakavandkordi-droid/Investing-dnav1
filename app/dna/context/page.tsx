@@ -5,6 +5,7 @@ import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {supabase,pilot,rpc} from "@/lib/supabase";
 import {readDraft,writeEphemeralResult} from "@/lib/dna";
+import {formatInvestmentContext} from "@/lib/dna-presentation";
 import type {AppState,Draft,InvestmentContextProfile,MatchPayload,Submission} from "@/lib/dna";
 
 type ContextForm={
@@ -31,6 +32,8 @@ const INITIAL_FORM:ContextForm={
  liquidity_need:'',
  principal_required:''
 };
+
+const CURRENT_HORIZONS=['lt_1y','1_3y','3_5y','5_10y','gt_10y'] as const;
 
 /**
  * Money/goal context kept separate from Investor DNA scoring.
@@ -181,6 +184,10 @@ function MissingContextSource({error}:{error:string}){
 }
 
 function CoreContextFields({form,update}:{form:ContextForm;update:<K extends keyof ContextForm>(key:K,value:ContextForm[K])=>void}){
+ const legacyHorizon=form.time_horizon&&!CURRENT_HORIZONS.includes(form.time_horizon as typeof CURRENT_HORIZONS[number])
+  ? form.time_horizon
+  : null;
+
  return <div className="context-fields">
   <label className="context-field">
    <span>Primary goal</span>
@@ -189,8 +196,10 @@ function CoreContextFields({form,update}:{form:ContextForm;update:<K extends key
     <option value="growth">General long-term growth</option>
     <option value="retirement">Retirement</option>
     <option value="house_purchase">Home purchase</option>
+    <option value="major_purchase">Major purchase</option>
     <option value="education">Education</option>
     <option value="income">Regular investment income</option>
+    <option value="wealth_preservation">Wealth preservation</option>
     <option value="emergency_reserve">Emergency reserve / protect near-term money</option>
    </select>
   </label>
@@ -199,7 +208,7 @@ function CoreContextFields({form,update}:{form:ContextForm;update:<K extends key
    <span>When might you first need this money?</span>
    <select value={form.time_horizon} onChange={event=>update('time_horizon',event.target.value)}>
     <option value="" disabled>Choose a time horizon</option>
-    {form.time_horizon==='under_2'&&<option value="under_2">Under 2 years — previous selection</option>}
+    {legacyHorizon&&<option value={legacyHorizon}>{formatInvestmentContext('time_horizon',legacyHorizon)} — previous selection</option>}
     <option value="lt_1y">Less than 1 year</option>
     <option value="1_3y">1–3 years</option>
     <option value="3_5y">3–5 years</option>
@@ -259,7 +268,7 @@ function formFromContext(context:InvestmentContextProfile):ContextForm{
   first_name:context.first_name||'',
   age:context.age==null?'':String(context.age),
   amount_to_invest:context.amount_to_invest==null?'':String(context.amount_to_invest),
-  goal:context.goal==='preservation'?'emergency_reserve':context.goal||'',
+  goal:context.goal==='preservation'?'wealth_preservation':context.goal||'',
   time_horizon:context.time_horizon||'',
   liquidity_need:context.liquidity_need||'',
   principal_required:context.principal_required||''
