@@ -103,13 +103,14 @@ watchlist items: 0
 
 ## E. Product truthfulness / data
 
-- [ ] Unknown fund data remains unavailable, not zero/inferred
-- [ ] Partial holdings/exposure coverage is visibly labelled
-- [ ] Official risk provenance remains available
-- [ ] Data freshness/as-of dates remain visible where relevant
+- [x] Unknown data remains unavailable, not zero/inferred — live audit confirms four ETF risk values remain `NULL`, no ETF MER/1Y placeholder zeros, and all 15 non-ETF generic catalog yields remain `NULL` rather than synthetic zero values
+- [x] Partial holdings/exposure coverage is visibly labelled — research UI distinguishes full holdings, fund-of-funds, top-holdings sample and unavailable coverage
+- [x] Official risk provenance remains available — live audit confirms 40/40 ETFs have official risk rating, source URL and source date in Investment DNA
+- [x] Data freshness/as-of dates remain visible where relevant — 40/40 ETF catalog rows carry metrics-as-of dates; all 15 non-ETF samples carry structure-as-of dates; 4/4 GIC and 11/11 fixed-income/money-market samples carry source-as-of dates
 - [x] `review_required` still suppresses rankable score semantics — M1 live regression PASS
 - [x] `no_suitable_options` still does not force a recommendation — M1 live regression PASS
-- [ ] Compatibility remains separate from fund facts
+- [x] Compatibility remains separate from investment facts — Detail composes facts/structure research independently from `InstrumentConnection`; personalized Match remains ETF-only and is explicitly labelled as compatibility, not a buy recommendation
+- [x] M4 cross-asset research regression re-run live 2026-09-16 and PASS: 55 active instruments, complete `structure-v1` coverage, sourced GIC/T-Bill terms, and no synthetic CP/ABCP current yield
 
 ## F. Privacy / compliance / positioning
 
@@ -129,11 +130,11 @@ watchlist items: 0
 - [x] M4 launch-surface browser regression added
 - [x] M4 disclosure/privacy regression PASS on initial implementation batch
 - [x] Vercel deployment success on an earlier application-equivalent M4 implementation head
-- [x] Final current head CI PASS — run 257 on `d509e7a081bf70c5a79da5e8651465208e24def1`
+- [x] Final application head CI PASS — run 257 on `d509e7a081bf70c5a79da5e8651465208e24def1`
 - [ ] Final current head Vercel deployment PASS
 - [x] Current PR ancestry/mergeability check — PR #2 remains open, draft and mergeable
 
-Current hosting note: Vercel status for exact head `d509e7a081bf70c5a79da5e8651465208e24def1` is provider `build-rate-limit`. This is not an application compile failure, but it is also not an exact-head deployment pass. The connected Vercel account currently exposes no team/project metadata, so exact-head hosting acceptance remains blocked until Vercel can build the SHA.
+Current hosting note: Vercel status for application head `d509e7a081bf70c5a79da5e8651465208e24def1` is provider `build-rate-limit`. This is not an application compile failure, but it is also not an exact-head deployment pass. The connected Vercel account currently exposes no team/project metadata, so exact-head hosting acceptance remains blocked until Vercel can build the SHA.
 
 ## Public-launch decision
 
