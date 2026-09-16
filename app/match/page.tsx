@@ -85,7 +85,6 @@ export default function Matches(){
         : !state?.dna
           ? <MissingDnaState/>
           : <MatchContent
-             state={state}
              match={match}
              constraints={constraints}
              featured={featured}
@@ -138,9 +137,8 @@ function MissingDnaState(){
 }
 
 function MatchContent({
- state,match,constraints,featured,more,hasContext,idBySymbol,compareIds
+ match,constraints,featured,more,hasContext,idBySymbol,compareIds
 }:{
- state:AppState;
  match?:MatchPayload;
  constraints:ConstraintShape;
  featured:MatchItem[];
