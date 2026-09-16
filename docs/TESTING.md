@@ -221,6 +221,23 @@ Keep these states separate:
 
 Do not collapse them into “deployed”.
 
+### Protected Vercel Preview canary
+
+`.github/workflows/preview-canary.yml` exercises the real branch Preview with headless Chrome. Vercel Deployment Protection is bypassed through the repository secret `VERCEL_PREVIEW_SHARE_TOKEN`; the share credential is never committed or printed.
+
+`tests/run-deployed-preview-canary.cjs` bootstraps the protected-preview browser session, then runs `tests/deployed-preview-flow.cjs` against the deployed Next.js frontend while intercepting Supabase requests. This deliberately prevents the canary from creating real assessments, sending email or mutating the live database.
+
+The canary follows the guest product journey through real client-side navigation rather than using full reloads that would intentionally discard the privacy-limited guest result:
+
+```text
+Assessment -> Result -> DNA-only Match -> Context -> context-aware Match
+-> ETF Detail -> Match -> Screener -> Compare -> My DNA
+```
+
+Exact deployed branch head `d89cd1c0f2c6f41a3c553475cee1a06c15aee82f` passed `preview-canary` in workflow run `35126359360`. The full repository `verify` workflow also passed on the same exact head in run `35126359410`.
+
+What this proves: the deployed Vercel frontend, routes, SPA continuity and mocked client/backend contracts work together on that exact head. What it does **not** prove: live Supabase data/RLS, a real external email round trip, user comprehension, scientific validity or regulatory suitability.
+
 ## 10. Human evidence is separate
 
 Automated tests can prove implementation consistency; they cannot prove comprehension, trust, return intent, psychometric validity or regulatory suitability.
