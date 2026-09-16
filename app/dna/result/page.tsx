@@ -6,6 +6,7 @@ import Link from "next/link";
 import {supabase,rpc} from "@/lib/supabase";
 import {trackProductEvent} from "@/lib/analytics";
 import {readDraft} from "@/lib/dna";
+import {matchFitLabel,matchScorePresentation} from "@/lib/match-presentation";
 import type {AppState,DNA,MatchItem,MatchPayload} from "@/lib/dna";
 import {DnaSummary} from "@/components/DnaSummary";
 
@@ -174,8 +175,10 @@ function MatchReviewCallout({matches}:{matches:MatchPayload}){
 function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boolean}){
  return <section className="report-section matches-section">
   <div className="eyebrow">From DNA to research</div>
-  <h2>ETFs worth comparing more closely</h2>
-  <p className="report-lede">These are compatibility signals based on your DNA{hasContext?' and the context you added':''}. They are not buy recommendations.</p>
+  <h2>{hasContext?'ETFs worth comparing more closely':'DNA-only ETF comparisons'}</h2>
+  <p className="report-lede">{hasContext
+   ? 'These are compatibility signals based on your DNA and the context you added. They are not buy recommendations.'
+   : 'These comparisons use your DNA only. Add the purpose, horizon and access needs for this money before treating any ETF as a context-aware Match.'}</p>
 
   <div className="match-preview-grid">
    {matches.map(match=><MatchPreviewCard key={match.investment_id||match.symbol} match={match}/>) }
@@ -191,15 +194,17 @@ function MatchPreviewCard({match}:{match:MatchItem}){
   match.explanation?.strengths?.[0] ||
   match.explanation?.why_it_fits?.[0] ||
   match.explanation?.watchouts?.[0];
- const score=match.match_score==null?null:Math.round(match.match_score);
+ const score=matchScorePresentation(match);
 
  return <article className="match-preview-card">
   <div className="match-preview-top">
    <span className="pill">{match.symbol}</span>
-   <strong>{score==null?'Review':score}{score==null?null:<small>/100</small>}</strong>
+   <strong>{score.numericValue==null
+    ? score.text
+    : <>{score.numericValue}<small>/100</small></>}</strong>
   </div>
   <h3>{match.name||match.symbol}</h3>
-  <p className="match-fit-label">{match.fit_label||match.recommendation_tier?.replaceAll('_',' ')||'Compatibility signal'}</p>
+  <p className="match-fit-label">{matchFitLabel(match)}</p>
   {why&&<p className="muted">{why}</p>}
   {match.investment_id
    ? <Link className="btn" href={`/investment/${match.investment_id}`}>See why it fits</Link>
