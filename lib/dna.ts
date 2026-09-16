@@ -187,6 +187,8 @@ export type AssessmentSession = {
   session_token: string;
   account_linked?: boolean;
   language_code?: 'en'|'fr'|'fa';
+  /** Backend-generated pseudonymous research/session code; never identity. */
+  anonymous_code?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -358,16 +360,4 @@ export function optionsFor(q:Question){
   return Array.isArray(q.options)
     ? q.options.map(o=>({value:String(o.value),label:o.label||o.text||String(o.value)}))
     : [];
-}
-
-export function sectionLabel(section?:string):string {
-  if(section==='risk_tolerance')return 'Risk tolerance';
-  if(section==='behavioral_dna')return 'Behavioral DNA';
-  if(section==='risk_capacity')return 'Financial capacity';
-  if(section==='investment_experience')return 'Investment experience';
-  return 'Investor DNA';
-}
-
-export function humanize(key:string):string {
-  return key.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
 }
