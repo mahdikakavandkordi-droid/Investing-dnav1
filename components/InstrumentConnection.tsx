@@ -1,10 +1,12 @@
 "use client";
 
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import {trackProductEvent} from '@/lib/analytics';
+import {readDraft} from '@/lib/dna';
+import type {MatchItem} from '@/lib/dna';
 import {instrumentWatchlist,saveInstrument,removeInstrument} from '@/lib/instruments';
 import {matchEligible,assetLabel} from '@/lib/instrument-model';
 import {formatMetric} from '@/lib/investments';
@@ -13,9 +15,9 @@ import type {Fit} from '@/lib/investments';
 /**
  * Account/watchlist connection for any research instrument.
  *
- * Saving is asset-neutral. Personalized DNA Match is requested only for asset
- * types marked eligible by the canonical taxonomy (`lib/instrument-model.ts`).
- * This keeps non-ETF research from accidentally displaying a fake/missing fit.
+ * Saving is asset-neutral. ETF fit is shown from either the persisted account
+ * contract or the current guest-session Match payload. Account creation remains
+ * a persistence action rather than a gate to same-session research value.
  */
 export function InstrumentConnection({id,assetType}:{id:string;assetType?:string|null}){
  const {user,loading}=useAccount();
@@ -34,6 +36,7 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
 
  const canMatch=matchEligible(assetType);
  const typeLabel=assetLabel(assetType);
+ const guestMatch=useMemo(()=>!user&&canMatch?guestMatchFor(id):null,[id,user,canMatch]);
 
  useEffect(()=>{
   let active=true;
@@ -84,7 +87,6 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
     if(!result.item)throw new Error('Saving was not confirmed. Please try again.');
    }
 
-   // Ignore a stale async response if the signed-in account changed meanwhile.
    if(owner.current===uid){
     setSaved(!wasSaved);
     setMessage(wasSaved?'Removed from your watchlist.':'Saved to your watchlist.');
@@ -105,14 +107,17 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
  }
 
  if(!user){
-  return <div className="card">
-   <h2>Keep this {typeLabel.toLowerCase()} on your radar</h2>
-   <p>Create a free account to save research items and return to your watchlist.</p>
-   <div className="actions">
-    <Link className="btn primary" href={'/profile?mode=signup&investment='+id}>Create a free account</Link>
-    <Link className="btn" href={'/profile?investment='+id}>Sign in</Link>
+  return <div className="card instrument-connection-card">
+   {guestMatch&&<GuestEtfFit match={guestMatch}/>} 
+   <div className={guestMatch?'connection-save-block':''}>
+    <h2>{guestMatch?'Save this research for later':`Keep this ${typeLabel.toLowerCase()} on your radar`}</h2>
+    <p>Create a free passwordless account only if you want to save research items and return to your watchlist later.</p>
+    <div className="actions">
+     <Link className="btn primary" href={'/profile?mode=signup&investment='+id}>Save with an account</Link>
+     <Link className="btn" href={'/profile?investment='+id}>Already have an account? Sign in</Link>
+    </div>
+    <p className="muted fine">Browsing research, Investor DNA results and same-session ETF Match stay available without an account.</p>
    </div>
-   <p className="muted fine">Browsing research and taking the Investing DNA assessment are available without an account.</p>
   </div>;
  }
 
@@ -140,13 +145,29 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
  </div>;
 }
 
-/** ETF-only fit presentation, kept separate from generic save/watchlist UI. */
+function GuestEtfFit({match}:{match:MatchItem}){
+ const label=match.explanation?.fit_label||match.fit_label||match.recommendation_tier?.replaceAll('_',' ')||'Compatibility signal';
+ const strengths=match.explanation?.strengths||match.strengths||[];
+ const watchouts=match.explanation?.watchouts||match.watchouts||[];
+
+ return <div className="guest-fit-block">
+  <div className="eyebrow">Your current-session ETF match</div>
+  <div className="kpi">{match.match_score==null?'Review':`${Math.round(match.match_score)} / 100`}</div>
+  <strong>{label}</strong>
+  {match.explanation?.summary&&<p>{match.explanation.summary}</p>}
+  {strengths.length>0&&<p className="muted fine">Why it may fit: {strengths[0]}</p>}
+  {watchouts.length>0&&<p className="muted fine">What to consider: {watchouts[0]}</p>}
+  <p className="muted fine">This is a compatibility signal from your current guest session, not a recommendation to buy.</p>
+ </div>;
+}
+
+/** ETF-only fit presentation for persisted accounts. */
 function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
  if(fit?.status==='available'&&fit.fit){
   const label=fit.fit.explanation?.fit_label||fit.fit.recommendation_tier.replaceAll('_',' ');
   const watchouts=fit.fit.explanation?.watchouts?.filter(item=>typeof item==='string')||[];
   return <>
-   <div className="kpi">{formatMetric(fit.fit.match_score,' / 100',0)}</div>
+   <div className="kpi">{fit.fit.match_score==null?'Review':formatMetric(fit.fit.match_score,' / 100',0)}</div>
    <p>{label}</p>
    {fit.fit.explanation?.summary&&<p>{fit.fit.explanation.summary}</p>}
    {watchouts.length>0&&<>
@@ -170,4 +191,18 @@ function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
 
  if(!fitError)return <p>Loading your DNA connection…</p>;
  return null;
+}
+
+function guestMatchFor(investmentId:string):MatchItem|null{
+ const payload=readDraft(null)?.result?.match;
+ if(!payload)return null;
+ const rows=Array.isArray(payload.results)
+  ? payload.results
+  : [
+     ...(payload.top_matches||[]),
+     ...(payload.alternatives||[]),
+     ...(payload.consider||[]),
+     ...(payload.mismatch||[])
+    ];
+ return rows.find(item=>item.investment_id===investmentId)||null;
 }
