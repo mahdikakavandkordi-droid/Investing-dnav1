@@ -12,11 +12,12 @@ These files describe how the product works **now** and are the first place a new
 4. [`ENGINEERING-GUIDE.md`](ENGINEERING-GUIDE.md) — coding rules, naming rules, change checklist and documentation policy.
 5. [`DATABASE-AND-API.md`](DATABASE-AND-API.md) — Supabase schemas, trust boundaries, RPC/Edge Function conventions and migration rules.
 6. [`TESTING.md`](TESTING.md) — contract, browser, database and CI verification strategy.
-7. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
-8. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
-9. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
-10. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
-11. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
+7. [`RUNTIME-RETIREMENTS.md`](RUNTIME-RETIREMENTS.md) — intentional runtime removals, their replacements, and historical data that must not be mistaken for live code.
+8. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
+9. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
+10. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
+11. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
+12. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
 
 Folder-level maps also exist in `app/README.md`, `components/README.md`, `lib/README.md`, `supabase/README.md` and `tests/README.md`.
 
@@ -76,5 +77,7 @@ A code change is not complete if it changes any of the following without updatin
 - a security/privacy boundary;
 - a deployment requirement;
 - a test or acceptance gate.
+
+When retiring a runtime path, also update `RUNTIME-RETIREMENTS.md` so an engineer reading older migrations can distinguish historical creation from current architecture.
 
 Prefer updating an existing canonical document over creating another overlapping document.
