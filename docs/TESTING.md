@@ -58,6 +58,24 @@ Covers v1.10 assessment recovery, answer persistence/back navigation, submit ret
 
 Covers ETF Detail research, retry/error state, account intent continuity, watchlist behavior, DNA Match presentation/navigation, Screener -> Compare, returning profile flow, analytics and mobile viewport.
 
+The connected browser flow also protects the Match v7 context transition end to end:
+
+- a saved DNA with missing money context renders `context_required` rows as **DNA-only**;
+- numeric overall Match scores remain absent before context is complete;
+- context-required rows must not be mislabeled as **Review**;
+- the Context form exposes `major_purchase` and `wealth_preservation` in addition to the other current v7 goals;
+- saving signed-in context keeps ownership server-scoped and transitions the same account/session into a numeric context-aware Match;
+- Result, Match, investment Detail and Screener all use the same Match presentation semantics before and after that transition;
+- the resulting ETF selection still flows through Detail and Screener -> Compare.
+
+The browser test therefore protects this UI contract:
+
+```text
+context_required -> DNA-only
+review_required  -> Review
+available        -> numeric context-aware Match
+```
+
 ### `test:m4`
 
 Covers research/limitations wording, privacy contract, global disclosure and mobile/runtime health.
@@ -144,7 +162,9 @@ This A/B evidence supports an engineering/research promotion decision. It does *
 context_only_score_policy = hidden_until_context_complete
 ```
 
-Regression work touching Match serialization should preserve this rule.
+Browser presentation of this state is centralized in `lib/match-presentation.ts`. Result, Match, Screener and Detail should consume that helper rather than independently interpreting a null score.
+
+Regression work touching Match serialization or Match UI should preserve this rule.
 
 ## 7. Supabase Advisor checks
 
