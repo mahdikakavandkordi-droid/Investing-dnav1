@@ -189,7 +189,7 @@ function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boole
    {matches.map(match=><MatchPreviewCard key={match.investment_id||match.symbol} match={match}/>) }
   </div>
   <div className="matches-more">
-   <Link className="btn primary" href="/match">Open DNA Match</Link>
+   <Link className="btn primary" href="/match">See all DNA matches</Link>
   </div>
  </section>;
 }
