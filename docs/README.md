@@ -7,15 +7,16 @@ This directory contains three different kinds of documentation. Keep them separa
 These files describe how the product works **now** and are the first place a new engineer should read.
 
 1. [`../README.md`](../README.md) — repository entry point, local setup and current product state.
-2. [`ARCHITECTURE.md`](ARCHITECTURE.md) — end-to-end system architecture, product flows and code ownership boundaries.
-3. [`ENGINEERING-GUIDE.md`](ENGINEERING-GUIDE.md) — coding rules, naming rules, change checklist and documentation policy.
-4. [`DATABASE-AND-API.md`](DATABASE-AND-API.md) — Supabase schemas, trust boundaries, RPC/Edge Function conventions and migration rules.
-5. [`TESTING.md`](TESTING.md) — contract, browser, database and CI verification strategy.
-6. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
-7. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
-8. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
-9. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
-10. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
+2. [`CODE-MAP.md`](CODE-MAP.md) — concrete route → module → RPC/Edge action → database → test navigation map; start here when returning to a specific feature.
+3. [`ARCHITECTURE.md`](ARCHITECTURE.md) — end-to-end system architecture, product flows and code ownership boundaries.
+4. [`ENGINEERING-GUIDE.md`](ENGINEERING-GUIDE.md) — coding rules, naming rules, change checklist and documentation policy.
+5. [`DATABASE-AND-API.md`](DATABASE-AND-API.md) — Supabase schemas, trust boundaries, RPC/Edge Function conventions and migration rules.
+6. [`TESTING.md`](TESTING.md) — contract, browser, database and CI verification strategy.
+7. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
+8. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
+9. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
+10. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
+11. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
 
 Folder-level maps also exist in `app/README.md`, `components/README.md`, `lib/README.md`, `supabase/README.md` and `tests/README.md`.
 
