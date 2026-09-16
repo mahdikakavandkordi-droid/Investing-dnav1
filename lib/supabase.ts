@@ -17,7 +17,23 @@ const DEFAULT_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_p2fijbzQmFxdayOXr1C_fA_
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL || DEFAULT_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_PUBLISHABLE_KEY;
 
-export const supabase = createClient(url, key);
+/**
+ * Auth is intentionally client-only for V1.
+ *
+ * We explicitly use the implicit Magic Link flow so the browser can consume the
+ * returned URL fragment and persist the resulting session in local storage.
+ * `detectSessionInUrl` is kept explicit rather than relying on library defaults;
+ * `app/profile/page.tsx` removes the sensitive fragment after the authenticated
+ * session has been established.
+ */
+export const supabase = createClient(url, key, {
+  auth:{
+    flowType:"implicit",
+    detectSessionInUrl:true,
+    persistSession:true,
+    autoRefreshToken:true
+  }
+});
 
 /** Call a narrow browser-facing Postgres RPC and surface its database error. */
 export async function rpc<T=any>(name:string,args?:Record<string,unknown>):Promise<T> {
