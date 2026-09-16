@@ -14,7 +14,7 @@ import type {Investment} from "@/lib/types";
  */
 
 /**
- * ETF/fund research row used by the ETF Screener and legacy fund-specific UI.
+ * ETF/fund research row used by the ETF Screener and fund-specific UI.
  * Do not use this as the generic cross-asset investment type.
  */
 export type Fund = Investment & {
@@ -177,15 +177,6 @@ export type ResearchContext = {
  };
 };
 
-/** Legacy-compatible Watchlist item shape; storage itself is asset-neutral. */
-export type WatchItem = {
- investment_id:string;
- symbol:string;
- name:string;
- note?:string;
- created_at?:string;
-};
-
 /** Personalized ETF fit response. Non-ETF instruments do not use this contract yet. */
 export type Fit = {
  status:'available'|'no_dna'|'unavailable';
@@ -237,21 +228,4 @@ export function officialFundFacts(id:string){
 
 export function researchContext(id:string){
  return rpc<ResearchContext|null>('app_get_investment_research_context',{p_investment_id:id});
-}
-
-// Legacy Watchlist aliases --------------------------------------------------
-// New asset-neutral code should prefer `instrumentWatchlist`, `saveInstrument`
-// and `removeInstrument` from `lib/instruments.ts`. These aliases remain while
-// ETF-specific routes/tests are migrated incrementally.
-
-export function watchlist(){
- return rpc<{items:WatchItem[]}>('app_watchlist',{p_action:'list'});
-}
-
-export function saveFund(id:string){
- return rpc<{item?:{investment_id:string}}>('app_watchlist',{p_action:'add',p_investment_id:id});
-}
-
-export function removeFund(id:string){
- return rpc<{removed:boolean}>('app_watchlist',{p_action:'remove',p_investment_id:id});
 }
