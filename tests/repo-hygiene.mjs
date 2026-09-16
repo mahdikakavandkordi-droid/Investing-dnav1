@@ -103,7 +103,8 @@ const retiredRuntimeNames = [
   'get_explainable_match',
   'get_investment_match_intelligence',
   'cleanup_match_result_versions',
-  'investor_match_snapshots'
+  'investor_match_snapshots',
+  'v_investment_intelligence'
 ];
 const retiredRuntimeRefs = currentRuntimeFiles.filter(file => {
   const text = read(file);
