@@ -15,13 +15,18 @@
 // Public assessment / result contracts
 // ---------------------------------------------------------------------------
 
+/**
+ * Narrow browser-facing questionnaire DTO.
+ *
+ * Internal scoring metadata (`weight`, construct configuration, model/version
+ * fields and non-selected localized copy) stays server-side. Keep this type in
+ * lock-step with the Edge Function questionnaire response and `tests/contracts.mjs`.
+ */
 export type Question = {
   question_id: string;
   prompt: string;
   question_type: string;
   section?: string;
-  construct?: string;
-  construct_role?: string;
   options: {value:string|number;label?:string;text?:string}[];
 };
 
