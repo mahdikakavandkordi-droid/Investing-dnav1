@@ -296,7 +296,9 @@ const testAccess=[
  assert.match(resultText,/research candidate/i);
  assert.equal(await page.evaluate(key=>localStorage.getItem(key),DRAFT_KEY),null);
  assert.ok(await page.evaluate(key=>localStorage.getItem(key),CLAIM_KEY));
- check('submission retry lands on ephemeral v1.10 result and retains only a claim ticket');
+ const resultContextLink=page.getByRole('link',{name:'Add investment context',exact:true});
+ assert.equal(await resultContextLink.getAttribute('href'),'/dna/context?returnTo=/match');
+ check('submission retry lands on ephemeral v1.10 result, retains only a claim ticket, and points Context forward to Match');
 
  await page.getByRole('link',{name:'See all DNA matches'}).click();
  await page.waitForURL(url=>url.pathname==='/match');
@@ -327,10 +329,13 @@ const testAccess=[
  check('investment context requires explicit core choices, sends principal protection, and returns directly to the review-required Match state');
 
  await page.getByRole('link',{name:'My DNA',exact:true}).click();
+ await page.waitForURL(url=>url.pathname==='/dna');
+ await page.getByRole('link',{name:'View my current DNA',exact:true}).waitFor();
+ await page.getByRole('link',{name:'View my current DNA',exact:true}).click();
  await page.waitForURL(url=>url.pathname==='/dna/result');
  await page.getByRole('heading',{name:'Your money context is ready.'}).waitFor();
  assert.match(await page.locator('body').innerText(),/DNA Match paused/i);
- check('guest Result and Match stay connected within the same privacy-limited browser session');
+ check('My DNA hub preserves discoverability of the guest result inside the privacy-limited browser session');
 
  const feedback=await ctx.newPage();
  await feedback.goto(ORIGIN+'/feedback');
