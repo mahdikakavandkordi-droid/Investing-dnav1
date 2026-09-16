@@ -79,6 +79,8 @@ const currentRuntimeFiles = [
   ...walk('supabase/functions')
 ].filter(file => /\.(?:ts|tsx|js|mjs|cjs)$/.test(file));
 
+// These names belong only in immutable migration history / retirement docs.
+// Current browser and Edge runtime must not depend on or resurrect them.
 const retiredRuntimeNames = [
   'generate_portfolio_blueprints',
   'refresh_blueprint_risk_and_match',
@@ -90,7 +92,18 @@ const retiredRuntimeNames = [
   'v_app_watchlist',
   'v_investor_home',
   'v_current_user_identity',
-  'v_current_investor_dna'
+  'v_current_investor_dna',
+  'calculate_investment_match_v3',
+  'calculate_investment_match_v4',
+  'calculate_investment_match_v5',
+  'calculate_investment_match_v51',
+  'v_investment_dna_v1',
+  'capture_current_match_snapshot',
+  'get_investment_recommendations',
+  'get_explainable_match',
+  'get_investment_match_intelligence',
+  'cleanup_match_result_versions',
+  'investor_match_snapshots'
 ];
 const retiredRuntimeRefs = currentRuntimeFiles.filter(file => {
   const text = read(file);
