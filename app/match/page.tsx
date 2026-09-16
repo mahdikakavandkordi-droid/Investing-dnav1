@@ -18,6 +18,15 @@ type ConstraintShape={
  horizon_months?:number;
 };
 
+type GoalAwareExplanation=NonNullable<MatchItem['explanation']>&{
+ goal_fit?:{
+  model_version?:string;
+  score?:number|null;
+  components?:Record<string,number>;
+  summary?:string;
+ }|null;
+};
+
 /** Personalized ETF compatibility surface backed by the canonical Match payload. */
 export default function Matches(){
  const {user,loading:authLoading}=useAccount();
@@ -88,7 +97,6 @@ export default function Matches(){
  const featured=rows.slice(0,3);
  const more=rows.slice(3,9);
  const context=state?.report?.investment_context||null;
- const hasContext=!!context;
  const compareIds=featured
   .map(item=>idBySymbol.get(item.symbol))
   .filter((id):id is string=>!!id);
@@ -109,7 +117,6 @@ export default function Matches(){
            featured={featured}
            more={more}
            context={context}
-           hasContext={hasContext}
            idBySymbol={idBySymbol}
            compareIds={compareIds}
           />}
@@ -160,23 +167,24 @@ function MissingDnaState(){
 }
 
 function MatchContent({
- match,constraints,featured,more,context,hasContext,idBySymbol,compareIds
+ match,constraints,featured,more,context,idBySymbol,compareIds
 }:{
  match?:MatchPayload;
  constraints:ConstraintShape;
  featured:MatchItem[];
  more:MatchItem[];
  context:InvestmentContextProfile|null;
- hasContext:boolean;
  idBySymbol:Map<string,string>;
  compareIds:string[];
 }){
+ const goalLens=featured.map(goalLensFor).find((value):value is string=>!!value);
+
  return <>
   <MatchStatus match={match} constraints={constraints} featuredCount={featured.length}/>
 
-  {context&&<MoneyContextSummary context={context}/>} 
+  {context&&<MoneyContextSummary context={context} goalLens={goalLens}/>} 
 
-  {!hasContext&&match?.status!=='review_required'&&<div className="match-context-nudge">
+  {match?.status==='context_required'&&<div className="match-context-nudge">
    <div>
     <strong>Make these comparisons specific to this money</strong>
     <p>Add what the money is for, when you may need it, how important access is, and whether the full amount must be protected. That context stays separate from your Investor DNA.</p>
@@ -204,7 +212,7 @@ function MatchContent({
  </>;
 }
 
-function MoneyContextSummary({context}:{context:InvestmentContextProfile}){
+function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfile;goalLens?:string}){
  const rows=[
   ['Goal',formatInvestmentContext('goal',context.goal)],
   ['Time horizon',formatInvestmentContext('time_horizon',context.time_horizon)],
@@ -222,6 +230,10 @@ function MoneyContextSummary({context}:{context:InvestmentContextProfile}){
     <strong>{value}</strong>
    </div>)}
   </div>
+  {goalLens&&<div className="notice">
+   <strong>How this goal changes Match</strong>
+   <p>{goalLens}</p>
+  </div>}
   <div className="actions compact">
    <Link className="btn" href="/dna/context">Edit this context</Link>
   </div>
@@ -378,6 +390,11 @@ function unique(items:MatchItem[]){
 
 function strengths(item:MatchItem){return item.explanation?.strengths||item.strengths||[];}
 function watchouts(item:MatchItem){return item.explanation?.watchouts||item.watchouts||[];}
+
+function goalLensFor(item:MatchItem):string|null{
+ const explanation=item.explanation as GoalAwareExplanation|undefined;
+ return explanation?.goal_fit?.summary||null;
+}
 
 function constraintShape(match?:MatchPayload){
  return (match?.constraints||{}) as ConstraintShape;
