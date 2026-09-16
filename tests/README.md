@@ -8,6 +8,7 @@ These tests validate browser/client behavior and repository architecture invaria
 - `repo-hygiene.mjs` — repository/runtime-boundary guard: no convenience backup files, no retired compatibility/runtime references, no internal questionnaire DTO leakage, and no service-role secret references in browser source.
 - `run-flow.cjs` — starts/stops the local Next.js server used by browser flows.
 - `flow.cjs` — assessment, result, claim, cognitive-pilot and analytics flow.
+- `assessment-multichoice-flow.cjs` — live-shape regression for multi-choice assessment answers; proves selections serialize as arrays and can complete into the DNA report.
 - `funds-flow.cjs` — connected ETF research/Match/Screener/Compare/account flow.
 - `m4-launch-flow.cjs` — M4 research/privacy/disclosure checks.
 - `assets-flow.cjs` — cross-asset Explore/Detail/Compare behavior.
@@ -21,6 +22,7 @@ npm run test:hygiene
 npm run typecheck
 npm run typecheck:hygiene
 npm run test:flow
+npm run test:assessment
 npm run test:funds
 npm run test:m4
 npm run test:assets
@@ -39,10 +41,11 @@ Browser suites use port 3001 by default and can use an installed Chrome via `CHR
 4. Keep missing research data as `null` in fixtures when testing unavailable-data semantics.
 5. Tests may mock auth/email callbacks; they must not be described as proof of real external email delivery.
 6. Do not put immutable migration history into the runtime deny-list scan. Historical SQL may legitimately name retired objects; `repo-hygiene` protects current source/runtime from depending on them again.
+7. Any questionnaire fixture that exercises completion must include every answer shape used by the live questionnaire. In particular, `multi_choice` values are arrays and must not be approximated as single-choice strings.
 
 ## When to add a test
 
-- assessment persistence/storage behavior -> `contracts.mjs` and/or `flow.cjs`;
+- assessment persistence/storage behavior -> `contracts.mjs`, `flow.cjs`, and/or `assessment-multichoice-flow.cjs`;
 - repository/runtime architecture invariant -> `repo-hygiene.mjs`;
 - ETF-specific research/Match/account behavior -> `funds-flow.cjs`;
 - cross-asset research behavior -> `assets-flow.cjs`;
