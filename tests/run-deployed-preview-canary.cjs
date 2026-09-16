@@ -11,9 +11,15 @@ if (!token) {
 const sourcePath = path.join(__dirname, 'deployed-preview-flow.cjs');
 const source = fs.readFileSync(sourcePath, 'utf8');
 const marker = "  const response = await page.goto(ORIGIN + '/dna/assessment', { waitUntil: 'domcontentloaded' });";
+const screenerMarker = "  await page.goto(ORIGIN + '/screener');";
+
 if (!source.includes(marker)) {
   console.error('Deployed-preview canary bootstrap marker not found.');
   process.exit(3);
+}
+if (!source.includes(screenerMarker)) {
+  console.error('Deployed-preview canary screener navigation marker not found.');
+  process.exit(4);
 }
 
 const bootstrap = [
@@ -25,8 +31,23 @@ const bootstrap = [
   marker
 ].join('\n');
 
+// Keep the guest journey inside the same Next.js application session. A full
+// reload intentionally does not persist the complete guest DNA report; account
+// creation is the cross-visit persistence boundary. Navigate back to Match and
+// follow the real product CTA into the screener instead of forcing page.goto().
+const screenerNavigation = [
+  "  await page.goBack();",
+  "  await page.waitForURL(url => url.pathname === '/match');",
+  "  await page.getByText('Context-aware match', { exact: true }).waitFor();",
+  "  await page.getByRole('link', { name: 'Open ETF screener', exact: true }).click();",
+  "  await page.waitForURL(url => url.pathname === '/screener');"
+].join('\n');
+
 const runtimePath = path.join(__dirname, '.deployed-preview-flow.runtime.cjs');
-fs.writeFileSync(runtimePath, source.replace(marker, bootstrap), 'utf8');
+const runtimeSource = source
+  .replace(marker, bootstrap)
+  .replace(screenerMarker, screenerNavigation);
+fs.writeFileSync(runtimePath, runtimeSource, 'utf8');
 
 try {
   const result = spawnSync(process.execPath, [runtimePath], {
