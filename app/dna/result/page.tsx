@@ -60,6 +60,7 @@ export default function Result(){
 
  const topMatches=useMemo(()=>normalizeMatches(matches).slice(0,3),[matches]);
  const hasContext=!!report?.investment_context;
+ const reviewRequired=matches?.status==='review_required';
 
  async function emailSaveLink(event:FormEvent){
   event.preventDefault();
@@ -95,7 +96,9 @@ export default function Result(){
   <div className="container result-container">
    <DnaSummary dna={dna} report={report}/>
    <ContextCallout hasContext={hasContext}/>
-   {topMatches.length>0&&<MatchPreview matches={topMatches} hasContext={hasContext}/>} 
+   {reviewRequired
+    ? <MatchReviewCallout matches={matches}/>
+    : topMatches.length>0&&<MatchPreview matches={topMatches} hasContext={hasContext}/>} 
 
    {pending
     ? <GuestSaveCard
@@ -152,6 +155,19 @@ function ContextCallout({hasContext}:{hasContext:boolean}){
     : 'Your DNA describes you. Add the goal, time horizon, access needs and whether the full amount must be protected for this particular pool of money.'}</p>
   </div>
   <Link className="btn primary" href="/dna/context">{hasContext?'Review investment context':'Add investment context'}</Link>
+ </section>;
+}
+
+function MatchReviewCallout({matches}:{matches:MatchPayload}){
+ const reasons=(matches.constraints?.reasons as string[]|undefined)||[];
+ return <section className="result-next-card result-match-review">
+  <div>
+   <div className="eyebrow">DNA Match paused</div>
+   <h2>This money needs review before ranking ETFs.</h2>
+   <p>The current context triggered a safety or product-data gate, so Investor DNA is not turning it into a ranked ETF list.</p>
+   {reasons.length>0&&<ul className="result-list">{reasons.slice(0,3).map(reason=><li key={reason}>{reason}</li>)}</ul>}
+  </div>
+  <Link className="btn primary" href="/match">Review Match status</Link>
  </section>;
 }
 
