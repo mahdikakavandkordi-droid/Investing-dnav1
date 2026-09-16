@@ -189,7 +189,7 @@ function MatchContent({
     <strong>Make these comparisons specific to this money</strong>
     <p>Add what the money is for, when you may need it, how important access is, and whether the full amount must be protected. That context stays separate from your Investor DNA.</p>
    </div>
-   <Link className="btn" href="/dna/context">Add investment context</Link>
+   <Link className="btn" href="/dna/context?returnTo=/match">Add investment context</Link>
   </div>}
 
   {featured.length
@@ -235,7 +235,7 @@ function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfil
    <p>{goalLens}</p>
   </div>}
   <div className="actions compact">
-   <Link className="btn" href="/dna/context">Edit this context</Link>
+   <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
   </div>
  </section>;
 }
@@ -248,7 +248,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
    <p>The current inputs or ETF data triggered a review point, so we are not turning them into a ranked list.</p>
    {constraints.reasons?.length?<ul>{constraints.reasons.map(reason=><li key={reason}>{reason}</li>)}</ul>:null}
    <div className="actions">
-    <Link className="btn" href="/dna/context">Review investment context</Link>
+    <Link className="btn" href="/dna/context?returnTo=/match">Review investment context</Link>
     <Link className="btn" href="/profile">My profile</Link>
    </div>
   </div>;
@@ -267,7 +267,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
    <div className="eyebrow">DNA-only view</div>
    <h2>Add the purpose of this money for a more useful match</h2>
    <p>Your DNA is available, but goal, horizon, liquidity or principal-protection needs are still missing. Numeric Match scores stay hidden until that context is complete.</p>
-   <Link className="btn primary" href="/dna/context">Add investment context</Link>
+   <Link className="btn primary" href="/dna/context?returnTo=/match">Add investment context</Link>
   </div>;
  }
 
