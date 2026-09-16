@@ -301,6 +301,7 @@ const testAccess=[
  await page.getByRole('link',{name:'See all DNA matches'}).click();
  await page.waitForURL('**/match');
  await page.getByRole('heading',{name:'See how your DNA lines up with ETFs'}).waitFor();
+ await page.getByText('VFV',{exact:true}).first().waitFor();
  assert.match(await page.locator('body').innerText(),/VFV/);
  assert.doesNotMatch(await page.locator('body').innerText(),/Sign in to see compatibility/);
  check('same-session guest can open full ETF DNA Match without creating an account');
