@@ -306,7 +306,8 @@ const testAccess=[
  assert.doesNotMatch(await page.locator('body').innerText(),/Sign in to see compatibility/);
  check('same-session guest can open full ETF DNA Match without creating an account');
 
- await page.goto(ORIGIN+'/dna/context');
+ await page.getByRole('link',{name:'Add investment context'}).first().click();
+ await page.waitForURL('**/dna/context');
  await page.getByRole('heading',{name:'Tell us what this money is for.'}).waitFor();
  assert.equal(await page.getByLabel('Primary goal').inputValue(),'');
  assert.equal(await page.getByLabel('When might you first need this money?').inputValue(),'');
@@ -321,7 +322,9 @@ const testAccess=[
  await page.waitForURL('**/dna/result');
  assert.equal(contextSaves,1);
  assert.match(await page.locator('body').innerText(),/This money now has context/);
- check('investment context requires explicit core choices and sends principal-protection need');
+ assert.match(await page.locator('body').innerText(),/DNA Match paused/);
+ assert.doesNotMatch(await page.locator('body').innerText(),/82\/100/);
+ check('investment context requires explicit core choices, sends principal protection, and respects review-required Match state');
 
  const feedback=await ctx.newPage();
  await feedback.goto(ORIGIN+'/feedback');
