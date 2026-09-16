@@ -70,14 +70,13 @@ Why:
 - `get_investor_home()` had already been removed from browser access and was no longer part of the product contract;
 - current account state is exposed through the canonical authenticated app-state contract instead.
 
-Intentionally retained:
+Intentionally retained at that step because they still had current dependencies:
 
 - `public.v_investment_catalog`
 - `public.v_investment_detail`
 - `public.v_investment_screener`
-- `public.v_investment_intelligence`
 
-Those views still participate in current research/screener/intelligence paths and were explicitly verified before retirement of the legacy shell.
+`public.v_investment_intelligence` was initially left untouched during this batch, then separately audited and retired later the same day after proving it had no live consumers and was pinned to the superseded `intelligence-v1.0` model. See migration `20260916003509` below.
 
 Current replacement:
 
@@ -154,6 +153,37 @@ Current replacement:
 Verification:
 
 - the final M1 engine regression passed on the live database after these helpers were removed.
+
+---
+
+## 2026-09-16 — stale aggregate investment-intelligence view retired
+
+Migration: `20260916003509_m4_retire_stale_investment_intelligence_view.sql`
+
+Removed live object:
+
+- `public.v_investment_intelligence`
+
+Why:
+
+- dependency audit found zero function callers and zero dependent views;
+- the view hard-coded `investment_intelligence_profiles.model_version = 'intelligence-v1.0'`;
+- current Investment DNA/Match uses the newer `intelligence-v1.1` signals through `public.v_investment_dna_v2`;
+- leaving the stale aggregate view live created an attractive but incorrect read path for future engineering work.
+
+Intentionally retained:
+
+- the underlying historical intelligence profiles/model data;
+- the migrations that created/evolved the old view and model.
+
+Current replacement:
+
+- `public.v_investment_dna_v2` for current ETF Investment DNA signals;
+- `public.app_get_investment_dna(uuid)` as the narrow public research RPC.
+
+Verification:
+
+- post-migration schema check confirmed the stale view was absent while `v_investment_detail`, `v_investment_screener` and `v_investment_dna_v2` remained present.
 
 ---
 
