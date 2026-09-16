@@ -95,6 +95,13 @@ export type MatchVersions = {
   fund_data?: string|null;
 };
 
+export type GoalFitExplanation = {
+  model_version?: string;
+  score?: number|null;
+  components?: Record<string,number>;
+  summary?: string;
+};
+
 export type MatchItem = {
   investment_id?: string;
   symbol: string;
@@ -112,6 +119,7 @@ export type MatchItem = {
     strengths?: string[];
     watchouts?: string[];
     scores?: Record<string,number|null>;
+    goal_fit?: GoalFitExplanation|null;
   };
   strengths?: string[];
   watchouts?: string[];
@@ -123,6 +131,8 @@ export type MatchItem = {
  */
 export type MatchPayload = {
   model_version?: string;
+  goal_model_version?: string;
+  context_only_score_policy?: "hidden_until_context_complete"|string;
   run_id?: string;
   status?: "review_required"|"context_required"|"no_suitable_options"|"available"|string;
   confidence?: string;
