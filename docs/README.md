@@ -9,15 +9,16 @@ These files describe how the product works **now** and are the first place a new
 1. [`../README.md`](../README.md) — repository entry point, local setup and current product state.
 2. [`CODE-MAP.md`](CODE-MAP.md) — concrete route → module → RPC/Edge action → database → test navigation map; start here when returning to a specific feature.
 3. [`ARCHITECTURE.md`](ARCHITECTURE.md) — end-to-end system architecture, product flows and code ownership boundaries.
-4. [`ENGINEERING-GUIDE.md`](ENGINEERING-GUIDE.md) — coding rules, naming rules, change checklist and documentation policy.
-5. [`DATABASE-AND-API.md`](DATABASE-AND-API.md) — Supabase schemas, trust boundaries, RPC/Edge Function conventions and migration rules.
-6. [`TESTING.md`](TESTING.md) — contract, browser, database and CI verification strategy.
-7. [`RUNTIME-RETIREMENTS.md`](RUNTIME-RETIREMENTS.md) — intentional runtime removals, their replacements, and historical data that must not be mistaken for live code.
-8. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
-9. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
-10. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
-11. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
-12. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
+4. [`PRODUCT-UX.md`](PRODUCT-UX.md) — product-journey invariants: value before account creation, assessment neutrality, context rules and guest continuity.
+5. [`ENGINEERING-GUIDE.md`](ENGINEERING-GUIDE.md) — coding rules, naming rules, change checklist and documentation policy.
+6. [`DATABASE-AND-API.md`](DATABASE-AND-API.md) — Supabase schemas, trust boundaries, RPC/Edge Function conventions and migration rules.
+7. [`TESTING.md`](TESTING.md) — contract, browser, database and CI verification strategy.
+8. [`RUNTIME-RETIREMENTS.md`](RUNTIME-RETIREMENTS.md) — intentional runtime removals, their replacements, and historical data that must not be mistaken for live code.
+9. [`INVESTOR-DNA-ASSET-ARCHITECTURE.md`](INVESTOR-DNA-ASSET-ARCHITECTURE.md) — cross-asset taxonomy and Investment DNA extension contract.
+10. [`ASSESSMENT-METHODOLOGY.md`](ASSESSMENT-METHODOLOGY.md) — assessment methodology and research-version rules.
+11. [`INVESTMENT-DNA-METHODOLOGY.md`](INVESTMENT-DNA-METHODOLOGY.md) — investment-profile methodology and source-of-truth rules.
+12. [`../DEPLOY.md`](../DEPLOY.md) — deployment and environment checklist.
+13. [`../CONTINUE-HERE.md`](../CONTINUE-HERE.md) — current work state and immediate blockers. Keep this short and current.
 
 Folder-level maps also exist in `app/README.md`, `components/README.md`, `lib/README.md`, `supabase/README.md` and `tests/README.md`.
 
