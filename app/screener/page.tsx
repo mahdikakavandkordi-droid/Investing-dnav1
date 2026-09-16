@@ -106,7 +106,7 @@ export default function Screener(){
    <div className="eyebrow">ETF Screener · DNA-powered</div>
    <h1>Find ETFs, then see how they relate to you</h1>
    <p className="muted">
-    This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; saved Investing DNA adds compatibility on top.
+    This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.
    </p>
 
    <MatchStatus
@@ -175,8 +175,14 @@ function MatchStatus({
       : matchStatus==='no_suitable_options'
         ? 'No ETF currently passes all fit limits; the screener still shows the research universe without forcing a recommendation.'
         : 'Your current match is under review, so rankings are not treated as eligible recommendations.';
+  const statusClass=
+   matchStatus==='available'
+    ? 'match-status-card ok'
+    : matchStatus==='review_required'||matchStatus==='no_suitable_options'
+      ? 'match-status-card warning'
+      : 'match-status-card';
 
-  return <div className="match-status-card ok">
+  return <div className={statusClass}>
    <strong>Your DNA is connected.</strong>
    <p>{text}</p>
   </div>;
@@ -232,7 +238,7 @@ function ScreenerToolbar({
     <option value="return_1y_desc">1-year return</option>
     <option value="mer_asc">Lowest MER</option>
     <option value="aum_desc">Largest AUM</option>
-    {matchReady&&<option value="dna_desc">Closest DNA fit</option>}
+    {matchReady&&matchStatus==='available'&&<option value="dna_desc">Closest DNA fit</option>}
    </select>
   </label>
 
