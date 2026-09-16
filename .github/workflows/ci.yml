@@ -29,6 +29,9 @@ jobs:
       - run: npm run test:flow
         env:
           CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:assessment
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
       - run: npm run test:funds
         env:
           CHROME_BIN: /usr/bin/google-chrome
