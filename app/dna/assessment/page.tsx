@@ -63,12 +63,14 @@ export default function Assessment(){
 
    const sessionLanguage=saved.session.language_code;
    if(sessionLanguage)setLocale(sessionLanguage);
-   setDraft(saved);
 
    const data=await pilot<{questions:Question[]}>('questionnaire',saved.session);
    if(!active)return;
    if(!data.questions?.length)throw new Error('No questions are available.');
+
+   const restored={...saved,answers:normalizeAnswers(saved.answers,data.questions)};
    setQuestions(data.questions);
+   persist(restored);
   })()
    .catch(e=>{if(active)setError(e.message)})
    .finally(()=>{if(active)setLoading(false)});
@@ -144,18 +146,21 @@ export default function Assessment(){
   setError('');
 
   try{
-   const complete=questions.every(question=>draft.answers[question.question_id]!==undefined);
+   const complete=questions.every(question=>hasAnswer(question,draft.answers[question.question_id]));
    if(!complete)throw new Error('Please answer every question before submitting.');
 
+   const normalized={...draft,answers:normalizeAnswers(draft.answers,questions)};
+   persist(normalized);
+
    await pilot('save_answers',{
-    ...draft.session,
-    answers:answerRows(draft.answers)
+    ...normalized.session,
+    answers:answerRows(normalized.answers)
    });
 
-   const result=await pilot<Submission>('submit',draft.session);
+   const result=await pilot<Submission>('submit',normalized.session);
    if(!result.result)throw new Error('The result is not available yet.');
 
-   const completed={...draft,result};
+   const completed={...normalized,result};
    setDraft(completed);
    writeEphemeralResult(completed);
    router.push('/dna/result');
@@ -289,6 +294,33 @@ function QuestionStep({
  const section=(question.section&&copy.sections[question.section as keyof typeof copy.sections])||'Investor DNA';
  const last=draft.index===questions.length-1;
  const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
+ const multi=question.question_type==='multi_choice';
+ const chosenValues=multi
+  ? Array.isArray(chosen)?chosen:typeof chosen==='string'&&chosen?[chosen]:[]
+  : [];
+ const answered=hasAnswer(question,chosen);
+
+ function choose(value:string){
+  if(!multi){
+   onPersist({...draft,answers:{...draft.answers,[question.question_id]:value}});
+   return;
+  }
+
+  let next:string[];
+  if(value==='none'){
+   next=['none'];
+  }else{
+   const withoutNone=chosenValues.filter(item=>item!=='none');
+   next=withoutNone.includes(value)
+    ? withoutNone.filter(item=>item!==value)
+    : [...withoutNone,value];
+  }
+
+  const answers={...draft.answers};
+  if(next.length)answers[question.question_id]=next;
+  else delete answers[question.question_id];
+  onPersist({...draft,answers});
+ }
 
  return <div className="assessment-card question-shell" dir={direction} lang={locale}>
   <div className="question-header">
@@ -302,20 +334,21 @@ function QuestionStep({
 
   <progress aria-label="Assessment progress" max={questions.length} value={current}/>
   <h1 className="question-title">{question.prompt}</h1>
+  {multi&&<p className="question-hint">Select all that apply.</p>}
 
   <div className="question-options" role="group" aria-label="Answer choices">
-   {options.map(option=><button
-    aria-pressed={chosen===option.value}
-    className={'option '+(chosen===option.value?'active':'')}
-    key={option.value}
-    disabled={busy}
-    onClick={()=>onPersist({
-     ...draft,
-     answers:{...draft.answers,[question.question_id]:option.value}
-    })}
-   >
-    <span>{option.label}</span>
-   </button>)}
+   {options.map(option=>{
+    const selected=multi?chosenValues.includes(option.value):chosen===option.value;
+    return <button
+     aria-pressed={selected}
+     className={'option '+(selected?'active':'')}
+     key={option.value}
+     disabled={busy}
+     onClick={()=>choose(option.value)}
+    >
+     <span>{option.label}</span>
+    </button>;
+   })}
   </div>
 
   <div className="question-actions">
@@ -326,20 +359,37 @@ function QuestionStep({
    >{copy.back}</button>
 
    {last
-    ? <button className="btn primary" disabled={busy||chosen===undefined} onClick={onFinish}>
+    ? <button className="btn primary" disabled={busy||!answered} onClick={onFinish}>
        {busy?copy.calculating:copy.result}
       </button>
     : <button
        className="btn primary"
-       disabled={busy||chosen===undefined}
+       disabled={busy||!answered}
        onClick={()=>onPersist({...draft,index:draft.index+1})}
       >{copy.next}</button>}
   </div>
 
-  <p className="question-hint">{copy.hint}</p>
+  {!multi&&<p className="question-hint">{copy.hint}</p>}
   {warning&&<p className="muted fine">{warning}</p>}
   {error&&<p role="alert" className="notice">{error}</p>}
  </div>;
+}
+
+function hasAnswer(question:Question,value:Draft['answers'][string]){
+ if(question.question_type==='multi_choice'){
+  return Array.isArray(value)?value.length>0:typeof value==='string'&&value.length>0;
+ }
+ return typeof value==='string'&&value.length>0;
+}
+
+function normalizeAnswers(answers:Draft['answers'],questions:Question[]):Draft['answers']{
+ const next={...answers};
+ for(const question of questions){
+  if(question.question_type!=='multi_choice')continue;
+  const value=next[question.question_id];
+  if(typeof value==='string'&&value)next[question.question_id]=[value];
+ }
+ return next;
 }
 
 function RecoveryError({locale}:{locale:AssessmentLocale}){
