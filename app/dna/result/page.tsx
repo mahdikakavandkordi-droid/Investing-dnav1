@@ -149,13 +149,18 @@ function MissingResult({error}:{error:string}){
 function ContextCallout({hasContext}:{hasContext:boolean}){
  return <section className="result-next-card result-context-cta">
   <div>
-   <div className="eyebrow">From DNA to this money</div>
-   <h2>{hasContext?'This money now has context.':'Tell us what this money is for.'}</h2>
+   <div className="eyebrow">Next · apply your DNA to this money</div>
+   <h2>{hasContext?'Your money context is ready.':'Tell us what this money is for.'}</h2>
    <p>{hasContext
-    ? 'Your goal, time horizon, access needs and principal-protection need are kept separate from your DNA and used only to make compatibility more specific.'
-    : 'Your DNA describes you. Add the goal, time horizon, access needs and whether the full amount must be protected for this particular pool of money.'}</p>
+    ? 'Your goal, time horizon, access needs and principal-protection need are now separate inputs for Match. Your underlying Investor DNA has not changed.'
+    : 'Your DNA describes you. Add the goal, time horizon, access needs and whether the full amount must be protected for this particular pool of money before using a context-aware Match.'}</p>
   </div>
-  <Link className="btn primary" href="/dna/context">{hasContext?'Review investment context':'Add investment context'}</Link>
+  {hasContext
+   ? <div className="actions compact">
+      <Link className="btn primary" href="/match">See my context-aware Match</Link>
+      <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
+     </div>
+   : <Link className="btn primary" href="/dna/context?returnTo=/match">Add investment context</Link>}
  </section>;
 }
 
@@ -175,7 +180,7 @@ function MatchReviewCallout({matches}:{matches:MatchPayload}){
 function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boolean}){
  return <section className="report-section matches-section">
   <div className="eyebrow">From DNA to research</div>
-  <h2>{hasContext?'ETFs worth comparing more closely':'DNA-only ETF comparisons'}</h2>
+  <h2>{hasContext?'Context-aware ETF comparisons':'DNA-only ETF comparisons'}</h2>
   <p className="report-lede">{hasContext
    ? 'These are compatibility signals based on your DNA and the context you added. They are not buy recommendations.'
    : 'These comparisons use your DNA only. Add the purpose, horizon and access needs for this money before treating any ETF as a context-aware Match.'}</p>
@@ -184,7 +189,7 @@ function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boole
    {matches.map(match=><MatchPreviewCard key={match.investment_id||match.symbol} match={match}/>) }
   </div>
   <div className="matches-more">
-   <Link className="btn primary" href="/match">See all DNA matches</Link>
+   <Link className="btn primary" href="/match">Open DNA Match</Link>
   </div>
  </section>;
 }
@@ -207,8 +212,8 @@ function MatchPreviewCard({match}:{match:MatchItem}){
   <p className="match-fit-label">{matchFitLabel(match)}</p>
   {why&&<p className="muted">{why}</p>}
   {match.investment_id
-   ? <Link className="btn" href={`/investment/${match.investment_id}`}>See why it fits</Link>
-   : <Link className="btn" href="/match">See my matches</Link>}
+   ? <Link className="btn" href={`/investment/${match.investment_id}`}>Open ETF research</Link>
+   : <Link className="btn" href="/match">Open DNA Match</Link>}
  </article>;
 }
 
