@@ -13,8 +13,8 @@ export function Nav(){
 
    <nav className="links" aria-label="Main navigation">
     <Link href="/dna">My DNA</Link>
+    <Link href="/match">Match</Link>
     <Link href="/explore">Explore</Link>
-    <Link href="/screener">Screener</Link>
     <Link href="/watchlist">Watchlist</Link>
    </nav>
 
