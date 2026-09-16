@@ -66,7 +66,7 @@ The `/dna` hub now behaves as follows:
 - signed-in saved DNA -> `View my saved DNA`;
 - no current/saved DNA -> normal assessment start choices.
 
-The ETF Screener now consumes the same in-memory guest Match state as Match and ETF Detail, so a guest who navigates there through the SPA keeps the current-session DNA compatibility layer without being forced to create an account.
+The ETF Screener consumes the same in-memory guest Match state as Match and ETF Detail, so a guest who navigates there through the SPA keeps the current-session DNA compatibility layer without being forced to create an account.
 
 ## Match v7 contract
 
@@ -82,7 +82,21 @@ available        -> numeric context-aware Match
 
 When context is complete, the UI shows the exact money context driving Match before ETF cards: Goal, Time horizon, Access need and Principal protection. Goal Lens text comes from `explanation.goal_fit.summary` in the backend payload rather than a second frontend model.
 
+The browser contract in `lib/dna.ts` now explicitly includes `goal_model_version`, `context_only_score_policy` and `explanation.goal_fit` so the TypeScript contract matches the canonical Match v7 payload.
+
 Match language remains compatibility/research language, not a recommendation or return forecast.
+
+## Final Result -> Context -> Match UX audit
+
+The latest audience-flow audit found and fixed the remaining continuity/presentation issues rather than changing Match weights or Goal Fit formulas:
+
+- Result without context points directly to Context with `returnTo=/match`;
+- saving Context returns directly to Match;
+- same-session guest DNA now remains available in Screener just as it does in Match and ETF Detail;
+- Screener no longer says only a saved DNA can add compatibility;
+- `Closest DNA fit` sorting is available only when Match status is actually `available`; it is hidden in DNA-only/review states;
+- Screener review/no-suitable states use warning presentation instead of the available/OK treatment;
+- full reload still intentionally discards the completed guest report, preserving the privacy contract.
 
 ## Match v7 engineering evidence
 
@@ -124,7 +138,7 @@ Local/CI Chrome coverage includes:
 - cross-asset Explore/Detail/Compare;
 - mobile overflow/runtime checks.
 
-A protected Vercel Preview canary is now source-controlled in:
+A protected Vercel Preview canary is source-controlled in:
 
 - `.github/workflows/preview-canary.yml`
 - `tests/run-deployed-preview-canary.cjs`
@@ -134,10 +148,10 @@ The repository secret `VERCEL_PREVIEW_SHARE_TOKEN` is used at runtime to enter t
 
 The deployed canary uses real Chrome against the Vercel branch Preview while intercepting Supabase requests, so it does not create real assessments, send email or mutate the live database.
 
-Exact deployed branch head `d89cd1c0f2c6f41a3c553475cee1a06c15aee82f` passed:
+Latest product-code head `eff0f498a9d5939f181c5cf8f1a9cf2a6a349810` passed:
 
-- `preview-canary` — run `35126359360`;
-- full repository `verify` — run `35126359410`.
+- `preview-canary` — run `35127527010`;
+- full repository `verify` — run `35127527097`.
 
 The deployed journey passed:
 
@@ -146,7 +160,7 @@ Assessment -> Result -> DNA-only Match -> Context -> context-aware Match
 -> ETF Detail -> Match -> Screener -> Compare -> My DNA
 ```
 
-This proves deployed frontend/routes/SPA continuity plus the mocked browser/backend contract for that exact head. It does **not** prove live Supabase RLS/data mutations or real email delivery.
+This proves deployed frontend/routes/SPA continuity plus the mocked browser/backend contract for that exact product-code head. It does **not** prove live Supabase RLS/data mutations or real email delivery.
 
 ## Security state
 
