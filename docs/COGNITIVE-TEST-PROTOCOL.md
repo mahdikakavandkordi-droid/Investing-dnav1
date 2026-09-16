@@ -16,6 +16,8 @@ The route requires a **moderator-only research invite code** before it will ente
 
 After a valid code is entered, the route clears any existing local development draft and starts a fresh cognitive assessment. Do not recruit cognitive participants through the normal `/dna/assessment` development path because `DEV_V1_10` and cognitive-study observations must remain analytically separate.
 
+Once the protected session starts, the assessment displays the backend-generated pseudonymous **Research code** (`P-...`). Copy that code exactly into `docs/M4-COGNITIVE-SESSION-WORKSHEET.md`. The backend research code is the canonical join key between moderator notes and the database participant/assessment record; do not replace it with a participant name, email or other PII. A moderator sequence such as `C01`–`C12` may still be used for scheduling, but it is not the database join key.
+
 The database cohort target is **12 participants**.
 
 ## Sample
@@ -76,7 +78,7 @@ After the cognitive debrief, keep product feedback separate from question-compre
 - What did you think Investing DNA was trying to tell you?
 - Which part of the result felt most useful?
 - Which part felt least credible or most confusing?
-- Could you explain why a fund matched or conflicted with your DNA in your own words?
+- Could you explain why an ETF matched or conflicted with your DNA in your own words?
 - What would make you return to the product?
 
 Do not use positive product feedback as evidence that the questionnaire itself is valid.
@@ -166,6 +168,7 @@ A difference in answers is not automatically an error. The cognitive interview s
 ## Moderator rules
 
 - Keep the raw research invite code moderator-only; do not embed it in participant URLs or public messages.
+- Record the displayed backend `P-...` research code on the worksheet before the participant proceeds too far.
 - Stay neutral.
 - Never praise a response as safer, smarter or more sophisticated.
 - Do not explain Investing DNA’s expected scoring before the session.
