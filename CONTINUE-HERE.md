@@ -100,17 +100,38 @@ The temporary `current_match_v7_candidate()` wrapper was removed after promotion
 
 `v_investment_dna_v2`, Match payload `universe_count`, Match result rows and Match data-version fingerprint are ETF-only. The earlier M4 defect where all 55 cross-asset instruments entered Match/fingerprint is fixed by `20260916113000_m4_scope_match_to_etf_universe.sql`.
 
-## Context-only score policy
+## Context-only score / browser presentation policy
 
 No-context/DNA-only state remains `context_required`, but its internal ordering value is no longer exposed as an overall `/100` Match score through the canonical contract.
 
-`current_match()` now returns:
+`current_match()` returns:
 
 ```text
 context_only_score_policy = hidden_until_context_complete
 ```
 
-and redacts row `match_score` values until money context is complete. This prevents values such as 98.95 from looking like personalized compatibility.
+and redacts row `match_score` values until money context is complete.
+
+Browser presentation is now centralized in `lib/match-presentation.ts`:
+
+```text
+context_required -> DNA-only
+review_required  -> Review
+available        -> numeric context-aware Match
+```
+
+Result, Match, ETF Screener and investment Detail all consume the same semantics. Context-required rows are no longer mislabeled as `Review`, and the Match page no longer calls the first DNA-only row `Closest match`.
+
+## Context UI alignment with v7
+
+The Context form now exposes every current v7 goal that the model can distinguish, including:
+
+- `major_purchase`;
+- `wealth_preservation`.
+
+`emergency_reserve` remains a separate safety-sensitive goal rather than a synonym for wealth preservation.
+
+Legacy stored `preservation` is presented as `wealth_preservation`, not emergency reserve. Legacy horizon values remain visible when editing rather than being silently remapped into a newer bucket. Current and historical context labels are formatted in `lib/dna-presentation.ts`.
 
 ## Safety behavior that must not regress
 
@@ -137,8 +158,25 @@ Incomplete/stale ETF data is not converted into a fake score.
 
 - `supabase/tests/milestone_1_engine_trust.sql` — canonical v7/versioning/cache/safety/ETF-boundary checks.
 - `supabase/tests/m4_match_hard_stress.sql` — 18 adversarial v7 scenarios plus goal-differentiation assertions.
-- `docs/TESTING.md` — records the 168-scenario v6/v7 A-B acceptance evidence.
+- `tests/funds-flow.cjs` — browser E2E covering DNA-only -> Context save -> context-aware Match -> Detail -> Screener -> Compare, plus account/watchlist continuity.
+- `docs/TESTING.md` — records browser coverage and the 168-scenario v6/v7 A-B acceptance evidence.
+- `docs/PRODUCT-UX.md` — canonical DNA-only/Review/numeric semantics and current goal set.
 - `docs/INVESTMENT-DNA-METHODOLOGY.md` — canonical v7 / `goal-fit-v1` formulas and limitations.
+
+## Browser E2E hardening result
+
+The connected browser test now explicitly verifies:
+
+1. before context, Match/Screener/Detail show `DNA-only`, no numeric overall `/100` score and no false `Review` label;
+2. Context exposes `Major purchase` and `Wealth preservation`;
+3. signed-in Context save sends the selected goal/horizon/liquidity/principal fields through the authenticated RPC;
+4. the same account/session becomes context-aware after save;
+5. Result and Match expose v7 numeric compatibility only after context;
+6. Match -> Detail and Screener -> Compare remain connected;
+7. account/watchlist retry and funnel analytics remain intact;
+8. mobile viewport remains free of horizontal overflow/runtime errors.
+
+Exact-head GitHub Actions verification for `eb1ddbb9afefc16ca6faeb74b9471b18b669f1b9` passed every CI step, including build, `test:flow`, `test:assessment`, the expanded `test:funds`, `test:m4` and `test:assets`.
 
 ## Security state
 
@@ -174,29 +212,24 @@ watchlist items: 0
 
 `COGNITIVE_V1_10` remains planned/invite-gated with zero real participants before recruitment. Use backend `P-...` participant code on moderator worksheets. Do not mutate v1.10 wording after evidence collection begins without a revised candidate version.
 
-## Verification status to re-check on latest exact head
+## Deployment status
 
-Backend migrations above are applied to the live Supabase project. v7 A/B acceptance was run transactionally against live schema and synthetic rows were rolled back.
+The latest application changes are engineering-green in GitHub CI, but the corresponding Vercel build is currently blocked by the provider `build-rate-limit`. Treat this as **not deployed on the exact latest head** even though the previous v7 head had a successful deployment.
 
-After the documentation/test updates in this handoff, run/check:
-
-1. M1 live SQL regression.
-2. M4 v7 hard-stress SQL regression.
-3. Supabase Security Advisor.
-4. GitHub Actions `verify` on the exact latest SHA.
-5. Vercel deployment status on the exact latest SHA.
+The Vercel connector also returns 403 for direct preview fetching in this chat, so a visual deployed-preview canary was not claimed. Once a latest-head deployment exists, exercise the actual preview separately; a mocked/local browser E2E is not a production canary.
 
 Do not claim Magic Link canary PASS until a real external inbox/link round trip succeeds.
 
 ## High-priority follow-ups
 
-1. Finish exact-head verification after the v7 promotion/documentation changes.
-2. Run real external Magic Link Canary A/B.
-3. Run first 6 cognitive sessions.
-4. Analyze Round 1 and revise only on documented evidence triggers.
-5. Run 6 more cognitive sessions and freeze quantitative-pilot candidate.
-6. Run planned 20–50 user product pilot after cognitive freeze.
-7. Formal Canadian compliance/privacy review remains a launch gate.
-8. Keep non-ETF assets research-only for personalized Match until a separately designed model exists.
+1. Re-run/confirm Vercel deployment of the exact latest head after the provider build-rate-limit clears.
+2. Exercise the deployed preview on the real DNA -> Context -> Match -> Detail -> Compare path.
+3. Run real external Magic Link Canary A/B.
+4. Run first 6 cognitive sessions.
+5. Analyze Round 1 and revise only on documented evidence triggers.
+6. Run 6 more cognitive sessions and freeze quantitative-pilot candidate.
+7. Run planned 20–50 user product pilot after cognitive freeze.
+8. Formal Canadian compliance/privacy review remains a launch gate.
+9. Keep non-ETF assets research-only for personalized Match until a separately designed model exists.
 
 If this snapshot conflicts with current code or canonical docs, update this snapshot rather than preserving stale handoff text.
