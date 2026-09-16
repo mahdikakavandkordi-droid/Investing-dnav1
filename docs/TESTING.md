@@ -3,13 +3,9 @@
 Status: canonical verification reference  
 Last reviewed: 2026-09-16
 
-Investor DNA has multiple test layers because no single test proves product correctness, repository cleanliness, database security and live deployment health at the same time.
+Investor DNA uses multiple test layers because no single test proves product correctness, repository cleanliness, database security and deployed behavior.
 
-## 1. Test layers
-
-### A. Lightweight client contracts
-
-Command:
+## 1. Client contract tests
 
 ```sh
 npm test
@@ -17,62 +13,35 @@ npm test
 
 Source: `tests/contracts.mjs`.
 
-Purpose:
+Purpose includes assessment envelopes, scale behavior, zero-vs-missing semantics, guest/account isolation, storage expiry/cleanup and the narrow public questionnaire DTO.
 
-- assessment answer envelope behavior;
-- scale option behavior;
-- zero-vs-missing semantics;
-- guest draft/account isolation;
-- expiry/storage cleanup behavior;
-- narrow public questionnaire DTO behavior.
+These are deterministic and do not start a browser.
 
-These are fast deterministic checks and do not start a browser.
-
-### B. Repository / unused-code hygiene
-
-Commands:
+## 2. Repository / unused-code hygiene
 
 ```sh
 npm run test:hygiene
 npm run typecheck:hygiene
 ```
 
-Sources/rules:
+`tests/repo-hygiene.mjs` protects architecture invariants that TypeScript alone cannot express. `typecheck:hygiene` runs strict no-unused checks.
 
-- `tests/repo-hygiene.mjs` protects architectural invariants that TypeScript alone cannot express;
-- `typecheck:hygiene` runs `tsc --noEmit --noUnusedLocals --noUnusedParameters`.
+Historical migration SQL is not scanned as current runtime: applied migrations must preserve the historical definitions that existed at the time.
 
-Current hygiene checks include:
+When a hygiene rule finds real dead code, remove/migrate the dead path rather than weakening the rule.
 
-- no convenience `old`/`backup` source copies;
-- no return of retired `FundConnection` or ETF-specific Watchlist compatibility aliases;
-- no internal scoring/construct fields in the browser question DTO;
-- no current browser/Edge dependency on runtime objects intentionally retired in `docs/RUNTIME-RETIREMENTS.md`;
-- no service-role secret reference in browser source;
-- no unused TypeScript locals/parameters.
-
-When a hygiene gate identifies real dead code, remove/migrate it rather than weakening the rule. If an exception is genuinely architectural, document the boundary before changing the gate.
-
-Historical migration SQL is not scanned as current runtime: old migrations must preserve the names/definitions that existed at the time.
-
-### C. Type/build verification
+## 3. Type/build verification
 
 ```sh
 npm run typecheck
 npm run build
 ```
 
-Purpose:
+A green build proves compilation/integration only. It does not prove browser flows, live database state or deployment.
 
-- TypeScript contract health;
-- Next.js production compilation;
-- route/build integration.
+## 4. Browser integration regressions
 
-A green build does not prove browser flows or live deployment.
-
-### D. Browser integration regressions
-
-The runner starts a local Next.js server on port 3001 and intercepts Supabase network calls with deterministic fixtures.
+The browser runner starts local Next.js and intercepts Supabase calls with deterministic fixtures.
 
 ```sh
 npm run test:flow
@@ -81,68 +50,29 @@ npm run test:m4
 npm run test:assets
 ```
 
-What they cover:
+### `test:flow`
 
-#### `test:flow`
-Assessment and controlled-pilot flow:
+Covers v1.10 assessment recovery, answer persistence/back navigation, submit retry/result handling, feedback, mocked auth/claim continuity, cognitive invite behavior, privacy-safe events and browser runtime errors.
 
-- v1.10 session recovery;
-- answer persistence/back navigation;
-- submit retry/result handling;
-- feedback submission;
-- magic-link/claim continuity behavior with mocked auth;
-- cognitive invite flow;
-- privacy-safe product event emission;
-- browser runtime errors.
+### `test:funds`
 
-#### `test:funds`
-Connected ETF/product loop:
+Covers ETF Detail research, retry/error state, account intent continuity, watchlist behavior, DNA Match presentation/navigation, Screener -> Compare, returning profile flow, analytics and mobile viewport.
 
-- generic investment Detail shell + ETF-specific research;
-- retry/error states;
-- account intent continuity;
-- watchlist persistence behavior;
-- canonical ETF DNA Match presentation;
-- Match -> Detail navigation;
-- ETF Screener -> Compare flow;
-- returning profile flow;
-- analytics events and mobile viewport.
+### `test:m4`
 
-#### `test:m4`
-Pre-launch transparency surfaces:
+Covers research/limitations wording, privacy contract, global disclosure and mobile/runtime health.
 
-- research/limitations wording;
-- pilot privacy contract;
-- global disclosure;
-- mobile/runtime health.
+### `test:assets`
 
-#### `test:assets`
-Cross-asset research behavior:
+Covers cross-asset Explore taxonomy, GIC terms/protection context, T-Bill yield/discount semantics, cross-asset Compare, disabled non-ETF Match, missing-value semantics and mobile/runtime health.
 
-- Explore asset taxonomy;
-- GIC terms/protection context;
-- T-Bill yield/discount semantics;
-- cross-asset Compare shared dimensions;
-- non-ETF Match remains disabled;
-- missing money-market yield stays unavailable rather than zero;
-- mobile/runtime health.
+Browser mocks do **not** prove production migrations, live RLS, real email delivery, deployment success, user comprehension or scientific validity.
 
-### What browser mocks do not prove
+## 5. Database regressions
 
-They do **not** prove:
+SQL regressions live in `supabase/tests/` and mutation-heavy suites run inside rollback transactions where practical.
 
-- a production Supabase migration is applied;
-- real email delivery works;
-- a Vercel deployment completed;
-- live RLS grants are correct;
-- pilot users understand/value the product;
-- scientific validity.
-
-## 2. Database regressions
-
-SQL tests live in `supabase/tests/`.
-
-Important suites include:
+Important suites:
 
 - `investor_platform_connections.sql`
 - `milestone_1_engine_trust.sql`
@@ -150,34 +80,88 @@ Important suites include:
 - `milestone_3_pilot_readiness.sql`
 - `m4_cross_asset_research.sql`
 - `m4_security_hardening.sql`
+- `m4_match_hard_stress.sql`
 
-Most mutation-heavy suites are designed to run inside rollback transactions so they can verify real functions/policies without leaving synthetic state.
+### `milestone_1_engine_trust.sql`
 
-Database work should be verified against the live/target schema after migration. A frontend mock cannot replace a DB regression.
+Current canonical engine regression. It verifies:
 
-For runtime retirement, the relevant DB regression should also assert that the superseded callable path is absent and that the canonical replacement remains present/functional. See `docs/RUNTIME-RETIREMENTS.md`.
+- Match v7 is the current engine and Match v6 remains historical/reproducible;
+- temporary candidate runtime is absent after promotion;
+- Goal Fit v1 helper exists;
+- Match universe/payload is ETF-only;
+- unchanged inputs reuse a stamped run;
+- scoring-relevant ETF data changes invalidate the run/data version;
+- safety gates stop ranking and preserve null scores;
+- no-suitable-options is explicit rather than force-fit;
+- long-horizon low-tolerance Education preserves a zero-equity path after calibration;
+- one-item Investor DNA sensitivity remains bounded.
 
-## 3. Supabase Advisor checks
+### `m4_match_hard_stress.sql`
 
-After material DDL/RLS/grant changes, review:
+A deliberately adversarial Match v7 suite. It exercises 18 named scenarios covering:
 
-- security advisor;
-- performance advisor.
+- high/mid/low-tolerance Investor DNA profiles;
+- Growth, Retirement, Income, Wealth Preservation, Education and House Purchase behavior;
+- 12y / 7y / 4y / 2y horizons;
+- principal-protection, essential-spending and emergency-reserve gates;
+- no-context behavior;
+- ETF-only universe integrity;
+- eligible-row hard limits;
+- horizon monotonicity;
+- zero-equity paths for low-tolerance Income/Education;
+- goal differentiation so distinct goals do not collapse to the same ordering.
 
-Classify findings rather than blindly eliminating them. Examples:
+The suite prints a compact scenario matrix before rollback for human review.
 
-- RLS with no policy may be intentional for service-only tables;
-- a security-definer view may be an architectural dependency;
-- an unused-index INFO finding in a young/pilot database is not enough by itself to justify dropping the index;
-- duplicate permissive account policies are normally a real cleanup issue.
+### v6 -> v7 A/B acceptance evidence
 
-Document accepted launch-relevant findings in the current M4 checklist/engineering notes.
+Before promotion, v6 and v7 were run on the same 168 synthetic combinations:
 
-## 4. CI
+```text
+6 Investor DNA profiles
+x 7 money goals
+x 4 horizons
+= 168 identical-input A/B scenarios
+```
 
-GitHub Actions workflow: `.github/workflows/ci.yml`.
+Acceptance result after the Education calibration:
 
-Current branch CI runs:
+- status mismatches: 0;
+- safety-review status mismatches: 0;
+- non-ETF/universe violations: 0;
+- eligible hard-limit violations: 0;
+- review-required numeric score leaks: 0;
+- formerly collapsed non-growth goal groups: reduced from 15 to 3 in the tested grid.
+
+This A/B evidence supports an engineering/research promotion decision. It does **not** establish investment suitability or statistical validity.
+
+## 6. Context-only score contract
+
+`context_required` is not a personalized Match. The v7 persisted run may keep internal comparison values for ordering/reproducibility, but the canonical `current_match()` contract redacts the consumer-facing overall `match_score` and returns:
+
+```text
+context_only_score_policy = hidden_until_context_complete
+```
+
+Regression work touching Match serialization should preserve this rule.
+
+## 7. Supabase Advisor checks
+
+After material DDL/RLS/grant changes, review Security and Performance Advisors. Classify findings rather than eliminating them blindly.
+
+Examples:
+
+- RLS/no-policy can be intentional for service-only tables;
+- unused-index INFO in a young pilot database is not enough by itself to drop an index;
+- duplicate permissive account policies are usually real cleanup;
+- security-definer changes require dependency/ownership tracing.
+
+Document accepted launch-relevant findings in the current M4 handoff/checklist.
+
+## 8. CI
+
+GitHub Actions `.github/workflows/ci.yml` currently runs:
 
 1. `npm ci`
 2. `npm test`
@@ -187,30 +171,29 @@ Current branch CI runs:
 6. `npm run build`
 7. Chrome availability check
 8. `npm run test:flow`
-9. `npm run test:funds`
-10. `npm run test:m4`
-11. `npm run test:assets`
+9. `npm run test:assessment`
+10. `npm run test:funds`
+11. `npm run test:m4`
+12. `npm run test:assets`
 
-All applicable steps must be green before calling a head revision engineering-green.
+All applicable steps must be green before calling an exact head engineering-green.
 
-## 5. Deployment verification
+Database SQL suites are additionally run against the target/live schema when backend behavior changes; a mocked frontend CI job is not a substitute for those checks.
 
-Deployment is a separate acceptance layer.
+## 9. Deployment verification
 
-Distinguish these states:
+Keep these states separate:
 
-- **CI green** — repository tests/build passed;
+- **CI green** — repository verification passed;
 - **Vercel build success** — hosting provider built the commit;
-- **preview/prod canary passed** — actual deployed URL was exercised;
-- **real email canary passed** — Supabase email and callback round trip worked with an external inbox.
+- **preview/prod canary passed** — deployed URL was exercised;
+- **real email canary passed** — Supabase email/callback round trip worked with an external inbox.
 
-Do not collapse these into “deployed”.
+Do not collapse them into “deployed”.
 
-A provider quota/rate-limit failure is not an application build failure, but it still means the new commit is not verified as deployed.
+## 10. Human evidence is separate
 
-## 6. Human evidence is not automated testing
-
-Cognitive and product-pilot evidence is a separate product/research gate. Automated tests can prove implementation consistency; they cannot prove comprehension, trust, return intent, reliability or validity.
+Automated tests can prove implementation consistency; they cannot prove comprehension, trust, return intent, psychometric validity or regulatory suitability.
 
 See:
 
@@ -218,24 +201,22 @@ See:
 - `MILESTONE-4-PILOT-EVIDENCE-PLAN.md`
 - `M4-PILOT-SCORECARD.md`
 
-## 7. Before adding a new test
+## 11. Before adding a test
 
-Place the test at the lowest layer that can prove the requirement:
+Use the lowest layer that can prove the requirement:
 
-- pure deterministic helper -> contract/unit test;
-- current-source architecture invariant -> repository hygiene test;
+- deterministic helper -> contract/unit test;
+- source architecture invariant -> hygiene test;
 - page/flow behavior -> browser test;
-- RLS/RPC/schema/source integrity -> SQL regression;
+- RLS/RPC/schema/source/scoring behavior -> SQL regression;
 - production-only integration -> controlled canary.
 
-Do not duplicate the same assertion across every suite unless it protects a genuinely different boundary.
+Do not duplicate the same assertion everywhere unless it protects a different boundary.
 
-## 8. Useful local command
-
-Run the complete repository verification set with:
+## 12. Full local repository verification
 
 ```sh
 npm run test:all
 ```
 
-`test:all` should remain synchronized with CI whenever the CI suite changes.
+Keep `test:all` synchronized with CI whenever CI changes.
