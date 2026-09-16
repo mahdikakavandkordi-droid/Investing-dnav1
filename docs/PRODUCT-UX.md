@@ -99,6 +99,19 @@ A valid no-match or review-required state is preferable to forcing a ranked opti
 
 When context is missing, avoid language such as `Closest match`, `top match` or numeric `/100` output. Use DNA-only comparison language until the context-aware state is available.
 
+When context is complete, the Match page must show the money context that is driving the comparison — goal, time horizon, access need and principal-protection need — before the user interprets ETF scores. The user should be able to edit that context directly from the Match surface.
+
+Match explanation copy should favor plain research language over internal-model terminology. The four current component labels are presented as:
+
+- Risk level;
+- Equity exposure;
+- Goal fit;
+- Diversification.
+
+Do not repeat the same generic model summary on every available ETF card. Lead with ETF-specific strengths and watchouts instead. Use `What to watch` rather than implying every disclosed risk is a direct conflict.
+
+Research CTAs should describe the destination (`Open ETF research`, `Open research`) rather than asking the user to understand internal product taxonomy such as `View Investment DNA`.
+
 ## 7. Cross-asset research is structure-first
 
 Explore and Compare may include ETFs, GICs, T-Bills, bonds and money-market research examples. Compare them through common structural dimensions rather than pretending every asset has ETF metrics.
@@ -134,8 +147,11 @@ High-value journey assertions include:
 - `principal_required` reaches the server contract;
 - returning-account context edits use authenticated ownership;
 - `context_required` rows show `DNA-only` and never expose a numeric overall Match score;
+- DNA-only cards do not expose context-aware component scores;
 - `review_required` rows show `Review` and never expose a fake zero score;
 - saving valid context transitions the same user/session from DNA-only to context-aware Match;
+- context-aware Match visibly restates the four money-context inputs before ETF cards;
+- Match cards use plain component labels and a clear research CTA;
 - mobile navigation still exposes the core loop.
 
 See `docs/CODE-MAP.md`, `docs/TESTING.md` and `docs/DATABASE-AND-API.md` for implementation ownership.
