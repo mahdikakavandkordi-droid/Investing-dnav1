@@ -174,7 +174,7 @@ export default function Profile(){
 
    setSentTo(address);
    setCooldown(60);
-   setMessage('Secure email link sent.');
+   setMessage('Check your email to confirm your free account or sign in.');
   }catch(e){
    const raw=e instanceof Error?e.message:'Unable to send an email link.';
    const friendly=friendlyAuthError(raw);
@@ -256,7 +256,7 @@ export default function Profile(){
   <div className="container narrow">
    <div className="card">
     <div className="eyebrow">My Investor DNA</div>
-    <h1>{user?'Your investor profile':'Continue with email'}</h1>
+    <h1>{user?'Your investor profile':'Create your free account or sign in'}</h1>
 
     {error&&<div className="notice" role="alert">
      <p>{error}</p>
@@ -492,7 +492,7 @@ function SignedOutContent({
        ? `Send another link in ${cooldown}s`
        : sentTo
          ? 'Send a new secure link'
-         : 'Continue with email'}
+         : 'Create my free account or sign in'}
    </button>
   </form>
 
