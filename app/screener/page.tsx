@@ -4,6 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {rpc} from '@/lib/supabase';
 import {formatMetric} from '@/lib/investments';
+import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 import type {Fund} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import type {AppState,MatchItem} from '@/lib/dna';
@@ -156,7 +157,7 @@ function MatchStatus({
    matchStatus==='available'
     ? 'Eligible ETF matches are identified using your current context.'
     : matchStatus==='context_required'
-      ? 'You are seeing DNA-only ETF compatibility until you add investment context.'
+      ? 'You are seeing DNA-only ETF comparisons until you add investment context. Numeric Match scores stay hidden until then.'
       : matchStatus==='no_suitable_options'
         ? 'No ETF currently passes all fit limits; the screener still shows the research universe without forcing a recommendation.'
         : 'Your current match is under review, so rankings are not treated as eligible recommendations.';
@@ -268,9 +269,10 @@ function ScreenerTable({
 
 function FitCell({match,matchReady}:{match?:MatchItem;matchReady:boolean}){
  if(!match)return <span className="muted">{matchReady?'Not ranked':'Add DNA'}</span>;
+ const score=matchScorePresentation(match);
  return <div className="dna-fit-cell">
-  <strong>{match.match_score==null?'Review':`${Math.round(match.match_score)}/100`}</strong>
-  <small>{fitLabel(match)}</small>
+  <strong>{score.text}</strong>
+  <small>{matchFitLabel(match)}</small>
  </div>;
 }
 
@@ -282,8 +284,4 @@ function SelectionBar({selected,onClear}:{selected:string[];onClear:()=>void}){
    <button className="btn" onClick={onClear}>Clear</button>
   </div>
  </div>;
-}
-
-function fitLabel(match?:MatchItem){
- return match?.explanation?.fit_label||match?.fit_label||match?.recommendation_tier?.replaceAll('_',' ')||'Not matched';
 }
