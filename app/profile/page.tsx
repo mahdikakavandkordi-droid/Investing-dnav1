@@ -19,9 +19,10 @@ import type {Instrument,SavedInstrument} from '@/lib/instruments';
 /**
  * Account/retention surface.
  *
- * This route coordinates optional magic-link auth, guest DNA claim continuity,
- * saved-investment intent and returning account state. Ownership remains
- * server-authoritative; URL IDs and browser state are never proof of ownership.
+ * Email auth is deliberately one path: an existing email signs in and a new
+ * email creates an account after confirmation. The user never has to decide
+ * which auth mode applies. Ownership remains server-authoritative; URL IDs and
+ * browser state are never proof of ownership.
  */
 export default function Profile(){
  const {user,loading:authLoading}=useAccount();
@@ -35,11 +36,12 @@ export default function Profile(){
  const [loading,setLoading]=useState(true);
  const [busy,setBusy]=useState(false);
  const [email,setEmail]=useState('');
+ const [sentTo,setSentTo]=useState('');
+ const [cooldown,setCooldown]=useState(0);
  const [message,setMessage]=useState('');
  const [error,setError]=useState('');
  const [listError,setListError]=useState('');
  const [retry,setRetry]=useState(0);
- const [mode,setMode]=useState<'signin'|'signup'>('signin');
  const [autoSave,setAutoSave]=useState(false);
  const [canReturnToResult,setCanReturnToResult]=useState(false);
 
@@ -47,13 +49,22 @@ export default function Profile(){
  // research data; account ownership is checked later by server-side APIs.
  useEffect(()=>{
   const url=new URL(location.href);
-  setMode(url.searchParams.get('mode')==='signup'?'signup':'signin');
   setAutoSave(url.searchParams.get('save')==='dna');
 
-  const authError=
-   new URLSearchParams(location.hash.slice(1)).get('error_description') ||
-   url.searchParams.get('error_description');
-  if(authError)setError(authError);
+  const fragment=new URLSearchParams(location.hash.slice(1));
+  const authError=fragment.get('error_description') || url.searchParams.get('error_description');
+  if(authError){
+   setError(friendlyAuthError(authError));
+
+   // Error fragments/search params are safe to remove immediately. Successful
+   // access/refresh token fragments are only removed after a real session exists.
+   const clean=new URL(location.href);
+   clean.searchParams.delete('error');
+   clean.searchParams.delete('error_code');
+   clean.searchParams.delete('error_description');
+   clean.hash='';
+   history.replaceState(history.state,'',clean.pathname+clean.search);
+  }
 
   const id=url.searchParams.get('investment');
   if(!validId(id))return;
@@ -69,9 +80,8 @@ export default function Profile(){
   return ()=>{active=false};
  },[]);
 
- // The implicit Magic Link flow returns access/refresh tokens in the URL
- // fragment. Only remove that fragment after Supabase has established a real
- // authenticated session. Safe query intent such as save=dna/investment= stays.
+ // Successful implicit email auth returns access/refresh tokens in the fragment.
+ // Only remove them after Supabase has established a real authenticated session.
  useEffect(()=>{
   if(!user||!location.hash)return;
   const fragment=new URLSearchParams(location.hash.slice(1));
@@ -84,8 +94,15 @@ export default function Profile(){
   history.replaceState(history.state,'',url.pathname+url.search);
  },[user?.id]);
 
- // Load account state and the limited guest claim/recovery state whenever auth
- // identity changes or the user explicitly retries a failed account read.
+ // A visible resend delay prevents accidental bursts that trigger provider rate
+ // limits. Provider-wide hourly limits can still be stricter than this cooldown.
+ useEffect(()=>{
+  if(cooldown<=0)return;
+  const timer=window.setInterval(()=>setCooldown(value=>Math.max(0,value-1)),1000);
+  return ()=>window.clearInterval(timer);
+ },[cooldown>0]);
+
+ // Load account state and limited guest recovery state whenever identity changes.
  useEffect(()=>{
   let active=true;
   setState(null);
@@ -132,7 +149,10 @@ export default function Profile(){
 
  async function sendMagicLink(event:FormEvent){
   event.preventDefault();
-  if(!supabase||busy)return;
+  if(!supabase||busy||cooldown>0)return;
+
+  const address=email.trim();
+  if(!address)return;
 
   setBusy(true);
   setError('');
@@ -144,21 +164,22 @@ export default function Profile(){
    if(pending)redirect.searchParams.set('save','dna');
 
    const {error:authError}=await supabase.auth.signInWithOtp({
-    email:email.trim(),
+    email:address,
     options:{
-     shouldCreateUser:mode==='signup',
+     shouldCreateUser:true,
      emailRedirectTo:redirect.toString()
     }
    });
    if(authError)throw authError;
 
-   setMessage(
-    mode==='signup'
-     ? 'Check your email to confirm your free account.'
-     : 'Check your email for a sign-in link.'
-   );
+   setSentTo(address);
+   setCooldown(60);
+   setMessage('Secure email link sent.');
   }catch(e){
-   setError(e instanceof Error?e.message:'Unable to send an email link.');
+   const raw=e instanceof Error?e.message:'Unable to send an email link.';
+   const friendly=friendlyAuthError(raw);
+   setError(friendly);
+   if(/rate limit|too many/i.test(raw))setCooldown(60);
   }finally{
    setBusy(false);
   }
@@ -217,6 +238,8 @@ export default function Profile(){
    setPending(null);
    setState(null);
    setItems([]);
+   setSentTo('');
+   setCooldown(0);
    setMessage('You have signed out.');
   }catch(e){
    setError(e instanceof Error?e.message:'Unable to sign out.');
@@ -232,8 +255,13 @@ export default function Profile(){
  return <section className="section">
   <div className="container narrow">
    <div className="card">
-    <div className="eyebrow">My Investing DNA</div>
-    <h1>{user?'Your investor profile':mode==='signup'?'Create your free account':'Welcome back'}</h1>
+    <div className="eyebrow">My Investor DNA</div>
+    <h1>{user?'Your investor profile':'Continue with email'}</h1>
+
+    {error&&<div className="notice" role="alert">
+     <p>{error}</p>
+     {user&&<button className="btn" onClick={()=>{setError('');setRetry(value=>value+1)}}>Retry loading profile</button>}
+    </div>}
 
     {authLoading||loading
      ? <p role="status">Loading your profile…</p>
@@ -255,23 +283,19 @@ export default function Profile(){
           onSignOut={()=>void signOut()}
          />
        : <SignedOutContent
-          mode={mode}
           email={email}
+          sentTo={sentTo}
+          cooldown={cooldown}
           busy={busy}
           intent={intent}
           intentId={intentId}
           pending={pending}
           canReturnToResult={canReturnToResult}
-          onMode={next=>{setMode(next);setError('');setMessage('')}}
-          onEmail={setEmail}
+          onEmail={value=>{setEmail(value);setError('')}}
           onSubmit={sendMagicLink}
          />}
 
     {message&&<p className="notice" role="status">{message}</p>}
-    {error&&<div className="notice" role="alert">
-     <p>{error}</p>
-     {user&&<button className="btn" onClick={()=>{setError('');setRetry(value=>value+1)}}>Retry loading profile</button>}
-    </div>}
    </div>
   </div>
  </section>;
@@ -335,7 +359,7 @@ function SignedInContent({
    : state&&!pending
      ? <>
         <h2>Connect your DNA</h2>
-        <p>Your account can keep saved investments now. Complete and save your assessment to add personal ETF compatibility.</p>
+        <p>Your account can keep saved investments now. Complete and save your Investing DNA assessment to add personal ETF compatibility.</p>
         <Link className="btn primary" href="/dna/assessment">Start Investing DNA assessment</Link>
        </>
      : null}
@@ -420,31 +444,34 @@ function SavedInvestments({items,listError,onRetry}:{items:SavedInstrument[];lis
 }
 
 function SignedOutContent({
- mode,email,busy,intent,intentId,pending,canReturnToResult,onMode,onEmail,onSubmit
+ email,sentTo,cooldown,busy,intent,intentId,pending,canReturnToResult,onEmail,onSubmit
 }:{
- mode:'signin'|'signup';
  email:string;
+ sentTo:string;
+ cooldown:number;
  busy:boolean;
  intent:Instrument|null;
  intentId:string|null;
  pending:ClaimTicket|null;
  canReturnToResult:boolean;
- onMode:(mode:'signin'|'signup')=>void;
  onEmail:(value:string)=>void;
  onSubmit:(event:FormEvent)=>void;
 }){
  return <>
-  <p className="muted">{mode==='signup'
-   ? 'Save investment research and your DNA in one place. You can return from another device after signing in.'
-   : 'Sign in with an email link to return to your saved investments and Investing DNA.'}</p>
-
-  <div className="mode-tabs" role="group" aria-label="Account options">
-   <button className="btn" aria-pressed={mode==='signin'} onClick={()=>onMode('signin')}>Sign in</button>
-   <button className="btn" aria-pressed={mode==='signup'} onClick={()=>onMode('signup')}>Create account</button>
-  </div>
+  <p className="muted">Enter your email once. If you already have an Investor DNA account, we’ll sign you in. If this is your first time, we’ll create a free account after you confirm your email. No password needed.</p>
 
   {intent&&<p className="notice">Ready to save: {intent.symbol?`${intent.symbol} — `:''}{intent.name}</p>}
-  {pending&&<p className="notice">Your completed assessment can still be attached to an account for a limited time. The guest report itself disappears after refresh.</p>}
+  {pending&&<div className="notice">
+   <strong>Your completed Investing DNA assessment is ready to attach.</strong>
+   <p>Keep this browser open while you check your email. The limited claim ticket stays available for a short time; the full guest report is not stored after refresh.</p>
+  </div>}
+
+  {sentTo&&<div className="notice" role="status">
+   <h2>Check your email</h2>
+   <p>We sent a secure one-time link to <strong>{sentTo}</strong>.</p>
+   <p>Open the <strong>newest</strong> Investor DNA email in this same browser. Each link works once.</p>
+   <p className="fine muted">If your mail app opens a different browser, copy the email link and paste it into this browser instead.</p>
+  </div>}
 
   <form onSubmit={onSubmit} className="auth-form">
    <label htmlFor="email">Email address</label>
@@ -458,14 +485,36 @@ function SignedOutContent({
     onChange={event=>onEmail(event.target.value)}
     placeholder="you@example.com"
    />
-   <button className="btn primary" disabled={busy||!supabase}>
-    {busy?'Sending…':mode==='signup'?'Create my free account':'Email me a sign-in link'}
+   <button className="btn primary" disabled={busy||!supabase||cooldown>0}>
+    {busy
+     ? 'Sending…'
+     : cooldown>0
+       ? `Send another link in ${cooldown}s`
+       : sentTo
+         ? 'Send a new secure link'
+         : 'Continue with email'}
    </button>
   </form>
 
-  <p className="fine muted">No password needed. If you have an unsaved DNA result, open the email link in this browser so we can attach that assessment to your account.</p>
+  <p className="fine muted">You do not need to choose between “sign in” and “create account.” We handle that from the email address you enter.</p>
   {canReturnToResult
    ? <Link href="/dna/result">Back to my one-time report →</Link>
    : <Link href={intentId?'/investment/'+intentId:'/dna/assessment'}>{intentId?'Back to investment':'Continue without an account'} →</Link>}
  </>;
+}
+
+function friendlyAuthError(raw:string):string {
+ const value=raw.replaceAll('+',' ').trim();
+ const lower=value.toLowerCase();
+
+ if(lower.includes('invalid')&&lower.includes('expired') || lower.includes('otp_expired') || lower.includes('token has expired')){
+  return 'This email link is no longer valid or has already been used. Request one new secure link below and open only the newest email.';
+ }
+ if(lower.includes('rate limit') || lower.includes('too many')){
+  return 'Too many email links were requested recently. Wait a few minutes, then request one new link. Your saved intent is still here.';
+ }
+ if(lower.includes('email address not authorized')){
+  return 'This test environment can only send authentication email to an authorized pilot address right now.';
+ }
+ return value || 'We could not finish email sign-in. Request a new secure link and try again.';
 }
