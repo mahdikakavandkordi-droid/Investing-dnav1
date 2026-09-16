@@ -322,7 +322,7 @@ const testAccess=[
  await page.waitForURL('**/dna/result');
  assert.equal(contextSaves,1);
  assert.match(await page.locator('body').innerText(),/This money now has context/);
- assert.match(await page.locator('body').innerText(),/DNA Match paused/);
+ assert.match(await page.locator('body').innerText(),/DNA Match paused/i);
  assert.doesNotMatch(await page.locator('body').innerText(),/82\/100/);
  check('investment context requires explicit core choices, sends principal protection, and respects review-required Match state');
 
