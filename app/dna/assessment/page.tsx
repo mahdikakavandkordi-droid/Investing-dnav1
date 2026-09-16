@@ -196,6 +196,7 @@ export default function Assessment(){
  return <AssessmentShell>
   <QuestionStep
    locale={locale}
+   cohort={cohort}
    draft={draft}
    questions={questions}
    question={question}
@@ -267,9 +268,10 @@ function AssessmentIntro({
 }
 
 function QuestionStep({
- locale,draft,questions,question,busy,warning,error,onPersist,onFinish
+ locale,cohort,draft,questions,question,busy,warning,error,onPersist,onFinish
 }:{
  locale:AssessmentLocale;
+ cohort:AssessmentCohort;
  draft:Draft;
  questions:Question[];
  question:Question;
@@ -286,12 +288,14 @@ function QuestionStep({
  const current=draft.index+1;
  const section=(question.section&&copy.sections[question.section as keyof typeof copy.sections])||'Investor DNA';
  const last=draft.index===questions.length-1;
+ const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
 
  return <div className="assessment-card question-shell" dir={direction} lang={locale}>
   <div className="question-header">
    <div>
     <div className="eyebrow">{section}</div>
     <div className="question-count">{copy.question} {current} / {questions.length}</div>
+    {researchCode&&<div className="fine muted">Research code: <strong>{researchCode}</strong></div>}
    </div>
    <div className="question-percent">{Math.round((current/questions.length)*100)}%</div>
   </div>
