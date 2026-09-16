@@ -1,4 +1,4 @@
-import Link from "next/link";
+import {DnaEntryActions} from "@/components/DnaEntryActions";
 
 const PILLARS:[string,string][]=[
  ["Risk comfort","How much uncertainty and market movement you are emotionally comfortable accepting."],
@@ -21,10 +21,7 @@ export default function DNA(){
     <span>No account required</span>
     <span>Save your result only if you want</span>
    </div>
-   <div className="actions">
-    <Link className="btn primary" href="/dna/assessment">Start as guest</Link>
-    <Link className="btn" href="/profile">I already have an account</Link>
-   </div>
+   <DnaEntryActions/>
 
    <div className="grid2" style={{marginTop:38}}>
     {PILLARS.map(([title,copy])=><div className="card" key={title}>
