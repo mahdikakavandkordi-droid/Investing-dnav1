@@ -5,7 +5,7 @@ Last reviewed: 2026-09-16
 
 This is the fastest way to answer **“where does this behavior live?”** without reading the repository from top to bottom.
 
-For design rules and trust boundaries, read `ARCHITECTURE.md`. For database/API details, read `DATABASE-AND-API.md`. This file maps product behavior to concrete code.
+For design rules and trust boundaries, read `ARCHITECTURE.md`. For product-journey invariants, read `PRODUCT-UX.md`. For database/API details, read `DATABASE-AND-API.md`. This file maps product behavior to concrete code.
 
 ---
 
@@ -35,6 +35,7 @@ Rules:
 5. Missing financial data stays `null`/unavailable; never silently convert it to zero.
 6. Applied migrations are immutable history. Runtime code can be retired with a new migration; old migration files are not deleted.
 7. A frozen/retired subsystem must not remain as a second callable runtime path “just in case”. Git history and migrations are the recovery mechanism.
+8. Account creation is for persistence, not a gate in front of assessment, same-session Match, research Detail or Compare. See `PRODUCT-UX.md` before changing guest continuity.
 
 ---
 
@@ -63,7 +64,7 @@ Do not use “fund” as a generic synonym for all investments. Match is current
 ### `/dna` — Investing DNA entry
 
 **Route:** `app/dna/page.tsx`  
-**Purpose:** explain/start assessment.  
+**Purpose:** explain/start assessment without exposing archetype outcomes before the user answers.  
 **Scoring:** none.
 
 ### `/dna/assessment` — questionnaire session
@@ -82,7 +83,7 @@ save_answers
 submit
 ```
 
-Canonical questionnaire/scoring is server/database owned. The browser only manages navigation, temporary answers and recovery state.
+Canonical questionnaire/scoring is server/database owned. The browser only manages navigation, temporary answers and recovery state. The assessment starts guest-first; account creation is optional after value is delivered.
 
 **Tests:**
 - `tests/contracts.mjs`
@@ -93,13 +94,26 @@ Canonical questionnaire/scoring is server/database owned. The browser only manag
 
 ### `/dna/context` — money/goal context
 
-**Route:** `app/dna/context/page.tsx`  
-**Server action:** `save_context` via Edge Function  
-**DB service contract:** current `service_save_investment_context` path.
+**Route:** `app/dna/context/page.tsx`
+
+There are two ownership paths with one UI:
+
+```text
+guest same-session assessment
+ -> save_context Edge action
+ -> server-issued assessment/session token validation
+
+signed-in saved DNA
+ -> app_save_current_investment_context()
+ -> authenticated ownership derived from auth.uid()
+ -> investor_private.save_current_investment_context(...)
+```
+
+The four core Match inputs are explicit choices: goal, canonical time-horizon bucket, liquidity need and `principal_required`. Do not preselect realistic answers. Existing context is preloaded when editing.
 
 Context describes the current pool of money. It is not Risk Tolerance and must not be fed back into the underlying Investor DNA score.
 
-**Tests:** M1 DB regression + browser flow.
+**Tests:** M1/account DB regression + `tests/flow.cjs`.
 
 ### `/dna/result` — Investor DNA result
 
@@ -108,7 +122,9 @@ Context describes the current pool of money. It is not Risk Tolerance and must n
 **Presentation helpers:** `lib/dna-presentation.ts`  
 **Persisted account state:** `get_current_investor_app_state()` browser contract.
 
-Guest result state is intentionally ephemeral. Full guest reports are not a permanent localStorage database.
+Guest result state is intentionally ephemeral. Full guest reports are not a permanent localStorage database. The same SPA session can continue into Context, Match, Detail and Compare; a full refresh is allowed to lose the unpersisted full report while the narrow claim ticket can remain for optional account attachment.
+
+A `review_required` Match state must render as a paused/review callout rather than a ranked ETF preview. A missing/NULL Match score is never rendered as `0/100`.
 
 **Tests:** `tests/flow.cjs`, account/platform DB regression.
 
@@ -118,6 +134,8 @@ Guest result state is intentionally ephemeral. Full guest reports are not a perm
 **Adapter:** `lib/instruments.ts`  
 **Taxonomy/display rules:** `lib/instrument-model.ts`  
 **Primary RPC:** `app_search_instruments`
+
+Explore is guest-accessible and supports category tabs plus client-side search over the current research catalog.
 
 Current research universe:
 - ETF
@@ -144,8 +162,10 @@ ETF-specific enrichment:
 - `components/OfficialFundFactsCard.tsx`
 - `components/ResearchContextCard.tsx`
 
-Account/watchlist connection:
+Account/watchlist + fit connection:
 - `components/InstrumentConnection.tsx`
+
+Research Detail stays guest-accessible. For a same-session guest who arrived from a completed assessment/Match, the ETF fit layer may be shown from the ephemeral result. Account creation is required only to persist/save the investment to the Watchlist.
 
 Do not make GIC/Bond/T-Bill pretend to have ETF metrics such as MER/holdings merely to reuse a component.
 
@@ -154,6 +174,8 @@ Do not make GIC/Bond/T-Bill pretend to have ETF metrics such as MER/holdings mer
 **Route:** `app/match/page.tsx`  
 **Client contract:** `MatchPayload` / `MatchItem` in `lib/dna.ts`  
 **Canonical server model:** `investment-dna-match-v6` via current Match run/read path.
+
+The route accepts either persisted signed-in app state or the same-session ephemeral guest result. It must not force account creation merely to display a Match the guest just generated.
 
 Meaningful states:
 - `review_required`
@@ -178,9 +200,9 @@ This remains ETF-only while personalized Match is ETF-only.
 **Route:** `app/compare/page.tsx`  
 **Generic compare adapter:** `lib/instruments.ts`  
 **Shared dimensions:** cross-asset structure fields.  
-**Optional ETF layer:** saved DNA/Match can be overlaid only on Match-eligible ETF rows.
+**Optional ETF layer:** persisted or same-session guest DNA/Match can be overlaid only on Match-eligible ETF rows.
 
-Cross-asset comparison should compare structure first, not invent a fake common performance metric.
+Cross-asset comparison should compare structure first, not invent a fake common performance metric. Same-session guest personalization must not disappear merely because the user moved from Match to Compare.
 
 ### `/watchlist` — saved investments
 
@@ -188,7 +210,7 @@ Cross-asset comparison should compare structure first, not invent a fake common 
 **Adapter:** asset-neutral watchlist methods in `lib/instruments.ts`  
 **Ownership:** server/RLS/profile derived from authenticated identity.
 
-Watchlist is not ETF-specific.
+Watchlist is not ETF-specific. Unlike research/Match browsing, Watchlist persistence requires an account.
 
 ### `/profile` — account continuity
 
@@ -198,7 +220,7 @@ Watchlist is not ETF-specific.
 **Guest claim:** `claim_assessment` Edge action  
 **Saved investments:** `lib/instruments.ts`.
 
-The URL can express intent (for example an investment to save), but it is never proof of ownership.
+The URL can express intent (for example an investment to save), but it is never proof of ownership. Account UI should explain persistence/return value rather than interrupting the guest research journey.
 
 ### `/feedback` — product pilot feedback
 
@@ -224,9 +246,9 @@ These are product trust surfaces. Changes that alter claims or data handling sho
 ## 4. `lib/` ownership map
 
 ### `dna.ts`
-Browser contracts for questionnaire/result/Match plus guest recovery and limited claim-ticket state.
+Browser contracts for questionnaire/result/Match plus in-progress recovery, same-session ephemeral completed result and limited claim-ticket state.
 
-**Not allowed here:** canonical scoring calculations.
+**Not allowed here:** canonical scoring calculations or permanent storage of the full guest report.
 
 ### `assessment-copy.ts`
 Localized assessment UI copy only.
@@ -282,14 +304,14 @@ Small foundational investment fields shared by generic and ETF-specific client m
 | Component | Owns | Must not own |
 | --- | --- | --- |
 | `DnaSummary` | Investor DNA report composition | scoring |
-| `InstrumentConnection` | save/watchlist UI + ETF-only fit presentation | ownership decisions |
+| `InstrumentConnection` | save/watchlist UI + ETF-only persisted/same-session fit presentation | ownership decisions |
 | `InstrumentStructureCard` | shared cross-asset structure display | asset-specific fake metrics |
 | `InstrumentTermsCard` | fixed-income/GIC terms display | canonical research calculations |
 | `InvestmentDnaCard` | ETF Investment DNA display | Investor DNA scoring |
 | `OfficialFundFactsCard` | official ETF facts/provenance | Match logic |
 | `ResearchContextCard` | ETF coverage/holdings/performance context | filling missing data |
 | `ProductAnalytics` | route event mounting | arbitrary personal-data collection |
-| `Nav` / `Footer` | global shell | domain logic |
+| `Nav` / `Footer` | global shell/navigation/trust links | domain logic |
 
 ---
 
@@ -310,14 +332,15 @@ ETF/fund-specific research:
 
 Authenticated/account:
 - `get_current_investor_app_state`
+- `app_save_current_investment_context`
 - `app_watchlist`
 - `app_investment_fit`
 
-Assessment/pilot browser writes go through the Edge Function rather than direct table writes.
+Guest assessment/pilot writes go through the Edge Function rather than direct table writes. Signed-in current-context edits use the authenticated RPC so account ownership is derived server-side.
 
 ### Private/privileged implementation
 
-Privileged logic that genuinely needs elevated access belongs in `investor_private` or service-only functions and is reached through a narrow public wrapper/Edge action.
+Privileged logic that genuinely needs elevated access belongs in `investor_private` or service-only functions and is reached through a narrow public invoker wrapper/Edge action. `investor_private.save_current_investment_context` is the privileged implementation behind the authenticated context wrapper.
 
 ### Historical but intentionally retained
 
@@ -339,7 +362,7 @@ File: `supabase/functions/investing-dna-pilot/index.ts`
 | `questionnaire` | return narrow localized public question DTO |
 | `save_answers` | validate and persist answers |
 | `submit` | complete canonical assessment/result/Match |
-| `save_context` | persist money/goal context and refresh relevant output |
+| `save_context` | persist guest same-session money/goal context and refresh relevant output |
 | `claim_assessment` | attach completed/in-progress guest assessment to authenticated profile |
 | `track_event` | privacy-minimized product analytics |
 | `submit_feedback` | structured pilot feedback |
@@ -357,7 +380,7 @@ When adding an action, update:
 ### Browser/contract layer (`tests/`)
 
 - `contracts.mjs` — static public contract invariants (including questionnaire DTO leakage guard).
-- `flow.cjs` — Investing DNA guest flow.
+- `flow.cjs` — Investing DNA guest journey, same-session Match/Context continuity, review-required safety rendering and optional save/claim flow.
 - `funds-flow.cjs` — ETF research/Match/product paths.
 - `assets-flow.cjs` — cross-asset Explore/Detail/Compare behavior.
 - `m4-launch-flow.cjs` — transparency/privacy/launch-surface checks.
@@ -426,6 +449,8 @@ Trace:
  -> investor_platform_connections.sql regression
 ```
 
+Preserve the product rule that account is for persistence/return continuity; do not make account creation a prerequisite for guest assessment, same-session Match or public research.
+
 ### Change a research field
 
 Trace source → stored field → generic/specialized read model → adapter type → component → source/as-of display → regression.
@@ -457,6 +482,7 @@ A change is not finished until:
 - there is one clear owner for the behavior;
 - old callers/parallel implementations are removed;
 - public/server contract is explicit;
+- UX invariants still hold for guest/account continuity;
 - tests cover the changed boundary;
 - relevant code map/architecture docs are updated;
 - current CI is green;
