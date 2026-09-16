@@ -2,7 +2,6 @@
 
 import {useEffect,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
-import Link from "next/link";
 import {supabase,pilot} from "@/lib/supabase";
 import {
  answerRows,
@@ -48,15 +47,10 @@ export default function Assessment(){
   }catch{}
  },[]);
 
- // Resume only a valid draft belonging to the current account/guest context.
- // Completed guest reports redirect to the one-time result instead of reopening
- // the questionnaire.
  useEffect(()=>{
   let active=true;
 
   (async()=>{
-   if(!supabase)throw new Error("The assessment service is not configured yet.");
-
    const {data:{session}}=await supabase.auth.getSession();
    const saved=readDraft(session?.user.id||null);
    if(!active)return;
@@ -101,7 +95,6 @@ export default function Assessment(){
   setError('');
 
   try{
-   if(!supabase)throw new Error('The assessment service is not configured yet.');
    const {data:{session}}=await supabase.auth.getSession();
 
    let cohortAccessCode:string|undefined;
@@ -119,8 +112,6 @@ export default function Assessment(){
     ...(cohortAccessCode?{cohort_access_code:cohortAccessCode}:{})
    });
 
-   // The raw moderator invite code is one-time browser state, not long-lived
-   // application state.
    if(cohort==='COGNITIVE_V1_10')sessionStorage.removeItem(COGNITIVE_ACCESS_KEY);
 
    const next:Draft={
@@ -268,14 +259,7 @@ function AssessmentIntro({
    {busy?copy.starting:copy.start}
   </button>
 
-  <div className="assessment-account-card">
-   <div><p className="account-card-title">{copy.accountTitle}</p><p>{copy.accountBody}</p></div>
-   <div className="account-card-actions">
-    <Link className="btn account-create" href="/profile?mode=signup">{copy.accountCta}</Link>
-    <Link className="account-signin" href="/profile">{copy.signin}</Link>
-   </div>
-  </div>
-
+  <p className="muted fine assessment-account-note">No account is needed. If the result is useful, you can choose to save it after you see it.</p>
   <p className="muted fine assessment-consent">{copy.consent}</p>
   {cognitive&&<p className="notice">Research session: your moderator may ask what you thought each question meant after you finish. Please answer naturally without trying to optimize the result.</p>}
   {error&&<p role="alert" className="notice">{error}</p>}
