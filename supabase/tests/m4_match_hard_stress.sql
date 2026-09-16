@@ -160,7 +160,7 @@ begin
       or jsonb_array_length(coalesce(h.payload->'top_matches','[]'::jsonb))<>0
       or exists(
         select 1 from jsonb_array_elements(coalesce(h.payload->'results','[]'::jsonb)) x
-        where x->'match_score' is not null
+        where x->>'match_score' is not null
       )
     );
   if bad is not null then raise exception 'review-required scenario leaked ranked scores: %',bad; end if;
