@@ -1,6 +1,6 @@
-# Continue here — 2026-09-15
+# Continue here — 2026-09-16
 
-This file is the short-lived project handoff snapshot. Canonical architecture belongs in `docs/ARCHITECTURE.md`; do not turn this file into another architecture document.
+This file is the short-lived project handoff snapshot. Canonical architecture belongs in `docs/ARCHITECTURE.md`; concrete navigation belongs in `docs/CODE-MAP.md`; intentional runtime removals belong in `docs/RUNTIME-RETIREMENTS.md`.
 
 ## Current branch / PR
 
@@ -15,7 +15,7 @@ This file is the short-lived project handoff snapshot. Canonical architecture be
 - M3 Controlled Pilot Readiness: complete from engineering/operations perspective.
 - M4 Pilot Evidence & Pre-Launch Hardening: active and not closable by engineering alone.
 
-Still missing for M4 closeout: real cognitive participants, subsequent product-pilot evidence, external email/account canary, remaining launch hardening and formal compliance/privacy review.
+Still missing for M4 closeout: real cognitive participants, subsequent product-pilot evidence, external email/account canary, remaining launch hardening and formal Canadian compliance/privacy review.
 
 ## Current product shape
 
@@ -26,76 +26,145 @@ Still missing for M4 closeout: real cognitive participants, subsequent product-p
 - Explore/Detail/Compare: cross-asset.
 - Screener/Match: ETF-scoped.
 - Watchlist/Profile: asset-neutral.
-- Portfolio Builder: frozen during M4 and removed from current assessment/context/account-state response paths; historical migrations/functions remain preserved.
+- Portfolio Builder: frozen during M4 and no longer exists as a callable runtime subsystem. Only the historical `investment_portfolio_blueprints` table is retained, browser-inaccessible, with prior developer evidence.
 
-## Recent engineering work
+## Canonical runtime boundaries
 
-Repository/version cleanup:
+### Investing DNA assessment
+
+Browser routes call the `investing-dna-pilot` Edge Function for:
+
+- `start`
+- `questionnaire`
+- `save_answers`
+- `submit`
+- `save_context`
+- `claim_assessment`
+- `track_event`
+- `submit_feedback`
+
+The public questionnaire DTO is deliberately narrow; scoring weight, construct metadata, raw alternate-language fields and internal version fields stay behind the service boundary.
+
+### DNA Match
+
+The live Match chain is intentionally singular:
+
+```text
+current app contracts
+ -> investor_private.current_match(assessment_id)
+ -> calculate_investment_match_v6(assessment_id)
+ -> match runs/results
+```
+
+Retired live Match paths include v3, v4, v5, v5.1, the unversioned wrapper, old Investment DNA v1 view, and unused recommendation/explainability/intelligence/snapshot helpers. Historical Match result rows and applied migrations remain for audit/reproducibility.
+
+See `docs/RUNTIME-RETIREMENTS.md` before restoring anything created by an older migration.
+
+## Recent engine / repository cleanup
+
+### Runtime retirement
+
+Applied and source-controlled retirement migrations:
+
+- `20260916000718_m4_retire_frozen_portfolio_runtime.sql`
+- `20260916001531_m4_retire_legacy_app_views_and_home.sql`
+- `20260916001822_m4_retire_legacy_match_runtimes.sql`
+- `20260916002108_m4_retire_unused_match_helpers.sql`
+
+Removed dead/parallel runtime includes:
+
+- Portfolio Builder generation/risk functions and views;
+- empty portfolio risk-analysis table;
+- legacy `v_app_*`/current-DNA/home shell views and `get_investor_home()`;
+- Match v3/v4/v5/v5.1 and the unused unversioned Match wrapper;
+- `v_investment_dna_v1`;
+- unused Match recommendations/explainability/intelligence/snapshot/cleanup helpers;
+- empty `investor_match_snapshots` table.
+
+Current research views that still have real dependencies, including `v_investment_catalog`, `v_investment_detail`, `v_investment_screener` and `v_investment_intelligence`, were explicitly retained.
+
+### Client/source cleanup
 
 - duplicate `FundConnection.tsx` removed; `InstrumentConnection.tsx` is canonical;
+- old ETF-specific Watchlist aliases/types were removed from `lib/investments.ts`; asset-neutral Watchlist lives in `lib/instruments.ts`;
+- browser `Question` type no longer advertises internal construct/scoring fields that the public API does not return;
+- unused `MatchContent` state prop removed;
 - obsolete `docs/HARD-TEST-V1.9.md` removed;
-- convenience `old`/`backup`/parallel-version copies are prohibited after callers migrate;
-- applied migrations are explicitly treated as append-only reproducibility history rather than disposable old versions;
-- three live-applied migrations that were missing from the active branch were restored under the exact Supabase ledger versions without re-running them:
-  - `20260915084212_guarded_match_runs_v6.sql`
-  - `20260915084213_assessment_v110_and_context.sql`
-  - `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`
+- convenience `old`/`backup`/parallel-version copies are prohibited after callers migrate.
 
-Browser/API boundary cleanup:
+### Hygiene enforcement
 
-- questionnaire Edge Function returns only the narrow selected-language public DTO; scoring weight/internal construct/raw-localization fields stay server-side;
-- public anonymous research RPC definer findings were reduced from 4 to 0 while anonymous search/compare/DNA/fund-facts reads were regression-verified;
-- authenticated browser-callable definer findings were reduced from 11 to 2;
-- legacy `app_save_investment_context`, `get_investor_home`, `get_investment_recommendations` and `promote_assessment_to_current_dna` no longer remain parallel browser APIs;
-- `get_current_investor_app_state` is now a public authenticated invoker wrapper over `investor_private.current_investor_app_state`;
-- official fund facts use a public invoker wrapper over a narrow private privileged implementation;
-- completed guest claim/promotion no longer relies on browser `auth.uid()` inside the service-role path.
+Current CI includes:
 
-Account/Portfolio hardening:
+- contract tests;
+- `tests/repo-hygiene.mjs`;
+- normal TypeScript check;
+- `tsc --noEmit --noUnusedLocals --noUnusedParameters` hygiene check;
+- Next.js build;
+- browser flow/fund/M4/cross-asset regressions.
 
-- a completed guest assessment was transactionally claimed into a temporary profile against the live schema; current assessment pointer and Investor DNA snapshot were verified, then the transaction was rolled back;
-- `complete_dna_assessment`, `service_save_investment_context` and current account-state no longer calculate/return Portfolio Builder output;
-- the only remaining code reference to `generate_portfolio_blueprints` found in the live database is a service-role-only historical maintenance helper;
-- `supabase/tests/m4_security_hardening.sql` passes on the live project with rollback and leaves no synthetic data behind.
-
-## Security Advisor state
-
-After the current M4 function/RPC hardening pass:
-
-- anonymous browser-callable `SECURITY DEFINER` functions: 0 (was 4);
-- authenticated browser-callable `SECURITY DEFINER` functions: 2 (was 11):
-  - `get_or_create_current_profile`
-  - `is_current_profile`
-- `SECURITY DEFINER` views: 28 remain for individual classification;
-- RLS-enabled/no-policy INFO findings: 33 remain, many intentionally service/admin/read-only and not to be changed blindly.
-
-The two remaining authenticated helpers participate in current auth/ownership semantics and should be tested with a real account canary before changing solely to eliminate an Advisor count. No real `auth.users`/profile-linked users existed in the project at the time of this audit.
+The unused-code gate already caught and led to removal of a real dead prop in `/match`; it should be fixed rather than weakened when future dead code is detected.
 
 ## Verification status
 
-The last pre-hardening fully completed GitHub CI was green. Several database/source-control hardening commits have been added since; confirm CI on the final head before calling the branch engineering-green.
+### Database
 
-The latest observed Vercel status was blocked by the provider build-rate limit (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the current head is not deployment-verified until Vercel accepts a new build.
+- anonymous generic research search/detail/compare and ETF search/DNA/official-facts/research-context smoke tests passed after legacy-view retirement;
+- `supabase/tests/milestone_1_engine_trust.sql` was updated to require legacy Match runtimes to be absent and canonical v6/current_match to be present;
+- final M1 engine trust regression passed on the live database after all Match/runtime helper removals;
+- synthetic DB regression data is transactionally rolled back.
 
-## Known high-priority follow-ups
+### GitHub CI
 
-1. Wait for/confirm final-head GitHub CI after the latest source/doc changes.
-2. Classify the 28 `SECURITY DEFINER` views individually; do not batch-convert them without tracing underlying grants/RLS.
-3. Run the real deployed magic-link/account canary with an external inbox when hosting can build the final head; use it to verify the remaining two auth helpers in real identity context.
-4. Review remaining Performance Advisor findings after the current DB changes.
+- full CI run 200 passed on commit `eb874160a256749bf2ce789ffd45b18ab271b3f3`, including the new unused-code gate and all browser suites;
+- documentation commits were added after that success. Confirm CI on the eventual final head before calling the branch fully engineering-green.
+
+### Vercel
+
+The last observed deployment state before this handoff refresh was provider rate limiting (`Deployment rate limited — retry in 24 hours`), not an application compile failure. Re-check Vercel on the final head before claiming deployment verification.
+
+## Current Supabase Advisor state
+
+Latest security audit after runtime retirement:
+
+- anonymous browser-callable `SECURITY DEFINER` functions: 0;
+- authenticated browser-callable `SECURITY DEFINER` functions: 2:
+  - `get_or_create_current_profile`
+  - `is_current_profile`
+- `SECURITY DEFINER` views: 20 (down from 28 during this cleanup pass);
+- RLS-enabled/no-policy INFO findings: 32 (down from 33).
+
+Do not batch-convert the remaining 20 views to `security_invoker`. Several current research/read-model paths depend on privileged reads and must be classified individually.
+
+Latest Performance Advisor currently reports only `unused_index` INFO findings (47). Because this is a young/pilot database, zero observed index usage is not enough reason to remove an index; trace expected query/FK workload first.
+
+## Documentation system
+
+Start here when returning to the codebase:
+
+1. `README.md`
+2. `docs/README.md`
+3. `docs/CODE-MAP.md` — route → module → RPC/Edge → DB → test map
+4. `docs/ARCHITECTURE.md`
+5. `docs/ENGINEERING-GUIDE.md`
+6. `docs/DATABASE-AND-API.md`
+7. `docs/RUNTIME-RETIREMENTS.md` — what was intentionally removed and what replaced it
+8. `docs/TESTING.md`
+9. `docs/INVESTOR-DNA-ASSET-ARCHITECTURE.md`
+10. `docs/ASSESSMENT-METHODOLOGY.md`
+11. `docs/INVESTMENT-DNA-METHODOLOGY.md`
+
+Folder-level maps also exist under `app/`, `components/`, `lib/`, `supabase/`, `supabase/migrations/`, `supabase/tests/` and `tests/`.
+
+## High-priority follow-ups
+
+1. Confirm final-head GitHub CI after the documentation/handoff commits.
+2. Re-check final-head Vercel deployment once provider rate limiting permits a build.
+3. Classify the remaining 20 `SECURITY DEFINER` views individually; do not batch-change security mode without tracing grants/RLS/dependencies.
+4. Run a real external magic-link/account canary and use that real authenticated flow before changing the two remaining authenticated definer helpers solely to reduce Advisor counts.
 5. Keep source/as-of dates real; never manufacture freshness.
-6. Preserve historical questionnaire/scoring/Match data and applied migrations only where reproducibility requires them; do not reintroduce duplicate live implementations.
+6. Keep historical persisted model results/migrations only where reproducibility or evidence requires them; do not reintroduce duplicate live implementations.
 7. Complete M4 human evidence gates: 6 cognitive sessions, review/revision decision, 6 further sessions, candidate freeze, then the 20–50 user product pilot.
-
-## Where to read next
-
-- `README.md`
-- `docs/README.md`
-- `docs/ARCHITECTURE.md`
-- `docs/ENGINEERING-GUIDE.md`
-- `docs/DATABASE-AND-API.md`
-- `docs/TESTING.md`
-- `docs/M4-PRELAUNCH-CHECKLIST.md`
-- `docs/MILESTONE-4-PILOT-EVIDENCE-PLAN.md`
+8. Formal Canadian compliance/privacy review remains a launch gate.
 
 If this snapshot conflicts with current code or canonical engineering docs, update this snapshot rather than preserving stale handoff text.
