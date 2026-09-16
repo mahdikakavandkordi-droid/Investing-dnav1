@@ -4,6 +4,7 @@ begin;
 do $$
 declare
   bad_count int;
+  legacy_oid oid;
   claim_assessment_id uuid;
   temp_profile_id uuid;
   claimed jsonb;
@@ -62,19 +63,31 @@ begin
     raise exception 'Expected SELECT-only access for 5 views x 2 browser roles; got % grants',bad_count;
   end if;
 
-  -- Retired browser RPCs stay in history but must not remain callable by browser roles.
-  if has_function_privilege('anon','public.app_save_investment_context(uuid,jsonb)','execute')
-     or has_function_privilege('authenticated','public.app_save_investment_context(uuid,jsonb)','execute') then
-    raise exception 'Legacy app_save_investment_context is still browser executable';
+  -- Legacy browser RPCs may be fully retired. If an object still exists, it
+  -- must not remain browser executable.
+  legacy_oid:=to_regprocedure('public.app_save_investment_context(uuid,jsonb)');
+  if legacy_oid is not null then
+    if has_function_privilege('anon',legacy_oid,'execute')
+       or has_function_privilege('authenticated',legacy_oid,'execute') then
+      raise exception 'Legacy app_save_investment_context is still browser executable';
+    end if;
   end if;
-  if has_function_privilege('anon','public.get_investor_home()','execute')
-     or has_function_privilege('authenticated','public.get_investor_home()','execute') then
-    raise exception 'Legacy get_investor_home is still browser executable';
+
+  legacy_oid:=to_regprocedure('public.get_investor_home()');
+  if legacy_oid is not null then
+    if has_function_privilege('anon',legacy_oid,'execute')
+       or has_function_privilege('authenticated',legacy_oid,'execute') then
+      raise exception 'Legacy get_investor_home is still browser executable';
+    end if;
   end if;
-  if has_function_privilege('authenticated','public.get_investment_recommendations(uuid,integer)','execute') then
+
+  legacy_oid:=to_regprocedure('public.get_investment_recommendations(uuid,integer)');
+  if legacy_oid is not null and has_function_privilege('authenticated',legacy_oid,'execute') then
     raise exception 'Legacy get_investment_recommendations is still browser executable';
   end if;
-  if has_function_privilege('authenticated','public.promote_assessment_to_current_dna(uuid)','execute') then
+
+  legacy_oid:=to_regprocedure('public.promote_assessment_to_current_dna(uuid)');
+  if legacy_oid is not null and has_function_privilege('authenticated',legacy_oid,'execute') then
     raise exception 'Legacy promote_assessment_to_current_dna is still browser executable';
   end if;
 
