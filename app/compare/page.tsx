@@ -8,6 +8,7 @@ import {assetLabel,matchEligible,heroMetrics} from '@/lib/instrument-model';
 import {formatMetric,validId} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
+import {readDraft} from '@/lib/dna';
 import type {AppState,MatchItem} from '@/lib/dna';
 
 const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
@@ -41,9 +42,18 @@ export default function Compare(){
    setSelected([ids[0]||'',ids[1]||'',ids[2]||'']);
   }
 
+  const local=!user?readDraft(null):null;
+  const guestState:AppState|null=local?.result?{
+   has_profile:false,
+   assessment_id:local.session.assessment_id,
+   dna:local.result.result,
+   report:local.result.report?.report||local.result.result,
+   matches:local.result.match
+  }:null;
+
   const stateRequest=user
    ? rpc<AppState>('get_current_investor_app_state').catch(()=>null)
-   : Promise.resolve(null);
+   : Promise.resolve(guestState);
 
   Promise.all([searchInstruments({limit:100}),stateRequest])
    .then(([catalog,appState])=>{
@@ -59,7 +69,7 @@ export default function Compare(){
  },[user?.id]);
 
  const matches=useMemo(
-  ()=>new Map((state?.matches?.results||[]).map(match=>[match.symbol,match])),
+  ()=>new Map(currentMatchRows(state).map(match=>[match.symbol,match])),
   [state]
  );
 
@@ -92,7 +102,7 @@ export default function Compare(){
    <div className="eyebrow">Compare</div>
    <h1>Compare Investment DNA side by side</h1>
    <p className="muted">
-    Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. Personalized DNA Match is shown only for ETFs.
+    Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.
    </p>
 
    {loading
@@ -112,7 +122,7 @@ export default function Compare(){
      {rows.map(item=><ComparisonCard
       key={item.id}
       item={item}
-      userPresent={!!user}
+      dnaPresent={!!state?.dna}
       match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}
      />)}
     </div>
@@ -163,11 +173,11 @@ function ComparisonPicker({
 
 function ComparisonCard({
  item,
- userPresent,
+ dnaPresent,
  match
 }:{
  item:Instrument;
- userPresent:boolean;
+ dnaPresent:boolean;
  match?:MatchItem;
 }){
  const canMatch=matchEligible(item.asset_type);
@@ -180,7 +190,7 @@ function ComparisonCard({
   </div>
   <h2>{item.name}</h2>
 
-  <FitSummary canMatch={canMatch} match={match} userPresent={userPresent}/>
+  <FitSummary canMatch={canMatch} match={match} dnaPresent={dnaPresent}/>
 
   <h3>Shared Investment DNA</h3>
   {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}>
@@ -221,7 +231,7 @@ function ComparisonCard({
  </article>;
 }
 
-function FitSummary({canMatch,match,userPresent}:{canMatch:boolean;match?:MatchItem;userPresent:boolean}){
+function FitSummary({canMatch,match,dnaPresent}:{canMatch:boolean;match?:MatchItem;dnaPresent:boolean}){
  if(!canMatch){
   return <div className="notice">
    <span>Research profile · personalized Match not enabled for this asset type yet</span>
@@ -230,7 +240,7 @@ function FitSummary({canMatch,match,userPresent}:{canMatch:boolean;match?:MatchI
 
  if(!match){
   return <div className="notice">
-   <span>{userPresent?'No ranked ETF fit available':'Sign in with saved DNA to add ETF fit'}</span>
+   <span>{dnaPresent?'No ranked ETF fit is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span>
   </div>;
  }
 
@@ -239,6 +249,18 @@ function FitSummary({canMatch,match,userPresent}:{canMatch:boolean;match?:MatchI
   <strong>{fitLabel(match)}</strong>
   <p className="fine muted">Personal ETF compatibility layer</p>
  </div>;
+}
+
+function currentMatchRows(state:AppState|null):MatchItem[]{
+ const payload=state?.matches;
+ if(!payload)return [];
+ if(Array.isArray(payload.results))return payload.results;
+ return [
+  ...(payload.top_matches||[]),
+  ...(payload.alternatives||[]),
+  ...(payload.consider||[]),
+  ...(payload.mismatch||[])
+ ];
 }
 
 function readRequestedIds(){
