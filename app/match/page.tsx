@@ -6,8 +6,9 @@ import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import type {Fund} from '@/lib/investments';
 import {readDraft} from '@/lib/dna';
+import {formatInvestmentContext} from '@/lib/dna-presentation';
 import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
-import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
+import type {AppState,InvestmentContextProfile,MatchItem,MatchPayload} from '@/lib/dna';
 
 type ConstraintShape={
  reasons?:string[];
@@ -86,7 +87,8 @@ export default function Matches(){
  const idBySymbol=useMemo(()=>new Map(funds.map(fund=>[fund.symbol,fund.id])),[funds]);
  const featured=rows.slice(0,3);
  const more=rows.slice(3,9);
- const hasContext=!!state?.report?.investment_context;
+ const context=state?.report?.investment_context||null;
+ const hasContext=!!context;
  const compareIds=featured
   .map(item=>idBySymbol.get(item.symbol))
   .filter((id):id is string=>!!id);
@@ -106,6 +108,7 @@ export default function Matches(){
            constraints={constraints}
            featured={featured}
            more={more}
+           context={context}
            hasContext={hasContext}
            idBySymbol={idBySymbol}
            compareIds={compareIds}
@@ -119,7 +122,7 @@ function MatchHero(){
   <div className="eyebrow">DNA Match · ETFs</div>
   <h1>See how your DNA lines up with ETFs</h1>
   <p>We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon and access needs for this money.</p>
-  <p className="fine muted">A higher score means closer research compatibility — not a better investment, a return forecast, or a recommendation to buy.</p>
+  <p className="fine muted">A higher score means closer research compatibility with the inputs shown on this page — not a better investment, a return forecast, or a recommendation to buy.</p>
  </div>;
 }
 
@@ -157,12 +160,13 @@ function MissingDnaState(){
 }
 
 function MatchContent({
- match,constraints,featured,more,hasContext,idBySymbol,compareIds
+ match,constraints,featured,more,context,hasContext,idBySymbol,compareIds
 }:{
  match?:MatchPayload;
  constraints:ConstraintShape;
  featured:MatchItem[];
  more:MatchItem[];
+ context:InvestmentContextProfile|null;
  hasContext:boolean;
  idBySymbol:Map<string,string>;
  compareIds:string[];
@@ -170,9 +174,11 @@ function MatchContent({
  return <>
   <MatchStatus match={match} constraints={constraints} featuredCount={featured.length}/>
 
+  {context&&<MoneyContextSummary context={context}/>} 
+
   {!hasContext&&match?.status!=='review_required'&&<div className="match-context-nudge">
    <div>
-    <strong>Make these matches more useful</strong>
+    <strong>Make these comparisons specific to this money</strong>
     <p>Add what the money is for, when you may need it, how important access is, and whether the full amount must be protected. That context stays separate from your Investor DNA.</p>
    </div>
    <Link className="btn" href="/dna/context">Add investment context</Link>
@@ -198,12 +204,36 @@ function MatchContent({
  </>;
 }
 
+function MoneyContextSummary({context}:{context:InvestmentContextProfile}){
+ const rows=[
+  ['Goal',formatInvestmentContext('goal',context.goal)],
+  ['Time horizon',formatInvestmentContext('time_horizon',context.time_horizon)],
+  ['Access need',formatInvestmentContext('liquidity_need',context.liquidity_need)],
+  ['Principal protection',formatInvestmentContext('principal_required',context.principal_required)]
+ ];
+
+ return <section className="card">
+  <div className="eyebrow">What this Match is using</div>
+  <h2>Your money context</h2>
+  <p className="muted">These answers affect the ETF comparison below. They do not change your underlying Investor DNA.</p>
+  <div className="grid2 section compact">
+   {rows.map(([label,value])=><div className="fingerprint" key={label}>
+    <span>{label}</span>
+    <strong>{value}</strong>
+   </div>)}
+  </div>
+  <div className="actions compact">
+   <Link className="btn" href="/dna/context">Edit this context</Link>
+  </div>
+ </section>;
+}
+
 function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;constraints:ConstraintShape;featuredCount:number}){
  if(match?.status==='review_required'){
   return <div className="match-status-card warning">
    <div className="eyebrow">Matching paused</div>
    <h2>Review this money before ranking ETFs</h2>
-   <p>The engine found a financial or product-data condition that should not be converted into a ranked recommendation.</p>
+   <p>The current inputs or ETF data triggered a review point, so we are not turning them into a ranked list.</p>
    {constraints.reasons?.length?<ul>{constraints.reasons.map(reason=><li key={reason}>{reason}</li>)}</ul>:null}
    <div className="actions">
     <Link className="btn" href="/dna/context">Review investment context</Link>
@@ -216,7 +246,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
   return <div className="match-status-card warning">
    <div className="eyebrow">No forced match</div>
    <h2>No ETF in the current research universe passes your fit limits</h2>
-   <p>We are not forcing a recommendation. The comparisons below are the closest outside the current limits and are shown only to explain the mismatch.</p>
+   <p>We are not forcing a result. The comparisons below sit outside at least one current limit and are shown only to explain the mismatch.</p>
   </div>;
  }
 
@@ -234,7 +264,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
   return <div className="match-status-card ok">
    <div className="eyebrow">Context-aware match</div>
    <h2>{count} current option{count===1?'':'s'} passed the research fit limits</h2>
-   <p>These results use your Investor DNA, investment context and the current verified ETF data version.</p>
+   <p>Use the context summary and the reasons on each card to understand what is driving the comparison.</p>
    {match.data_as_of&&<p className="fine muted">ETF data through {match.data_as_of} · Match model {match.model_version}</p>}
   </div>;
  }
@@ -246,8 +276,8 @@ function FeaturedMatches({featured,match,idBySymbol}:{featured:MatchItem[];match
  const noSuitable=match?.status==='no_suitable_options';
  const contextOnly=match?.status==='context_required';
  return <section className="match-section">
-  <div className="eyebrow">{contextOnly?'DNA-only comparisons':noSuitable?'Closest comparisons outside limits':'Closest alignment'}</div>
-  <h2>{contextOnly?'Explore these before adding context':noSuitable?'Why the nearest options still miss':'Start with these'}</h2>
+  <div className="eyebrow">{contextOnly?'DNA-only comparisons':noSuitable?'Closest comparisons outside limits':'Closest current alignment'}</div>
+  <h2>{contextOnly?'Explore these before adding context':noSuitable?'Why the nearest options still miss':'Compare these more closely'}</h2>
   <div className="match-dna-grid">
    {featured.map((item,index)=><MatchCard
     key={item.symbol}
@@ -263,15 +293,16 @@ function FeaturedMatches({featured,match,idBySymbol}:{featured:MatchItem[];match
 function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;match?:MatchPayload;investmentId?:string}){
  const good=strengths(item);
  const watch=watchouts(item);
- const scores=breakdown(item);
- const score=matchScorePresentation(item);
  const contextOnly=match?.status==='context_required';
+ const scores=contextOnly?[]:breakdown(item);
+ const score=matchScorePresentation(item);
+ const summary=contextOnly||match?.status==='no_suitable_options'?item.explanation?.summary:null;
 
  return <article className="match-dna-card">
   <div className="match-card-top">
    <div>
     <span className="pill">{item.symbol}</span>
-    {index===0&&match?.status!=='no_suitable_options'&&<span className="match-rank">{contextOnly?'DNA-only comparison':'Closest match'}</span>}
+    {index===0&&match?.status!=='no_suitable_options'&&<span className="match-rank">{contextOnly?'DNA-only comparison':'Closest current fit'}</span>}
    </div>
    <div className="match-score">
     <strong>{score.numericValue??score.text}</strong>
@@ -284,7 +315,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
    <span className="match-fit">{matchFitLabel(item)}</span>
    {item.risk_band&&<span className="pill">Official risk: {item.risk_band}</span>}
   </div>
-  {item.explanation?.summary&&<p className="match-summary">{item.explanation.summary}</p>}
+  {summary&&<p className="match-summary">{summary}</p>}
 
   {scores.length>0&&<div className="match-breakdown">
    {scores.map(([name,value])=><div key={name}>
@@ -298,17 +329,17 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
   </div>}
 
   {watch.length>0&&<div className="match-watch">
-   <small>What conflicts</small>
+   <small>What to watch</small>
    {watch.slice(0,2).map(text=><p key={text}>! {text}</p>)}
   </div>}
 
   <p className="match-change">
-   <strong>What would change this comparison?</strong><br/>
+   <strong>What could change the fit?</strong><br/>
    {changeNote(item,match)}
   </p>
 
   {investmentId
-   ? <Link className="btn primary" href={'/investment/'+investmentId}>View Investment DNA</Link>
+   ? <Link className="btn primary" href={'/investment/'+investmentId}>Open ETF research</Link>
    : <Link className="btn" href="/explore">Find in Explore</Link>}
  </article>;
 }
@@ -316,8 +347,8 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
 function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>}){
  const contextOnly=match?.status==='context_required';
  return <section className="match-section match-more">
-  <div className="eyebrow">{contextOnly?'More DNA-only comparisons':'Also worth comparing'}</div>
-  <h2>{contextOnly?'Continue exploring the ETF universe':'Other compatible options'}</h2>
+  <div className="eyebrow">{contextOnly?'More DNA-only comparisons':'Also passed current limits'}</div>
+  <h2>{contextOnly?'Continue exploring the ETF universe':'Other ETFs to compare'}</h2>
   <div className="match-more-grid">
    {rows.map(item=>{
     const id=idBySymbol.get(item.symbol);
@@ -329,7 +360,7 @@ function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPaylo
       <p>{matchFitLabel(item)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
      </div>
      <div className="match-mini-score">{score.text}</div>
-     {id&&<Link href={'/investment/'+id}>See details →</Link>}
+     {id&&<Link href={'/investment/'+id}>Open research →</Link>}
     </article>;
    })}
   </div>
@@ -355,10 +386,10 @@ function constraintShape(match?:MatchPayload){
 function breakdown(item:MatchItem){
  const scores=item.explanation?.scores||{};
  return [
-  ['Official risk fit',scores.official_risk_fit],
-  ['Market exposure fit',scores.market_exposure_fit],
-  ['Goal role fit',scores.goal_role_fit],
-  ['Exposure breadth',scores.exposure_breadth]
+  ['Risk level',scores.official_risk_fit],
+  ['Equity exposure',scores.market_exposure_fit],
+  ['Goal fit',scores.goal_role_fit],
+  ['Diversification',scores.exposure_breadth]
  ].filter((entry):entry is [string,number]=>typeof entry[1]==='number'&&Number.isFinite(entry[1]));
 }
 
@@ -369,19 +400,19 @@ function changeNote(item:MatchItem,match?:MatchPayload){
   return 'This comparison is paused by a safety or data-review gate. Resolve the review point rather than trying to raise the score.';
  }
  if(match?.status==='context_required'){
-  return 'Add the real goal, withdrawal horizon, liquidity need and principal requirement for this money. That turns this from DNA-only comparison into context-aware matching.';
+  return 'Add the real goal, withdrawal horizon, liquidity need and principal requirement for this money. That turns this from a DNA-only comparison into a context-aware Match.';
  }
  if(typeof scores.market_exposure_fit==='number'&&scores.market_exposure_fit<95){
-  return 'A lower-equity structure would fit the current exposure ceiling more closely. A genuinely longer horizon may also change that ceiling; do not change your inputs just to improve a score.';
+  return 'A lower-equity ETF would sit closer to the current exposure limit. A genuinely longer horizon may also change that limit; do not change your inputs just to improve a score.';
  }
  if(typeof scores.official_risk_fit==='number'&&scores.official_risk_fit<85){
-  return 'A fund with a lower issuer-disclosed risk category would align more closely with the risk tolerance and capacity in your current DNA.';
+  return 'An ETF with a lower issuer-disclosed risk category would align more closely with the risk tolerance and capacity in your current DNA.';
  }
  if(typeof scores.goal_role_fit==='number'&&scores.goal_role_fit<60){
-  return 'An investment whose asset mix better serves the goal you entered for this money would improve role fit.';
+  return 'An ETF whose structure better serves the goal and horizon you entered for this money would improve the goal-fit component.';
  }
  if(typeof scores.exposure_breadth==='number'&&scores.exposure_breadth<75){
-  return 'A structure with broader market or asset-class exposure would improve the breadth component.';
+  return 'A structure with broader market or asset-class exposure would improve the diversification component.';
  }
- return 'The score should move only when your genuine inputs change, the fund structure changes, or newer verified fund data becomes available.';
+ return 'The fit can move when your genuine money context changes, the ETF structure changes, or newer verified ETF data becomes available.';
 }
