@@ -1,6 +1,6 @@
 # Continue here — 2026-09-16
 
-This is the short-lived project handoff snapshot. Canonical references: `docs/ARCHITECTURE.md`, `docs/PRODUCT-UX.md`, `docs/TESTING.md`, `docs/INVESTMENT-DNA-METHODOLOGY.md`.
+This is the short-lived project handoff snapshot. Canonical references: `docs/ARCHITECTURE.md`, `docs/PRODUCT-UX.md`, `docs/TESTING.md`, `docs/INVESTMENT-DNA-METHODOLOGY.md`, `docs/MATCH-UX-REVIEW.md`.
 
 ## Current branch / PR
 
@@ -112,7 +112,7 @@ context_only_score_policy = hidden_until_context_complete
 
 and redacts row `match_score` values until money context is complete.
 
-Browser presentation is now centralized in `lib/match-presentation.ts`:
+Browser presentation is centralized in `lib/match-presentation.ts`:
 
 ```text
 context_required -> DNA-only
@@ -120,11 +120,11 @@ review_required  -> Review
 available        -> numeric context-aware Match
 ```
 
-Result, Match, ETF Screener and investment Detail all consume the same semantics. Context-required rows are no longer mislabeled as `Review`, and the Match page no longer calls the first DNA-only row `Closest match`.
+The presentation helper is defensive: context/review state takes precedence over any accidental numeric score in the browser payload. Result, Match, ETF Screener and investment Detail consume the same semantics.
 
 ## Context UI alignment with v7
 
-The Context form now exposes every current v7 goal that the model can distinguish, including:
+The Context form exposes every current v7 goal that the model can distinguish, including:
 
 - `major_purchase`;
 - `wealth_preservation`.
@@ -132,6 +132,23 @@ The Context form now exposes every current v7 goal that the model can distinguis
 `emergency_reserve` remains a separate safety-sensitive goal rather than a synonym for wealth preservation.
 
 Legacy stored `preservation` is presented as `wealth_preservation`, not emergency reserve. Legacy horizon values remain visible when editing rather than being silently remapped into a newer bucket. Current and historical context labels are formatted in `lib/dna-presentation.ts`.
+
+## Match v7 UX hardening
+
+The pre-pilot Match surface was reviewed from the user's perspective without changing Match v7 weights or Goal Fit formulas. Canonical review notes are in `docs/MATCH-UX-REVIEW.md`.
+
+Current Match behavior:
+
+- before ETF cards, the page restates the exact money context driving the comparison: Goal, Time horizon, Access need and Principal protection;
+- the user can edit that context directly from Match;
+- `How this goal changes Match` displays the canonical `goal-fit-v1` summary from the Match payload, so the frontend does not invent a second explanation model;
+- DNA-only rows hide both overall `/100` scores and the context-aware component-score block;
+- available Match component labels are plain-language: `Risk level`, `Equity exposure`, `Goal fit`, `Diversification`;
+- available cards no longer repeat a generic model summary that says the same thing for every ETF;
+- card language is research-oriented: `Compare these more closely`, `Closest current fit`, `What to watch`, `What could change the fit?`, `Open ETF research`;
+- valid no-match and review states still remain explicit rather than being softened into recommendations.
+
+Goal Lens is sourced from `explanation.goal_fit.summary`. If Goal Fit text/formulas change in a future model version, update the versioned backend model rather than hard-coding parallel goal explanations in the UI.
 
 ## Safety behavior that must not regress
 
@@ -158,25 +175,32 @@ Incomplete/stale ETF data is not converted into a fake score.
 
 - `supabase/tests/milestone_1_engine_trust.sql` — canonical v7/versioning/cache/safety/ETF-boundary checks.
 - `supabase/tests/m4_match_hard_stress.sql` — 18 adversarial v7 scenarios plus goal-differentiation assertions.
-- `tests/funds-flow.cjs` — browser E2E covering DNA-only -> Context save -> context-aware Match -> Detail -> Screener -> Compare, plus account/watchlist continuity.
+- `tests/funds-flow.cjs` — browser E2E covering DNA-only -> Context save -> context-aware Match -> Detail -> Screener -> Compare, account/watchlist continuity, visible money-context summary and Goal Lens.
 - `docs/TESTING.md` — records browser coverage and the 168-scenario v6/v7 A-B acceptance evidence.
-- `docs/PRODUCT-UX.md` — canonical DNA-only/Review/numeric semantics and current goal set.
+- `docs/PRODUCT-UX.md` — canonical DNA-only/Review/numeric semantics, explanation hierarchy and current goal set.
+- `docs/MATCH-UX-REVIEW.md` — user-facing Match v7 UX findings and implemented fixes.
 - `docs/INVESTMENT-DNA-METHODOLOGY.md` — canonical v7 / `goal-fit-v1` formulas and limitations.
 
 ## Browser E2E hardening result
 
-The connected browser test now explicitly verifies:
+The connected Chrome/Playwright test now explicitly verifies:
 
 1. before context, Match/Screener/Detail show `DNA-only`, no numeric overall `/100` score and no false `Review` label;
-2. Context exposes `Major purchase` and `Wealth preservation`;
-3. signed-in Context save sends the selected goal/horizon/liquidity/principal fields through the authenticated RPC;
-4. the same account/session becomes context-aware after save;
-5. Result and Match expose v7 numeric compatibility only after context;
-6. Match -> Detail and Screener -> Compare remain connected;
-7. account/watchlist retry and funnel analytics remain intact;
-8. mobile viewport remains free of horizontal overflow/runtime errors.
+2. DNA-only Match cards do not expose context-aware component scores;
+3. Context exposes `Major purchase` and `Wealth preservation`;
+4. signed-in Context save sends the selected goal/horizon/liquidity/principal fields through the authenticated RPC;
+5. the same account/session becomes context-aware after save;
+6. Match visibly restates Major Purchase / More than 10 years / Low access need / no principal-protection requirement in the fixture;
+7. the canonical Goal Fit summary is visible under `How this goal changes Match`;
+8. the four plain-language component labels, watchout language and research CTA are present;
+9. the repeated generic available-card summary is absent;
+10. Match -> Detail and Screener -> Compare remain connected;
+11. account/watchlist retry and funnel analytics remain intact;
+12. mobile viewport remains free of horizontal overflow/runtime errors.
 
-Exact-head GitHub Actions verification for `eb1ddbb9afefc16ca6faeb74b9471b18b669f1b9` passed every CI step, including build, `test:flow`, `test:assessment`, the expanded `test:funds`, `test:m4` and `test:assets`.
+Exact code/test head `6b685a1d418649d0fb660ded41c0d968c0f6649d` passed the full GitHub Actions verification: build, contract/hygiene/type checks, `test:flow`, `test:assessment`, expanded `test:funds`, `test:m4` and `test:assets`.
+
+One intermediate `test:funds` failure was caused by a brittle case-sensitive text assertion against CSS-transformed `innerText`; the rendered UX was correct. The assertion was made presentation-safe and the full suite passed on the exact code/test head above.
 
 ## Security state
 
@@ -214,16 +238,16 @@ watchlist items: 0
 
 ## Deployment status
 
-The latest application changes are engineering-green in GitHub CI, but the corresponding Vercel build is currently blocked by the provider `build-rate-limit`. Treat this as **not deployed on the exact latest head** even though the previous v7 head had a successful deployment.
+Application code is engineering-green in GitHub CI, including localhost Next.js + real Chrome/Playwright flows. Vercel deployment of the latest branch remains blocked by the provider `build-rate-limit`; this is not an application build failure.
 
-The Vercel connector also returns 403 for direct preview fetching in this chat, so a visual deployed-preview canary was not claimed. Once a latest-head deployment exists, exercise the actual preview separately; a mocked/local browser E2E is not a production canary.
+Because the site is not live yet, local/CI browser verification is the active development acceptance path. A deployed-preview canary still needs to be run separately when Vercel is available again.
 
 Do not claim Magic Link canary PASS until a real external inbox/link round trip succeeds.
 
 ## High-priority follow-ups
 
-1. Re-run/confirm Vercel deployment of the exact latest head after the provider build-rate-limit clears.
-2. Exercise the deployed preview on the real DNA -> Context -> Match -> Detail -> Compare path.
+1. Continue UX/product hardening with localhost/CI browser verification while Vercel is rate-limited.
+2. Re-run/confirm Vercel deployment after the provider build-rate-limit clears and exercise the real deployed preview.
 3. Run real external Magic Link Canary A/B.
 4. Run first 6 cognitive sessions.
 5. Analyze Round 1 and revise only on documented evidence triggers.
