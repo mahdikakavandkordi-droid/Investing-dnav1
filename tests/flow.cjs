@@ -299,7 +299,7 @@ const testAccess=[
  check('submission retry lands on ephemeral v1.10 result and retains only a claim ticket');
 
  await page.getByRole('link',{name:'See all DNA matches'}).click();
- await page.waitForURL('**/match');
+ await page.waitForURL(url=>url.pathname==='/match');
  await page.getByRole('heading',{name:'See how your DNA lines up with ETFs'}).waitFor();
  await page.getByText('VFV',{exact:true}).first().waitFor();
  assert.match(await page.locator('body').innerText(),/VFV/);
@@ -307,7 +307,7 @@ const testAccess=[
  check('same-session guest can open full ETF DNA Match without creating an account');
 
  await page.getByRole('link',{name:'Add investment context'}).first().click();
- await page.waitForURL('**/dna/context?returnTo=/match');
+ await page.waitForURL(url=>url.pathname==='/dna/context'&&url.searchParams.get('returnTo')==='/match');
  await page.getByRole('heading',{name:'Tell us what this money is for.'}).waitFor();
  assert.equal(await page.getByLabel('Primary goal').inputValue(),'');
  assert.equal(await page.getByLabel('When might you first need this money?').inputValue(),'');
@@ -319,7 +319,7 @@ const testAccess=[
  await page.getByLabel('How important is quick access?').selectOption('medium');
  await page.getByLabel(/must the full amount be protected/i).selectOption('yes');
  await page.getByRole('button',{name:'Use this context'}).click();
- await page.waitForURL('**/match');
+ await page.waitForURL(url=>url.pathname==='/match');
  assert.equal(contextSaves,1);
  assert.match(await page.locator('body').innerText(),/Matching paused/i);
  assert.match(await page.locator('body').innerText(),/Review this money before ranking ETFs/i);
