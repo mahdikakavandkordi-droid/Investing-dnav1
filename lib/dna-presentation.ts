@@ -69,11 +69,33 @@ export function formatInvestmentContext(key:string,value:unknown){
  if(value===null||value===undefined||value==='')return 'Not provided';
  const maps:Record<string,Record<string,string>>={
   goal:{
-   growth:'Long-term growth',retirement:'Retirement',house_purchase:'Home purchase',
-   education:'Education',income:'Regular investment income',preservation:'Preserve capital'
+   growth:'Long-term growth',
+   retirement:'Retirement',
+   house_purchase:'Home purchase',
+   major_purchase:'Major purchase',
+   education:'Education',
+   income:'Regular investment income',
+   wealth_preservation:'Wealth preservation',
+   preservation:'Wealth preservation',
+   emergency_reserve:'Emergency reserve / protect near-term money'
   },
-  time_horizon:{under_2:'Under 2 years','1_3y':'1–3 years','3_5y':'3–5 years','5_10y':'5–10 years','gt_10y':'More than 10 years'},
-  liquidity_need:{high:'High — easy access matters',medium:'Medium — some access matters',low:'Low — can stay invested'}
+  time_horizon:{
+   under_2:'Under 2 years',
+   lt_1y:'Less than 1 year',
+   '1_3y':'1–3 years',
+   '2_5':'2–5 years',
+   '3_5y':'3–5 years',
+   '5_10':'5–10 years',
+   '5_10y':'5–10 years',
+   '10_plus':'More than 10 years',
+   gt_10y:'More than 10 years'
+  },
+  liquidity_need:{
+   very_high:'Very high — immediate access matters',
+   high:'High — easy access matters',
+   medium:'Medium — some access matters',
+   low:'Low — can stay invested'
+  }
  };
  return maps[key]?.[String(value)]||humanize(String(value));
 }
