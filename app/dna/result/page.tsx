@@ -11,9 +11,8 @@ import {DnaSummary} from "@/components/DnaSummary";
 
 /**
  * One-time guest or persisted-account Investor DNA result surface.
- *
- * Guest completed reports are intentionally ephemeral; the browser may retain
- * only the limited claim ticket needed for optional account attachment.
+ * Guest reports stay available for the current browser session only; persistence
+ * is optional and happens through the account/save flow.
  */
 export default function Result(){
  const [dna,setDna]=useState<DNA|null>(null);
@@ -129,14 +128,13 @@ function MissingResult({error}:{error:string}){
  return <main className="result-page">
   <div className="container result-container">
    <div className="result-loading-card">
-    <h1>{error?'Could not load your DNA':'Your guest report has expired'}</h1>
+    <h1>{error?'Could not load your DNA':'Your guest report is no longer available'}</h1>
     {error
      ? <p role="alert">{error}</p>
-     : <p>Guest reports are one-time previews and are not kept in this browser after a refresh. Create or sign in to an account to keep your Investor DNA.</p>}
+     : <p>Guest reports are kept only for the current browser session. Take the assessment again, or sign in if you previously saved your Investor DNA.</p>}
     <div className="actions">
      <Link className="btn primary" href="/dna/assessment">Take the assessment</Link>
-     <Link className="btn" href="/profile?mode=signup">Create free account</Link>
-     <Link className="btn" href="/profile">Sign in</Link>
+     <Link className="btn" href="/profile">Sign in to saved DNA</Link>
      {error&&<button className="btn" onClick={()=>location.reload()}>Retry</button>}
     </div>
    </div>
@@ -147,20 +145,20 @@ function MissingResult({error}:{error:string}){
 function ContextCallout({hasContext}:{hasContext:boolean}){
  return <section className="result-next-card result-context-cta">
   <div>
-   <div className="eyebrow">From DNA to a real decision</div>
+   <div className="eyebrow">From DNA to this money</div>
    <h2>{hasContext?'This money now has context.':'Tell us what this money is for.'}</h2>
    <p>{hasContext
-    ? 'Your goal, time horizon and liquidity needs are kept separate from your DNA and used only to make compatibility more specific.'
-    : 'Your DNA describes you. Add the goal, time horizon and access needs for this particular pool of money before looking at investments.'}</p>
+    ? 'Your goal, time horizon, access needs and principal-protection need are kept separate from your DNA and used only to make compatibility more specific.'
+    : 'Your DNA describes you. Add the goal, time horizon, access needs and whether the full amount must be protected for this particular pool of money.'}</p>
   </div>
-  <Link className="btn primary" href="/dna/context">{hasContext?'Edit investment context':'Add investment context'}</Link>
+  <Link className="btn primary" href="/dna/context">{hasContext?'Review investment context':'Add investment context'}</Link>
  </section>;
 }
 
 function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boolean}){
  return <section className="report-section matches-section">
-  <div className="eyebrow">05 · From DNA to discovery</div>
-  <h2>Investments worth exploring</h2>
+  <div className="eyebrow">From DNA to research</div>
+  <h2>ETFs worth comparing more closely</h2>
   <p className="report-lede">These are compatibility signals based on your DNA{hasContext?' and the context you added':''}. They are not buy recommendations.</p>
 
   <div className="match-preview-grid">
@@ -177,11 +175,12 @@ function MatchPreviewCard({match}:{match:MatchItem}){
   match.explanation?.strengths?.[0] ||
   match.explanation?.why_it_fits?.[0] ||
   match.explanation?.watchouts?.[0];
+ const score=match.match_score==null?null:Math.round(match.match_score);
 
  return <article className="match-preview-card">
   <div className="match-preview-top">
    <span className="pill">{match.symbol}</span>
-   <strong>{Math.round(match.match_score||0)}<small>/100</small></strong>
+   <strong>{score==null?'Review':score}{score==null?null:<small>/100</small>}</strong>
   </div>
   <h3>{match.name||match.symbol}</h3>
   <p className="match-fit-label">{match.fit_label||match.recommendation_tier?.replaceAll('_',' ')||'Compatibility signal'}</p>
@@ -203,17 +202,14 @@ function GuestSaveCard({
 }){
  return <section className="result-save-card guest-save-card">
   <div className="guest-save-copy">
-   <div className="eyebrow">Keep this report</div>
-   <strong>Don’t lose your Investor DNA</strong>
-   <p>Your guest report is not stored after refresh. Choose either option below if you want to come back to it.</p>
-   <div className="result-actions">
-    <Link className="btn primary" href="/profile?mode=signup">Create free account</Link>
-    <Link className="btn" href="/profile">Already have an account? Sign in</Link>
-   </div>
+   <div className="eyebrow">Optional</div>
+   <strong>Save your Investor DNA if you want to come back</strong>
+   <p>You can keep using this result and Match as a guest right now. Saving creates a free passwordless account so your DNA can follow you across visits and devices.</p>
+   <Link className="account-signin" href="/profile">Already have an account? Sign in →</Link>
   </div>
 
   <form className="guest-email-form" onSubmit={onSubmit}>
-   <label htmlFor="save-email">Or send me a secure save link</label>
+   <label htmlFor="save-email">Email address</label>
    <div className="guest-email-row">
     <input
      id="save-email"
@@ -225,9 +221,9 @@ function GuestSaveCard({
      onChange={event=>onEmail(event.target.value)}
      placeholder="you@example.com"
     />
-    <button className="btn" disabled={sending||!supabase}>{sending?'Sending…':'Email me the link'}</button>
+    <button className="btn primary" disabled={sending||!supabase}>{sending?'Sending…':'Save my DNA'}</button>
    </div>
-   <p className="fine muted">Opening the link creates a free passwordless account and attaches this assessment to it. We are not emailing a PDF yet.</p>
+   <p className="fine muted">We send a secure sign-in link; there is no password and no PDF attachment.</p>
    {message&&<p className="notice" role="status">{message}</p>}
   </form>
  </section>;
@@ -262,5 +258,5 @@ function normalizeMatches(payload?:MatchPayload|null):MatchItem[]{
  const rows=Array.isArray(payload.results)
   ? [...payload.results]
   : [...(payload.top_matches||[]),...(payload.alternatives||[])];
- return rows.sort((a,b)=>(b.match_score||0)-(a.match_score||0));
+ return rows.sort((a,b)=>(b.match_score??-1)-(a.match_score??-1));
 }
