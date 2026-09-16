@@ -32,16 +32,7 @@ Still missing for M4 closeout: real cognitive participants, subsequent product-p
 
 ### Investing DNA assessment
 
-Browser routes call the `investing-dna-pilot` Edge Function for:
-
-- `start`
-- `questionnaire`
-- `save_answers`
-- `submit`
-- `save_context`
-- `claim_assessment`
-- `track_event`
-- `submit_feedback`
+Browser routes call the `investing-dna-pilot` Edge Function for `start`, `questionnaire`, `save_answers`, `submit`, `save_context`, `claim_assessment`, `track_event` and `submit_feedback`.
 
 The public questionnaire DTO is deliberately narrow; scoring weight, construct metadata, raw alternate-language fields and internal version fields stay behind the service boundary.
 
@@ -70,18 +61,18 @@ Applied and source-controlled retirement migrations:
 - `20260916001531_m4_retire_legacy_app_views_and_home.sql`
 - `20260916001822_m4_retire_legacy_match_runtimes.sql`
 - `20260916002108_m4_retire_unused_match_helpers.sql`
+- `20260916003509_m4_retire_stale_investment_intelligence_view.sql`
 
 Removed dead/parallel runtime includes:
 
-- Portfolio Builder generation/risk functions and views;
-- empty portfolio risk-analysis table;
+- Portfolio Builder generation/risk functions and views plus the empty risk-analysis table;
 - legacy `v_app_*`/current-DNA/home shell views and `get_investor_home()`;
 - Match v3/v4/v5/v5.1 and the unused unversioned Match wrapper;
 - `v_investment_dna_v1`;
-- unused Match recommendations/explainability/intelligence/snapshot/cleanup helpers;
-- empty `investor_match_snapshots` table.
+- unused Match recommendations/explainability/intelligence/snapshot/cleanup helpers plus the empty `investor_match_snapshots` table;
+- stale `v_investment_intelligence`, which had no live caller and still hard-coded `intelligence-v1.0` after the product moved to the v1.1 / Investment DNA v2 path.
 
-Current research views that still have real dependencies, including `v_investment_catalog`, `v_investment_detail`, `v_investment_screener` and `v_investment_intelligence`, were explicitly retained.
+Current dependency-backed research paths such as `v_investment_catalog`, `v_investment_detail`, `v_investment_screener` and `v_investment_dna_v2` were explicitly retained.
 
 ### Client/source cleanup
 
@@ -94,34 +85,28 @@ Current research views that still have real dependencies, including `v_investmen
 
 ### Hygiene enforcement
 
-Current CI includes:
+Current CI includes contract tests, `tests/repo-hygiene.mjs`, normal TypeScript checking, `tsc --noEmit --noUnusedLocals --noUnusedParameters`, production build and all browser flow/fund/M4/cross-asset regressions.
 
-- contract tests;
-- `tests/repo-hygiene.mjs`;
-- normal TypeScript check;
-- `tsc --noEmit --noUnusedLocals --noUnusedParameters` hygiene check;
-- Next.js build;
-- browser flow/fund/M4/cross-asset regressions.
-
-The unused-code gate already caught and led to removal of a real dead prop in `/match`; it should be fixed rather than weakened when future dead code is detected.
+The hygiene guard now prevents current browser/Edge source from reintroducing the retired Portfolio, app-shell, Match and stale intelligence runtime names while still allowing immutable migration history to preserve them.
 
 ## Verification status
 
 ### Database
 
 - anonymous generic research search/detail/compare and ETF search/DNA/official-facts/research-context smoke tests passed after legacy-view retirement;
-- `supabase/tests/milestone_1_engine_trust.sql` was updated to require legacy Match runtimes to be absent and canonical v6/current_match to be present;
-- final M1 engine trust regression passed on the live database after all Match/runtime helper removals;
+- `supabase/tests/milestone_1_engine_trust.sql` requires legacy Match runtimes to be absent and canonical v6/current_match to be present;
+- final M1 engine trust regression passed on the live database after Match/runtime helper removals;
+- stale `v_investment_intelligence` retirement was schema-verified while current detail/screener/DNA-v2 views remained present;
 - synthetic DB regression data is transactionally rolled back.
 
 ### GitHub CI
 
-- full CI run 200 passed on commit `eb874160a256749bf2ce789ffd45b18ab271b3f3`, including the new unused-code gate and all browser suites;
-- documentation commits were added after that success. Confirm CI on the eventual final head before calling the branch fully engineering-green.
+- full CI run 200 passed on commit `eb874160a256749bf2ce789ffd45b18ab271b3f3`, including the unused-code gate and all browser suites;
+- additional migration/docs/hygiene commits were added after that success. Confirm CI on the eventual final head before calling the branch fully engineering-green.
 
 ### Vercel
 
-The last observed deployment state before this handoff refresh was provider rate limiting (`Deployment rate limited — retry in 24 hours`), not an application compile failure. Re-check Vercel on the final head before claiming deployment verification.
+The current Git integration is still being rejected by provider build-rate limiting (`Deployment rate limited — retry in 24 hours`). This is not an application compile failure, but the newest head is not deployment-verified until Vercel accepts a build.
 
 ## Current Supabase Advisor state
 
@@ -131,10 +116,10 @@ Latest security audit after runtime retirement:
 - authenticated browser-callable `SECURITY DEFINER` functions: 2:
   - `get_or_create_current_profile`
   - `is_current_profile`
-- `SECURITY DEFINER` views: 20 (down from 28 during this cleanup pass);
+- `SECURITY DEFINER` views: 19 (down from 28 during this cleanup pass);
 - RLS-enabled/no-policy INFO findings: 32 (down from 33).
 
-Do not batch-convert the remaining 20 views to `security_invoker`. Several current research/read-model paths depend on privileged reads and must be classified individually.
+Do not batch-convert the remaining 19 views to `security_invoker`. Dependency audit shows a mixture of current read-model views and useful diagnostics/operations views; each must be classified against grants/RLS/current callers before changing it.
 
 Latest Performance Advisor currently reports only `unused_index` INFO findings (47). Because this is a young/pilot database, zero observed index usage is not enough reason to remove an index; trace expected query/FK workload first.
 
@@ -158,9 +143,9 @@ Folder-level maps also exist under `app/`, `components/`, `lib/`, `supabase/`, `
 
 ## High-priority follow-ups
 
-1. Confirm final-head GitHub CI after the documentation/handoff commits.
+1. Confirm final-head GitHub CI after the latest migration/docs/hygiene commits.
 2. Re-check final-head Vercel deployment once provider rate limiting permits a build.
-3. Classify the remaining 20 `SECURITY DEFINER` views individually; do not batch-change security mode without tracing grants/RLS/dependencies.
+3. Classify the remaining 19 `SECURITY DEFINER` views individually; do not batch-change security mode without tracing grants/RLS/dependencies.
 4. Run a real external magic-link/account canary and use that real authenticated flow before changing the two remaining authenticated definer helpers solely to reduce Advisor counts.
 5. Keep source/as-of dates real; never manufacture freshness.
 6. Keep historical persisted model results/migrations only where reproducibility or evidence requires them; do not reintroduce duplicate live implementations.
