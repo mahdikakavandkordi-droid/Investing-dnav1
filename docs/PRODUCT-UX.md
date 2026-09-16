@@ -20,6 +20,8 @@ A guest must be able to:
 
 Ask for an account when the user wants continuity across visits/devices, a persistent watchlist or saved DNA. Do not place account creation as a competing primary CTA before the user has seen their result.
 
+A completed guest result is intentionally privacy-limited to the active browser application session. In-app navigation may keep that result available, but a full reload must not be treated as a persistence promise. Persistent continuity belongs to the optional account flow.
+
 ## 2. Do not prime the assessment
 
 Before the assessment, explain the dimensions being measured rather than showing all possible archetype labels or implying that one outcome is desirable.
@@ -61,13 +63,17 @@ Optional personal details such as name, age or amount can stay blank.
 
 Changing context may change Match constraints but must not silently change the underlying Investor DNA score.
 
-## 4. Editing context must be safe
+## 4. Editing context must be safe and continue the journey
 
 If saved context exists, the edit flow must preload it. Never open an edit form with unrelated defaults that can overwrite persisted context.
 
 Legacy stored context values should remain visible on edit even when a newer UI uses a more precise label/value. Do not silently remap an old horizon into a different current bucket. The legacy `preservation` goal maps to the current `wealth_preservation` presentation because it represents the same broad intent; it must not be silently converted into `emergency_reserve`.
 
 Guests save through their short-lived assessment capability. Signed-in returning users save through an account-owned server contract that resolves the current assessment from authenticated identity; browser IDs are not ownership proof.
+
+Context is a step in the Result -> Context -> Match journey, not a dead-end form. When Result asks a person to add money context for Match, its primary Context link should carry a safe internal return target to Match. Context entry/edit links from Match should do the same. After a successful save, the user should continue directly to the resulting Match state instead of being sent back to Result for another click.
+
+Return targets must be allowlisted internal product paths. Do not turn `returnTo` into an open redirect. If the saved context triggers a safety/review gate, returning to Match should expose that review state immediately rather than manufacturing a ranked result.
 
 ## 5. Missing, context-limited, gated and unavailable are not zero
 
@@ -128,6 +134,8 @@ Primary navigation should make the core journey discoverable:
 - Watchlist;
 - Profile/account continuity.
 
+`My DNA` may lead to the neutral `/dna` hub rather than hard-coding a result route. When a current one-session guest result or saved account DNA already exists, that hub must surface the existing DNA as the primary continuation instead of presenting only a restart path. The neutral assessment explanation and anti-priming rules still apply.
+
 Specialized tools such as the ETF Screener can remain contextual tools rather than replacing a core product step in global navigation.
 
 ## 9. Compliance text supports the experience; it does not replace it
@@ -142,6 +150,9 @@ High-value journey assertions include:
 
 - assessment starts without account creation;
 - same-session guest Result -> Match continuity works;
+- Result points a missing-context user forward to Context with Match as the safe continuation target;
+- Context entered from Result/Match saves and returns directly to Match;
+- the `My DNA` hub surfaces an existing same-session guest result without persisting the full report;
 - context core fields begin unselected unless previously saved;
 - every current Match v7 goal is reachable from the Context form;
 - `principal_required` reaches the server contract;
