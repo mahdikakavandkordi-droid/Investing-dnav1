@@ -51,14 +51,31 @@ do $$ begin
  if to_regclass('public.v_investment_dna_v2') is null then raise exception 'canonical Investment DNA v2 view missing'; end if;
 end $$;
 
+-- Match v6 is an ETF-only product boundary even though Explore/Detail/Compare are cross-asset.
+do $$ declare v_match_count int; v_active_etf_count int; begin
+ select count(*) into v_match_count from public.v_investment_dna_v2;
+ select count(*) into v_active_etf_count from public.investments where is_active=true and asset_type='ETF';
+ if exists(select 1 from public.v_investment_dna_v2 where asset_type is distinct from 'ETF') then
+  raise exception 'non-ETF instrument leaked into Match research view';
+ end if;
+ if v_match_count<>v_active_etf_count then
+  raise exception 'Match universe count % differs from active ETF count %',v_match_count,v_active_etf_count;
+ end if;
+end $$;
+
 -- Canonical run, explicit versions and stable reuse.
-do $$ declare aid uuid; m1 jsonb; m2 jsonb; begin
+do $$ declare aid uuid; m1 jsonb; m2 jsonb; v_etf_count int; begin
  aid:=pg_temp.m1_make_assessment('normal');
  m1:=investor_private.current_match(aid); m2:=investor_private.current_match(aid);
+ select count(*) into v_etf_count from public.v_investment_dna_v2;
  if m1->>'model_version'<>'investment-dna-match-v6' then raise exception 'wrong canonical model'; end if;
  if m1->>'run_id' is null or m1->>'data_version' is null or m1->'versions' is null then raise exception 'missing run/version metadata'; end if;
  if m1#>>'{versions,questionnaire}'<>'v1.10-cognitive-candidate' or m1#>>'{versions,investor_dna}'<>'dna-v1.10-research' then raise exception 'wrong questionnaire/DNA metadata'; end if;
  if m1->>'run_id' is distinct from m2->>'run_id' then raise exception 'unchanged inputs should reuse run'; end if;
+ if (m1->>'universe_count')::int<>v_etf_count then raise exception 'Match payload universe count is not ETF-scoped'; end if;
+ if exists(select 1 from jsonb_array_elements(coalesce(m1->'results','[]'::jsonb)) x where x#>>'{explanation,investment_dna,asset_type}' is distinct from 'ETF') then
+  raise exception 'non-ETF row leaked into Match payload';
+ end if;
  if (m1->>'eligible_count')::int<1 or m1->>'status'<>'available' then raise exception 'normal scenario expected available options'; end if;
  insert into m1_state values('aid',aid::text),('old_run',m1->>'run_id'),('old_data_version',m1->>'data_version');
 end $$;
