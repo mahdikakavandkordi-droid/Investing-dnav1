@@ -4,13 +4,16 @@ Use one copy per moderated `COGNITIVE_V1_10` participant. Do not record unnecess
 
 ## Session metadata
 
-- Session code: `C01` … `C12`
+- Moderator sequence: `C01` … `C12`
+- Backend research code: `P-________` — copy exactly from the assessment screen
 - Round: `1 / 2`
 - Date:
 - Moderator:
 - Investing experience bucket: `beginner / some / experienced`
 - Completed assessment unaided: `yes / no`
 - Technical interruption: `none / describe`
+
+The backend `P-...` research code is the canonical pseudonymous join key for connecting this worksheet to the correct pilot participant/assessment record. It is not a name, email or user identity. Do not substitute a participant name or other PII.
 
 ## Unaided observation
 
@@ -104,8 +107,8 @@ Evidence:
 - What did the participant think Investing DNA was trying to tell them?
 - Most useful part:
 - Least credible/confusing part:
-- Could they explain why a fund fit or conflicted in their own words?
-- Did they interpret Match as a recommendation to buy? `yes / no / unclear`
+- Could they explain why an ETF fit or conflicted with their DNA in their own words?
+- Did they interpret DNA Match as a recommendation to buy? `yes / no / unclear`
 - What would make them return?
 - Did they submit `/feedback`? `yes / no`
 
