@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import type {Fund} from '@/lib/investments';
+import {readDraft} from '@/lib/dna';
 import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
 
 type ConstraintShape={
@@ -30,8 +31,25 @@ export default function Matches(){
   setError('');
 
   if(!user){
-   setLoading(false);
-   return;
+   const local=readDraft(null);
+   if(!local?.result){
+    setLoading(false);
+    return;
+   }
+
+   setState({
+    has_profile:false,
+    assessment_id:local.session.assessment_id,
+    dna:local.result.result,
+    report:local.result.report?.report||local.result.result,
+    matches:local.result.match
+   });
+   setLoading(true);
+   rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100})
+    .then(rows=>{if(active)setFunds(rows)})
+    .catch(e=>{if(active)setError(e.message)})
+    .finally(()=>{if(active)setLoading(false)});
+   return ()=>{active=false};
   }
 
   setLoading(true);
@@ -80,28 +98,26 @@ export default function Matches(){
     ? <LoadingState/>
     : error
       ? <ErrorState error={error}/>
-      : !user
-        ? <SignedOutState/>
-        : !state?.dna
-          ? <MissingDnaState/>
-          : <MatchContent
-             match={match}
-             constraints={constraints}
-             featured={featured}
-             more={more}
-             hasContext={hasContext}
-             idBySymbol={idBySymbol}
-             compareIds={compareIds}
-            />}
+      : !state?.dna
+        ? user?<MissingDnaState/>:<SignedOutState/>
+        : <MatchContent
+           match={match}
+           constraints={constraints}
+           featured={featured}
+           more={more}
+           hasContext={hasContext}
+           idBySymbol={idBySymbol}
+           compareIds={compareIds}
+          />}
   </div>
  </section>;
 }
 
 function MatchHero(){
  return <div className="match-dna-hero">
-  <div className="eyebrow">Investor DNA × Investment DNA</div>
-  <h1>Your closest compatible structures</h1>
-  <p>We compare your capacity and comfort with risk against what each fund is structurally built to do, then apply the real goal and withdrawal horizon for this money.</p>
+  <div className="eyebrow">DNA Match · ETFs</div>
+  <h1>See how your DNA lines up with ETFs</h1>
+  <p>We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon and access needs for this money.</p>
   <p className="fine muted">A higher score means closer research compatibility — not a better investment, a return forecast, or a recommendation to buy.</p>
  </div>;
 }
@@ -109,7 +125,7 @@ function MatchHero(){
 function LoadingState(){
  return <div className="card">
   <h2>Building your matches…</h2>
-  <p className="muted">Comparing your Investor DNA with the current verified Investment DNA universe.</p>
+  <p className="muted">Comparing your Investor DNA with the current verified ETF research universe.</p>
  </div>;
 }
 
@@ -122,9 +138,12 @@ function ErrorState({error}:{error:string}){
 
 function SignedOutState(){
  return <div className="card">
-  <h2>Your matches stay connected to your DNA</h2>
-  <p>Sign in to see compatibility linked to your saved Investor DNA.</p>
-  <Link className="btn primary" href="/profile">Sign in / create account</Link>
+  <h2>Discover your DNA to unlock Match</h2>
+  <p>You can complete the assessment and see your current ETF compatibility as a guest. Create an account only if you want to keep it across visits.</p>
+  <div className="actions">
+   <Link className="btn primary" href="/dna/assessment">Discover my Investing DNA</Link>
+   <Link className="btn" href="/profile">Sign in to saved DNA</Link>
+  </div>
  </div>;
 }
 
@@ -153,7 +172,7 @@ function MatchContent({
   {!hasContext&&match?.status!=='review_required'&&<div className="match-context-nudge">
    <div>
     <strong>Make these matches more useful</strong>
-    <p>Add what the money is for, when you may need it, and how important access is. That context stays separate from your Investor DNA.</p>
+    <p>Add what the money is for, when you may need it, how important access is, and whether the full amount must be protected. That context stays separate from your Investor DNA.</p>
    </div>
    <Link className="btn" href="/dna/context">Add investment context</Link>
   </div>}
@@ -163,7 +182,7 @@ function MatchContent({
    : match?.status!=='review_required'
      ? <div className="card">
         <h2>No ranked comparisons are available</h2>
-        <p>Explore the fund research universe without treating the list as a personal match.</p>
+        <p>Explore the ETF research universe without treating the list as a personal match.</p>
         <Link className="btn" href="/explore">Explore investments</Link>
        </div>
      : null}
@@ -172,7 +191,7 @@ function MatchContent({
 
   <div className="match-footer-actions">
    {compareIds.length>=2&&<Link className="btn primary" href={`/compare?ids=${compareIds.join(',')}`}>Compare these side by side</Link>}
-   <Link className="btn" href="/screener">Screen with my DNA</Link>
+   <Link className="btn" href="/screener">Open ETF screener</Link>
    <Link className="btn" href="/explore">Explore all investments</Link>
   </div>
  </>;
@@ -194,7 +213,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
 
  if(match?.status==='no_suitable_options'){
   return <div className="match-status-card warning">
-   <div className="eyebrow">Honest no-match state</div>
+   <div className="eyebrow">No forced match</div>
    <h2>No ETF in the current research universe passes your fit limits</h2>
    <p>We are not forcing a recommendation. The comparisons below are the closest outside the current limits and are shown only to explain the mismatch.</p>
   </div>;
@@ -204,7 +223,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
   return <div className="match-status-card">
    <div className="eyebrow">DNA-only view</div>
    <h2>Add the purpose of this money for a more useful match</h2>
-   <p>Your DNA is available, but goal, horizon, liquidity and principal needs are still missing. Scores below are intentionally limited-context comparisons.</p>
+   <p>Your DNA is available, but goal, horizon, liquidity or principal-protection needs are still missing. Scores below are intentionally limited-context comparisons.</p>
    <Link className="btn primary" href="/dna/context">Add investment context</Link>
   </div>;
  }
@@ -214,8 +233,8 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
   return <div className="match-status-card ok">
    <div className="eyebrow">Context-aware match</div>
    <h2>{count} current option{count===1?'':'s'} passed the research fit limits</h2>
-   <p>These results use your saved DNA, investment context and the current verified fund-data version.</p>
-   {match.data_as_of&&<p className="fine muted">Fund data through {match.data_as_of} · Match model {match.model_version}</p>}
+   <p>These results use your Investor DNA, investment context and the current verified ETF data version.</p>
+   {match.data_as_of&&<p className="fine muted">ETF data through {match.data_as_of} · Match model {match.model_version}</p>}
   </div>;
  }
 
