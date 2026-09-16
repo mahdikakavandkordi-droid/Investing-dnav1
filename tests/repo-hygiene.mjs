@@ -8,8 +8,9 @@ import assert from 'node:assert/strict';
  * This does not replace TypeScript/ESLint. It protects a few Investor DNA
  * architecture decisions that are easy to accidentally regress during rapid
  * product work: no convenience backup files, no retired compatibility wrappers,
- * no internal questionnaire fields in the browser DTO, and no frozen Portfolio
- * Builder runtime references in current browser/Edge source.
+ * no internal questionnaire fields in the browser DTO, no frozen Portfolio
+ * Builder runtime references, and no service-role secret references in browser
+ * source. Server-side Edge Functions may read service-role environment secrets.
  */
 
 const ROOT = process.cwd();
@@ -67,10 +68,14 @@ for (const retired of [
   );
 }
 
-const currentRuntimeFiles = [
+const browserSourceFiles = [
   ...walk('app'),
   ...walk('components'),
-  ...walk('lib'),
+  ...walk('lib')
+].filter(file => /\.(?:ts|tsx|js|mjs|cjs)$/.test(file));
+
+const currentRuntimeFiles = [
+  ...browserSourceFiles,
   ...walk('supabase/functions')
 ].filter(file => /\.(?:ts|tsx|js|mjs|cjs)$/.test(file));
 
@@ -84,14 +89,14 @@ assert.deepEqual(
   `Frozen Portfolio Builder runtime must not return to current source: ${portfolioRuntimeRefs.join(', ')}`
 );
 
-const leakedServiceKeys = currentRuntimeFiles.filter(file => {
+const leakedServiceKeys = browserSourceFiles.filter(file => {
   const text = read(file);
   return /NEXT_PUBLIC_.*SERVICE_ROLE|SUPABASE_SERVICE_ROLE_KEY/.test(text);
 });
 assert.deepEqual(
   leakedServiceKeys,
   [],
-  `Service-role secrets must never appear in browser/current source: ${leakedServiceKeys.join(', ')}`
+  `Service-role secrets must never appear in browser source: ${leakedServiceKeys.join(', ')}`
 );
 
 console.log('PASS: repository hygiene and retired-runtime boundaries');
