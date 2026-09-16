@@ -19,21 +19,22 @@ export type MatchScorePresentation = {
 };
 
 /**
- * A context-required row is a DNA-only comparison, not a failed/reviewed Match.
- * A review-required row is intentionally paused by a safety/data gate.
+ * State semantics take precedence over a numeric payload. This keeps the UI
+ * defensive if a future backend regression accidentally serializes a score for
+ * a context-only or review-gated row.
  */
 export function matchScorePresentation(match:MatchDisplayLike):MatchScorePresentation{
-  if(typeof match.match_score==='number'&&Number.isFinite(match.match_score)){
-    const value=Math.round(match.match_score);
-    return {kind:'numeric',text:`${value}/100`,numericValue:value};
-  }
-
   if(match.eligibility==='context_required'||match.recommendation_tier==='consider'){
     return {kind:'context_only',text:'DNA-only',numericValue:null};
   }
 
   if(match.eligibility==='review_required'){
     return {kind:'review',text:'Review',numericValue:null};
+  }
+
+  if(typeof match.match_score==='number'&&Number.isFinite(match.match_score)){
+    const value=Math.round(match.match_score);
+    return {kind:'numeric',text:`${value}/100`,numericValue:value};
   }
 
   return {kind:'unavailable',text:'—',numericValue:null};
