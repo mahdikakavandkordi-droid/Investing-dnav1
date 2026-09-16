@@ -36,4 +36,15 @@ assert.doesNotMatch(questionnaireBlock,/\.\.\.row/);
 assert.doesNotMatch(questionnaireBlock,/\.select\([^)]*weight/);
 assert.doesNotMatch(questionnaireBlock,/construct_role/);
 
-console.log('PASS assessment envelope, scale options, missing versus zero score, guest recovery/isolation, and narrow public questionnaire DTO');
+const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
+assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
+assert.match(supabaseSource,/detectSessionInUrl:\s*true/);
+assert.match(supabaseSource,/persistSession:\s*true/);
+assert.match(supabaseSource,/autoRefreshToken:\s*true/);
+
+const profileSource=readFileSync(new URL('../app/profile/page.tsx',import.meta.url),'utf8');
+assert.match(profileSource,/history\.replaceState\(history\.state,''\s*,\s*url\.pathname\+url\.search\)/);
+assert.match(profileSource,/access_token/);
+assert.match(profileSource,/refresh_token/);
+
+console.log('PASS assessment envelope, scale options, missing versus zero score, guest recovery/isolation, narrow questionnaire DTO, and explicit Magic Link callback hygiene');
