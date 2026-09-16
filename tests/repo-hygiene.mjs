@@ -8,9 +8,9 @@ import assert from 'node:assert/strict';
  * This does not replace TypeScript/ESLint. It protects a few Investor DNA
  * architecture decisions that are easy to accidentally regress during rapid
  * product work: no convenience backup files, no retired compatibility wrappers,
- * no internal questionnaire fields in the browser DTO, no frozen Portfolio
- * Builder runtime references, and no service-role secret references in browser
- * source. Server-side Edge Functions may read service-role environment secrets.
+ * no internal questionnaire fields in the browser DTO, no retired database
+ * runtime references, and no service-role secret references in browser source.
+ * Server-side Edge Functions may read service-role environment secrets.
  */
 
 const ROOT = process.cwd();
@@ -79,14 +79,27 @@ const currentRuntimeFiles = [
   ...walk('supabase/functions')
 ].filter(file => /\.(?:ts|tsx|js|mjs|cjs)$/.test(file));
 
-const portfolioRuntimeRefs = currentRuntimeFiles.filter(file => {
+const retiredRuntimeNames = [
+  'generate_portfolio_blueprints',
+  'refresh_blueprint_risk_and_match',
+  'calculate_portfolio_risk_overlap',
+  'get_investor_home',
+  'v_app_dna',
+  'v_app_investment_catalog',
+  'v_app_investment_detail',
+  'v_app_watchlist',
+  'v_investor_home',
+  'v_current_user_identity',
+  'v_current_investor_dna'
+];
+const retiredRuntimeRefs = currentRuntimeFiles.filter(file => {
   const text = read(file);
-  return /generate_portfolio_blueprints|refresh_blueprint_risk_and_match|calculate_portfolio_risk_overlap/.test(text);
+  return retiredRuntimeNames.some(name => text.includes(name));
 });
 assert.deepEqual(
-  portfolioRuntimeRefs,
+  retiredRuntimeRefs,
   [],
-  `Frozen Portfolio Builder runtime must not return to current source: ${portfolioRuntimeRefs.join(', ')}`
+  `Retired runtime must not return to current source: ${retiredRuntimeRefs.join(', ')}`
 );
 
 const leakedServiceKeys = browserSourceFiles.filter(file => {
