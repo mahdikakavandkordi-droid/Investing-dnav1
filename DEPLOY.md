@@ -1,6 +1,6 @@
 # Investor DNA deployment runbook
 
-Last reviewed: 2026-09-15
+Last reviewed: 2026-09-16
 
 Deployment state must be described precisely. A green GitHub build, a successful Vercel deployment and a live canary are separate checks.
 
@@ -28,7 +28,7 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY` or any other privileged key through `NE
 
 ## Supabase backend state
 
-This repository contains a long append-only migration history, not “two migrations”. The existing project has been evolved through the M1–M4 workstreams, including the cross-asset architecture/data migrations and Watchlist RLS cleanup.
+This repository contains a long append-only migration history. The existing project has been evolved through the M1–M4 workstreams, including cross-asset research, runtime retirement, account Context correction and selective view/RPC hardening.
 
 Before deploying this frontend against a different Supabase project:
 
@@ -42,7 +42,7 @@ Do not infer backend readiness from repository files alone.
 
 ## Supabase Auth URL configuration
 
-The account flow uses email magic links.
+The V1 account flow uses client-side email Magic Links through the implicit flow. The browser Auth configuration is explicit in `lib/supabase.ts`.
 
 Configure:
 
@@ -50,10 +50,12 @@ Configure:
 - permitted preview origins as needed;
 - exact `/profile` redirect destination(s).
 
-Return flows can include query parameters such as:
+Return flows can include safe query parameters such as:
 
 - `investment=<uuid>` to preserve a saved-investment intent;
 - `save=dna` to preserve a completed guest assessment claim intent.
+
+The browser may briefly receive Auth tokens in the URL fragment during the implicit callback. `app/profile/page.tsx` removes that sensitive fragment only after an authenticated session has been established while preserving the safe query intent.
 
 ## Deployment acceptance
 
@@ -63,7 +65,7 @@ Return flows can include query parameters such as:
 npm run test:all
 ```
 
-This proves the local/build/browser-mock contract only.
+This proves the repository/build/browser-mock contract only.
 
 ### 2. Vercel build status
 
@@ -84,7 +86,9 @@ Exercise at least:
 
 ### 4. Real auth/email canary
 
-Using a controlled external inbox, verify:
+Follow `docs/AUTH-CANARY.md` using a controlled external inbox.
+
+At minimum verify both:
 
 ```text
 guest investment -> optional signup -> email link -> callback -> save -> watchlist/profile
@@ -96,26 +100,26 @@ and:
 guest assessment -> completed result -> account link -> claim -> sign out/in -> saved DNA restored
 ```
 
-Browser tests mock these operations and are not proof of actual email delivery.
+Browser tests mock these operations and are not proof of actual email delivery, redirect allow-list correctness or a real clicked-link session.
 
 ### 5. Backend verification
 
 Run relevant SQL regressions and review live state after migrations. For material RLS/DDL changes, also review Supabase security/performance advisors.
 
-## Current known hosting note
+## Current hosting state
 
-The cross-asset branch reached green GitHub CI, but the most recent Vercel Git status was blocked by a provider `build-rate-limit` rather than an application compile error. Do not call the newest head deployed until Vercel accepts/builds that exact commit and the preview canary passes.
+A recent runtime/hardening head (`6f92a2d3639bd077e0e1e9be2c946d36ea87b583`) passed full GitHub CI and received a successful Vercel build status. Later auth-hardening/documentation commits may independently hit provider build-rate limits; always check the **exact** SHA being accepted.
 
-Direct connected Vercel project inspection has also been inconsistent due connector/account scope, so GitHub/Vercel commit status remains an important independent signal.
+Vercel connector account/team discovery has been inconsistent in this session, so the GitHub Vercel commit status remains an independent deployment signal.
 
 ## Rollout wording
 
 Use these terms accurately:
 
 - `CI green` — tests/build passed in GitHub Actions.
-- `Vercel build green` — hosting provider built the commit.
+- `Vercel build green` — hosting provider built the exact commit.
 - `preview canary green` — deployed preview behavior was exercised.
-- `email canary green` — external magic-link round trip worked.
+- `email canary green` — external Magic Link round trip worked.
 - `production live` — production deployment and intended domain have been verified.
 
-See `docs/TESTING.md` and `docs/DATABASE-AND-API.md`.
+See `docs/AUTH-CANARY.md`, `docs/TESTING.md` and `docs/DATABASE-AND-API.md`.
