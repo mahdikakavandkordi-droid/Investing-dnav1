@@ -19,6 +19,18 @@ export type MatchScorePresentation = {
 };
 
 /**
+ * Browser-side fail-closed guard for stale or corrupted Match payloads.
+ * A payload can never unlock context-aware presentation unless the current
+ * report actually contains the complete money context required by Match.
+ * Review remains the stricter state when the backend explicitly pauses ranking.
+ */
+export function effectiveMatchStatus(payloadStatus:string|null|undefined,contextComplete:boolean):string|null|undefined{
+  if(payloadStatus==='review_required')return 'review_required';
+  if(!contextComplete)return 'context_required';
+  return payloadStatus;
+}
+
+/**
  * Payload status is allowed to override row-level data. This keeps every UI
  * surface safe even if a stale/backend-regression row accidentally carries a
  * numeric score while the overall Match run is context-required or paused.
