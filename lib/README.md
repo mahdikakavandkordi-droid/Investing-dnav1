@@ -25,6 +25,9 @@ Generic cross-asset research/watchlist client adapter. Use this for Explore, gen
 ### `investments.ts`
 Specialized ETF/fund research and compatibility adapter. Existing `Fund`, fund-facts, holdings/research-context and ETF fit contracts live here. Do not expand this module with generic GIC/Bond/T-Bill behavior; use `instruments.ts` instead.
 
+### `product-risk/`
+Owns Product Risk DNA browser/domain contracts. It is split into shared types, four consumer dimension definitions, an asset-module registry and a thin read adapter. Asset-specific scoring and publication stay server-side; UI must not recreate risk bands.
+
 ### `supabase.ts`
 Creates the public browser Supabase client and provides two transport helpers:
 

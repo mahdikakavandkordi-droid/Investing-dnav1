@@ -860,37 +860,33 @@ Rules:
 - hard floors override arithmetic averages;
 - consumer UI should initially show the vector + dominant risks, not a single `/100`.
 
-## 10. Product UI concept
+## 10. Consumer disclosure contract
 
-A Product Detail page can eventually show:
+The engine may remain detailed internally, but the default product page must stay simple.
 
-```text
-Product Risk DNA
-Market / Value          Medium
-Credit / Counterparty   Low
-Liquidity / Exit        High
-Concentration           Medium
-Leverage / Non-linearity N/A
-Complexity / Transparency Low
-Operational / Structural Low-Medium
+### Default layer
 
-Dominant risks: Liquidity, Concentration
-Confidence: High
-Why: [plain-language explanation]
-Sources: [issuer / regulator / market data]
-As of: [date]
-```
+Show only:
 
-Below that, keep Product Role / Structure DNA separate:
+- **Overall Risk** — a plain-language overall band when calibrated;
+- **Loss Potential** — how much invested value can realistically be at risk in adverse conditions;
+- **Price Movement** — how much economically relevant value can move before exit or maturity;
+- **Access to Money** — how easily the investor can exit or redeem without major delay or value concession;
+- **Diversification** — how widely the product itself spreads exposure.
 
-```text
-Role / Structure DNA
-Capital protection
-Income predictability
-Growth participation
-Time structure
-...
-```
+Each dimension has an info control that explains both **what it means** and **why it matters**. High diversification must never be described as protection against broad market losses.
+
+### Asset-specific flags
+
+Show only a few material flags in the default experience, such as `Locked until maturity`, `Single issuer exposure`, `Sensitive to interest rates`, `Uses leverage`, `Complex payoff`, `Currency exposure`, or `Custody/platform dependence`.
+
+### Depth on demand
+
+A `See full risk analysis` disclosure may reveal the internal risk families and asset-specific drivers. A separate methodology page explains the framework, sources, confidence/freshness rules and asset modules.
+
+### Plain-language snapshot
+
+The product page may show a short controlled summary generated only from verified Product Risk DNA plus Product Role / Structure DNA facts. It must not forecast returns or make a buy/sell recommendation. The narrative layer is deterministic/template-governed; generative AI must not invent or alter facts.
 
 ## 11. Research evidence used for this design
 
@@ -918,3 +914,36 @@ Before runtime implementation:
 6. separate source-backed fact from model inference in the schema;
 7. version the model (`product-risk-dna-v1-research`);
 8. only then implement database tables/RPC/UI.
+
+## 13. Modular implementation contract
+
+Runtime implementation is split so a new asset class does not force rewrites of the whole platform.
+
+```text
+verified source facts
+  -> asset-specific sensor module
+  -> internal common risk families
+  -> consumer mapper
+     -> Overall Risk
+     -> Loss Potential
+     -> Price Movement
+     -> Access to Money
+     -> Diversification
+  -> material flags
+  -> controlled summary
+  -> optional full analysis
+```
+
+Code/data boundaries:
+
+- `lib/product-risk/types.ts` — public contracts;
+- `lib/product-risk/dimensions.ts` — the four consumer dimensions and help copy;
+- `lib/product-risk/modules.ts` — asset-module registry and sensor contracts, with no scoring in UI;
+- `lib/product-risk/api.ts` — thin browser read adapter;
+- `product_risk_module_registry` — version/readiness metadata;
+- `product_risk_profiles` — versioned draft/published product-level outputs;
+- `product_risk_dimensions` — the four consumer dimensions;
+- `product_risk_family_scores` — deeper optional analysis;
+- `product_risk_sensor_evidence` — internal/source evidence, not browser-readable.
+
+The foundation publishes no invented risk scores. Asset modules start in `research` readiness and calibrated profiles must be explicitly published before the public RPC returns them.

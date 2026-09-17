@@ -51,6 +51,7 @@ Important modules:
 - `lib/instrument-model.ts` — canonical cross-asset taxonomy and display/Match eligibility rules.
 - `lib/instruments.ts` — generic cross-asset research/watchlist adapter.
 - `lib/investments.ts` — ETF-specific research/compatibility adapter.
+- `lib/product-risk/` — modular Product Risk DNA contracts: consumer dimensions, asset-module registry and public read adapter. Asset-specific sensors and canonical risk calculation stay server-side.
 - `lib/supabase.ts` — browser Supabase transport.
 - `lib/analytics.ts`, `lib/browser-session.ts` — privacy-minimized pilot events/session IDs.
 - `lib/use-account.ts` — auth-session hook.
@@ -167,6 +168,8 @@ See `INVESTMENT-DNA-METHODOLOGY.md` for formulas and validation status.
 ## 6. Cross-asset model
 
 Canonical asset taxonomy lives in `lib/instrument-model.ts`. Generic structure dimensions include liquidity, capital protection, price volatility, income predictability, growth participation, rate sensitivity, credit exposure, diversification, complexity and time structure.
+
+Product Risk DNA is a separate modular domain. Its internal model can use detailed asset-specific sensors, while the default consumer contract is compact: Overall Risk plus Loss Potential, Price Movement, Access to Money and Diversification. Product Role / Structure DNA stays separate from Product Risk DNA.
 
 Keep asset-specific facts in specialized models:
 
