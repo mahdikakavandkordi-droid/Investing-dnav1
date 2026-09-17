@@ -1,27 +1,10 @@
 /**
  * Client-side Investing DNA contracts and guest recovery state.
  *
- * This module owns:
- * - public questionnaire/result/Match TypeScript contracts used by the browser;
- * - in-progress guest draft recovery;
- * - the short-lived claim ticket used after a completed guest assessment.
- *
- * It intentionally does NOT calculate canonical Investor DNA or DNA Match
- * scores. Those remain server/database responsibilities.
- * See `docs/ARCHITECTURE.md` and `docs/ASSESSMENT-METHODOLOGY.md`.
+ * Canonical scoring stays server-side. The browser owns only rendering,
+ * recovery, short-lived guest continuity and optional report personalization.
  */
 
-// ---------------------------------------------------------------------------
-// Public assessment / result contracts
-// ---------------------------------------------------------------------------
-
-/**
- * Narrow browser-facing questionnaire DTO.
- *
- * Internal scoring metadata (`weight`, construct configuration, model/version
- * fields and non-selected localized copy) stays server-side. Keep this type in
- * lock-step with the Edge Function questionnaire response and `tests/contracts.mjs`.
- */
 export type Question = {
   question_id: string;
   prompt: string;
@@ -72,6 +55,13 @@ export type NarrativeProfile = {
   blind_spot?: string;
   decision_influence?: string;
   methodology_note?: string|null;
+};
+
+export type PersonalizationProfile = {
+  first_name: string;
+  age: number;
+  last_name?: string|null;
+  phone?: string|null;
 };
 
 export type InvestmentContextProfile = {
@@ -125,10 +115,6 @@ export type MatchItem = {
   watchouts?: string[];
 };
 
-/**
- * Canonical Match response consumed by the browser.
- * `match_score` can legitimately be null when a review/safety gate applies.
- */
 export type MatchPayload = {
   model_version?: string;
   goal_model_version?: string;
@@ -197,13 +183,8 @@ export type AssessmentSession = {
   session_token: string;
   account_linked?: boolean;
   language_code?: 'en'|'fr'|'fa';
-  /** Backend-generated pseudonymous research/session code; never identity. */
   anonymous_code?: string;
 };
-
-// ---------------------------------------------------------------------------
-// Guest recovery / claim state
-// ---------------------------------------------------------------------------
 
 export type AnswerValue = string|string[];
 
@@ -214,6 +195,7 @@ export type Draft = {
   session: AssessmentSession;
   answers: Record<string,AnswerValue>;
   index: number;
+  personalization?: PersonalizationProfile;
   result?: Submission;
 };
 
@@ -221,15 +203,13 @@ export type ClaimTicket = {
   version: 1;
   createdAt: number;
   session: AssessmentSession;
+  personalization?: PersonalizationProfile;
 };
 
 export const DRAFT_KEY = "investing-dna:draft:v2";
 const LEGACY_DRAFT_KEY = "investing-dna:draft:v1";
 const CLAIM_KEY = "investing-dna:claim:v1";
 const MAX_AGE = 24 * 60 * 60 * 1000;
-
-// Memory remains available when browser storage is blocked and also holds the
-// completed one-time guest result for the current page/session experience.
 let memory: Draft|null = null;
 
 function validAge(createdAt:number){
@@ -243,6 +223,22 @@ function removeStoredDraft(){
   }catch{}
 }
 
+export function normalizePersonalization(value:unknown):PersonalizationProfile|null{
+  if(!value||typeof value!=='object'||Array.isArray(value))return null;
+  const input=value as Record<string,unknown>;
+  const firstName=typeof input.first_name==='string'?input.first_name.trim().slice(0,60):'';
+  const age=typeof input.age==='number'?input.age:Number(input.age);
+  if(!firstName||!Number.isInteger(age)||age<18||age>100)return null;
+  const lastName=typeof input.last_name==='string'?input.last_name.trim().slice(0,80):'';
+  const phone=typeof input.phone==='string'?input.phone.trim().slice(0,40):'';
+  return {
+    first_name:firstName,
+    age,
+    ...(lastName?{last_name:lastName}:{}),
+    ...(phone?{phone}:{}),
+  };
+}
+
 export function clearClaimTicket(){
   try{localStorage.removeItem(CLAIM_KEY);}catch{}
 }
@@ -253,7 +249,6 @@ export function clearDraft(){
   clearClaimTicket();
 }
 
-/** Return a valid, unexpired post-completion claim ticket if one exists. */
 export function readClaimTicket():ClaimTicket|null {
   try{
     const raw=localStorage.getItem(CLAIM_KEY);
@@ -268,26 +263,34 @@ export function readClaimTicket():ClaimTicket|null {
       clearClaimTicket();
       return null;
     }
-    return ticket;
+    const personalization=normalizePersonalization(ticket.personalization);
+    return personalization?{...ticket,personalization}:{...ticket,personalization:undefined};
   }catch{
     clearClaimTicket();
     return null;
   }
 }
 
-/**
- * Restore an in-progress draft owned by the current account/guest context.
- * A draft owned by another signed-in user is deliberately ignored.
- */
+export function writeClaimPersonalization(value:PersonalizationProfile):boolean{
+  const personalization=normalizePersonalization(value);
+  if(!personalization)return false;
+  try{
+    const ticket=readClaimTicket();
+    if(!ticket)return false;
+    localStorage.setItem(CLAIM_KEY,JSON.stringify({...ticket,personalization}));
+    return true;
+  }catch{
+    return false;
+  }
+}
+
 export function readDraft(ownerId:string|null):Draft|null {
   let d:Draft|null=memory;
   if(!d){
     try{
       const raw=localStorage.getItem(DRAFT_KEY);
       if(raw)d=JSON.parse(raw);
-    }catch{
-      // Memory fallback keeps the assessment usable when storage is blocked.
-    }
+    }catch{}
   }
 
   try{localStorage.removeItem(LEGACY_DRAFT_KEY);}catch{}
@@ -309,11 +312,11 @@ export function readDraft(ownerId:string|null):Draft|null {
   }
   if(d.ownerId && d.ownerId!==ownerId)return null;
 
-  memory=d;
-  return d;
+  const personalization=normalizePersonalization(d.personalization);
+  memory=personalization?{...d,personalization}:{...d,personalization:undefined};
+  return memory;
 }
 
-/** Persist an in-progress draft when storage is available. */
 export function writeDraft(d:Draft):boolean {
   memory=d;
   try{
@@ -325,11 +328,6 @@ export function writeDraft(d:Draft):boolean {
   }
 }
 
-/**
- * Completed guest reports are not persisted as a full localStorage draft.
- * Keep only the limited claim ticket required to attach the assessment after
- * optional magic-link authentication.
- */
 export function writeEphemeralResult(d:Draft):boolean {
   memory=d;
   let ok=true;
@@ -341,7 +339,8 @@ export function writeEphemeralResult(d:Draft):boolean {
       localStorage.setItem(CLAIM_KEY,JSON.stringify({
         version:1,
         createdAt:Date.now(),
-        session:d.session
+        session:d.session,
+        personalization:normalizePersonalization(d.personalization)||undefined,
       } satisfies ClaimTicket));
     }
   }catch{
@@ -349,10 +348,6 @@ export function writeEphemeralResult(d:Draft):boolean {
   }
   return ok;
 }
-
-// ---------------------------------------------------------------------------
-// Small deterministic presentation / transport helpers
-// ---------------------------------------------------------------------------
 
 export function answerRows(answers:Record<string,AnswerValue>){
   return Object.entries(answers).map(([question_id,value])=>({
