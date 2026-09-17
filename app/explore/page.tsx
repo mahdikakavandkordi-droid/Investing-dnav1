@@ -145,7 +145,7 @@ function InvestmentCard({item}:{item:Instrument}){
 
   <div className="investment-card-footer">
    <span>{canMatch?'DNA Match available':'Structural research'}</span>
-   <Link href={'/investment/'+item.id}>Open research →</Link>
+   <Link aria-label="Open research" href={'/investment/'+item.id}>Open research →</Link>
   </div>
  </article>;
 }
