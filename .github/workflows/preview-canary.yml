@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/platform-v4-account-continuity
+      - codex/visual-redesign-v1
   workflow_dispatch:
 
 jobs:
@@ -21,9 +22,10 @@ jobs:
         run: test -x /usr/bin/google-chrome
       - name: Wait for branch preview and run deployed flow
         env:
-          TEST_ORIGIN: https://invasting-dna-agq7-git-codex-pla-e975cf-mahdikakavandkordi-9201.vercel.app
           CHROME_BIN: /usr/bin/google-chrome
           VERCEL_PREVIEW_SHARE_TOKEN: ${{ secrets.VERCEL_PREVIEW_SHARE_TOKEN }}
+          PLATFORM_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-pla-e975cf-mahdikakavandkordi-9201.vercel.app
+          VISUAL_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-vis-a45e9f-mahdikakavandkordi-9201.vercel.app
         run: |
           set -e
           if [ -z "${VERCEL_PREVIEW_SHARE_TOKEN}" ]; then
@@ -31,7 +33,21 @@ jobs:
             exit 2
           fi
 
-          echo "Waiting for protected preview endpoint"
+          case "${GITHUB_REF_NAME}" in
+            codex/visual-redesign-v1)
+              TEST_ORIGIN="${VISUAL_PREVIEW_ORIGIN}"
+              ;;
+            codex/platform-v4-account-continuity)
+              TEST_ORIGIN="${PLATFORM_PREVIEW_ORIGIN}"
+              ;;
+            *)
+              echo "No protected preview origin configured for ${GITHUB_REF_NAME}"
+              exit 2
+              ;;
+          esac
+          export TEST_ORIGIN
+
+          echo "Waiting for protected preview endpoint: ${TEST_ORIGIN}"
           cookie_jar=/tmp/vercel-preview-cookies.txt
           for i in $(seq 1 30); do
             rm -f "${cookie_jar}"
