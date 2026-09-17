@@ -82,7 +82,7 @@ export default function Result(){
   {pending
    ? <GuestSaveCard personal={personal} sending={sendingEmail} message={emailMessage} onSubmit={emailSaveLink}/>
    : <SavedResultCard/>}
-  <ContextCallout hasContext={hasContext}/>
+  <ContextCallout hasContext={hasContext} matchStatus={matchStatus}/>
   {reviewRequired?<MatchReviewCallout matches={matches!}/>:topMatches.length>0&&<MatchPreview matches={topMatches} matchStatus={matchStatus} hasContext={hasContext}/>} 
   <PilotFeedbackCard/>
   {error&&<p className="notice" role="alert">{error}</p>}
@@ -92,8 +92,17 @@ export default function Result(){
 function LoadingResult(){return <main className="result-page"><div className="container result-container"><div className="result-loading-card"><h1>Building your Investor DNA report…</h1><p className="muted">Turning your answers into a profile you can actually use.</p></div></div></main>}
 function MissingResult({error}:{error:string}){return <main className="result-page"><div className="container result-container"><div className="result-loading-card"><h1>{error?'Could not load your DNA':'Your guest report is no longer available'}</h1>{error?<p role="alert">{error}</p>:<p>Guest reports are kept only for the current browser session. Take the assessment again, or sign in if you previously saved your Investor DNA.</p>}<div className="actions"><Link className="btn primary" href="/dna/assessment">Take the assessment</Link><Link className="btn" href="/profile">Sign in to saved DNA</Link>{error&&<button className="btn" onClick={()=>location.reload()}>Retry</button>}</div></div></div></main>}
 
-function ContextCallout({hasContext}:{hasContext:boolean}){
- return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Next · put your DNA into action</div><h2>{hasContext?'This goal is connected to your DNA.':'Tell us what this money is for.'}</h2><p>{hasContext?'Your personal Investor DNA stays intact. Goal, horizon, access needs and principal protection now form a separate layer for this specific money.':'Your personal report is complete. Add a goal, time horizon, access needs and principal-protection requirement when you want context-aware DNA Match research.'}</p></div>{hasContext?<div className="actions compact"><Link className="btn primary" href="/match">Open context-aware Match</Link><Link className="btn" href="/dna/context?returnTo=/dna/result">Edit this goal</Link></div>:<Link className="btn primary" href="/dna/context?returnTo=/dna/result">Set an investment goal</Link>}</section>;
+function ContextCallout({hasContext,matchStatus}:{hasContext:boolean;matchStatus?:string}){
+ if(!hasContext){
+  return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Next · put your DNA into action</div><h2>Tell us what this money is for.</h2><p>Your personal report is complete. Add a goal, time horizon, access needs and principal-protection requirement when you want context-aware DNA Match research.</p></div><Link className="btn primary" href="/dna/context?returnTo=/dna/result">Set an investment goal</Link></section>;
+ }
+ if(matchStatus==='review_required'){
+  return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Your DNA in action</div><h2>This goal is connected, but Match is paused.</h2><p>Your personal DNA is unchanged and the money context is saved. A safety or data-review gate is preventing ranked ETF results for this context.</p></div><div className="actions compact"><Link className="btn primary" href="/match">Review Match status</Link><Link className="btn" href="/dna/context?returnTo=/dna/result">Edit this goal</Link></div></section>;
+ }
+ if(matchStatus==='context_required'){
+  return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Your DNA in action</div><h2>This context still needs another look.</h2><p>The report has goal details, but Match still considers required context incomplete. Review the goal, horizon, access need and principal-protection choice before using numeric compatibility.</p></div><Link className="btn primary" href="/dna/context?returnTo=/dna/result">Review this goal</Link></section>;
+ }
+ return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Your DNA in action</div><h2>This goal is connected to your DNA.</h2><p>Your personal Investor DNA stays intact. Goal, horizon, access needs and principal protection form a separate layer for this specific money.</p></div><div className="actions compact"><Link className="btn primary" href="/match">Open context-aware Match</Link><Link className="btn" href="/dna/context?returnTo=/dna/result">Edit this goal</Link></div></section>;
 }
 
 function GuestSaveCard({personal,sending,message,onSubmit}:{personal:PersonalizationProfile|null;sending:boolean;message:string;onSubmit:(email:string,profile:PersonalizationProfile)=>Promise<void>}){
