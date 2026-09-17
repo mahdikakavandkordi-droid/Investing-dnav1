@@ -8,16 +8,37 @@ import {humanize} from '@/lib/dna';
  * canonical assessment/Match engine.
  */
 export const ARCHETYPES:Record<string,{title:string;tagline:string}>={
- VAULT:{title:'The Capital Protector',tagline:'You prefer protection, and your finances also call for caution.'},
- ANCHOR:{title:'The Steady Builder',tagline:'You prefer a steadier path, with some room to take measured risk.'},
- COOLHAND:{title:'The Calm Conservative',tagline:'You can take more risk financially than you naturally prefer.'},
- SCOUT:{title:'The Cautious Explorer',tagline:'You are open to some risk, but your finances call for restraint.'},
+ VAULT:{title:'The Capital Protector',tagline:'Protection comes first, and your current financial capacity also calls for caution.'},
+ ANCHOR:{title:'The Steady Builder',tagline:'You prefer a steadier path, with room for measured investment risk.'},
+ COOLHAND:{title:'The Calm Conservative',tagline:'Your finances can absorb more risk than you naturally prefer to take.'},
+ SCOUT:{title:'The Cautious Explorer',tagline:'You are open to some risk, while your current financial capacity calls for restraint.'},
  MAVERICK:{title:'The Balanced Risk Taker',tagline:'Your comfort with risk and financial capacity are broadly balanced.'},
- STRIKER:{title:'The Calculated Aggressor',tagline:'You are comfortable with some risk and have room to absorb it.'},
- HOTSHOT:{title:'The High-Risk Aspirant',tagline:'Your appetite for risk runs ahead of your financial capacity.'},
- HIGHROLLER:{title:'The High-Conviction Investor',tagline:'You are comfortable taking significant risk, with moderate financial room.'},
- JACKPOT:{title:'The Adaptive Risk Taker',tagline:'Both your willingness and capacity for investment risk are relatively high.'}
+ STRIKER:{title:'The Calculated Aggressor',tagline:'You are comfortable with meaningful risk and currently have more room to absorb it.'},
+ HOTSHOT:{title:'The High-Comfort / Lower-Capacity Profile',tagline:'Your willingness to take risk is higher than the financial room you currently have to absorb losses.'},
+ HIGHROLLER:{title:'The High-Comfort / Moderate-Capacity Profile',tagline:'You are comfortable taking significant risk with moderate financial capacity behind it.'},
+ JACKPOT:{title:'The High-Comfort / Higher-Capacity Profile',tagline:'Both your willingness and your current capacity for investment risk are relatively high.'}
 };
+
+/**
+ * Friendly display names. Canonical backend archetype keys remain unchanged so
+ * assessment/scoring contracts and historical data do not need a migration.
+ */
+export const ARCHETYPE_DISPLAY_NAMES:Record<string,string>={
+ VAULT:'VAULT',
+ ANCHOR:'ANCHOR',
+ COOLHAND:'COOLHAND',
+ SCOUT:'SCOUT',
+ MAVERICK:'MAVERICK',
+ STRIKER:'STRIKER',
+ HOTSHOT:'CHARGER',
+ HIGHROLLER:'PATHFINDER',
+ JACKPOT:'VANGUARD'
+};
+
+export function displayArchetype(value?:string|null){
+ const key=(value||'MAVERICK').toUpperCase();
+ return ARCHETYPE_DISPLAY_NAMES[key]||key;
+}
 
 export const BEHAVIOR:Record<string,{label:string;help:string;high:string;mid:string;low:string}>={
  decision_independence:{label:'Decision independence',help:'How much you separate other people’s excitement from your own decision.',high:'Independent',mid:'Mixed',low:'More socially influenced'},
