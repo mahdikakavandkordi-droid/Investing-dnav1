@@ -8,7 +8,7 @@ import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 import {readDraft} from '@/lib/dna';
 import type {Fund} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
-import type {AppState,MatchItem} from '@/lib/dna';
+import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
 
 /**
  * ETF-only screener.
@@ -75,24 +75,30 @@ export default function Screener(){
   return ()=>{active=false};
  },[user?.id]);
 
+ const matchStatus=state?.matches?.status;
  const matches=useMemo(
-  ()=>new Map((state?.matches?.results||[]).map(match=>[match.symbol,match])),
+  ()=>new Map(currentMatchRows(state?.matches).map(match=>[match.symbol,match])),
   [state]
  );
 
+ useEffect(()=>{
+  if(matchStatus==='available')return;
+  setEligibleOnly(false);
+  setSort(current=>current==='dna_desc'?'name':current);
+ },[matchStatus]);
+
  const displayed=useMemo(()=>{
   let output=[...rows];
-  if(eligibleOnly){
+  if(eligibleOnly&&matchStatus==='available'){
    output=output.filter(fund=>matches.get(fund.symbol)?.eligibility==='eligible');
   }
-  if(sort==='dna_desc'){
+  if(sort==='dna_desc'&&matchStatus==='available'){
    output.sort((a,b)=>(matches.get(b.symbol)?.match_score??-1)-(matches.get(a.symbol)?.match_score??-1));
   }
   return output;
- },[rows,eligibleOnly,sort,matches]);
+ },[rows,eligibleOnly,sort,matches,matchStatus]);
 
  const matchReady=!!state?.dna&&!!state?.matches;
- const matchStatus=state?.matches?.status;
 
  function toggleSelection(id:string){
   setSelected(current=>{
@@ -146,6 +152,7 @@ export default function Screener(){
          rows={displayed}
          matches={matches}
          matchReady={matchReady}
+         matchStatus={matchStatus}
          selected={selected}
          onToggle={toggleSelection}
         />}
@@ -171,10 +178,10 @@ function MatchStatus({
    matchStatus==='available'
     ? 'Eligible ETF matches are identified using your current context.'
     : matchStatus==='context_required'
-      ? 'You are seeing DNA-only ETF comparisons until you add investment context. Numeric Match scores stay hidden until then.'
+      ? 'You are seeing DNA-only ETF comparisons until you add complete investment context. Numeric Match scores stay hidden until then.'
       : matchStatus==='no_suitable_options'
-        ? 'No ETF currently passes all fit limits; the screener still shows the research universe without forcing a recommendation.'
-        : 'Your current match is under review, so rankings are not treated as eligible recommendations.';
+        ? 'No ETF currently passes all fit limits; the screener still shows the research universe without forcing a match.'
+        : 'Your current Match is under review, so personalized rankings are paused.';
   const statusClass=
    matchStatus==='available'
     ? 'match-status-card ok'
@@ -254,11 +261,12 @@ function ScreenerToolbar({
 }
 
 function ScreenerTable({
- rows,matches,matchReady,selected,onToggle
+ rows,matches,matchReady,matchStatus,selected,onToggle
 }:{
  rows:Fund[];
  matches:Map<string,MatchItem>;
  matchReady:boolean;
+ matchStatus?:string;
  selected:string[];
  onToggle:(id:string)=>void;
 }){
@@ -278,7 +286,7 @@ function ScreenerTable({
     /></td>
     <td><b>{fund.symbol}</b> · {fund.name}</td>
     <td>{fund.risk_level||'Not available'}</td>
-    <td><FitCell match={match} matchReady={matchReady}/></td>
+    <td><FitCell match={match} matchReady={matchReady} matchStatus={matchStatus}/></td>
     <td>{formatMetric(fund.return_1y_pct,'%')}</td>
     <td>{formatMetric(fund.mer_pct,'%')}</td>
     <td><Link className="btn" href={'/investment/'+fund.id}>View ETF</Link></td>
@@ -287,12 +295,12 @@ function ScreenerTable({
  </table>;
 }
 
-function FitCell({match,matchReady}:{match?:MatchItem;matchReady:boolean}){
+function FitCell({match,matchReady,matchStatus}:{match?:MatchItem;matchReady:boolean;matchStatus?:string}){
  if(!match)return <span className="muted">{matchReady?'Not ranked':'Add DNA'}</span>;
- const score=matchScorePresentation(match);
+ const score=matchScorePresentation(match,matchStatus);
  return <div className="dna-fit-cell">
   <strong>{score.text}</strong>
-  <small>{matchFitLabel(match)}</small>
+  <small>{matchFitLabel(match,matchStatus)}</small>
  </div>;
 }
 
@@ -304,4 +312,10 @@ function SelectionBar({selected,onClear}:{selected:string[];onClear:()=>void}){
    <button className="btn" onClick={onClear}>Clear</button>
   </div>
  </div>;
+}
+
+function currentMatchRows(payload?:MatchPayload):MatchItem[]{
+ if(!payload)return [];
+ if(Array.isArray(payload.results)&&payload.results.length)return payload.results;
+ return [...(payload.top_matches||[]),...(payload.alternatives||[]),...(payload.consider||[]),...(payload.mismatch||[])];
 }
