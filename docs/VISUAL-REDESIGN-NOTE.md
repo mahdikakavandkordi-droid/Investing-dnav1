@@ -9,11 +9,12 @@ Included in this pass:
 - questionnaire presentation with a quiet progress-linked DNA journey visual;
 - Explore catalog, Compare, Watchlist, and investment-detail presentation;
 - asset-aware detail facts and reduced repeated missing-data placeholders;
-- ETF allocation hierarchy that separates overall allocation from child breakdowns.
+- ETF allocation hierarchy that separates overall allocation from child breakdowns;
+- `/dna/result` report redesign with an editorial archetype hero, compact personal/context summary, Investor DNA matrix, plain-language interpretation, and the existing deeper decision fingerprint retained below the summary fold;
+- display-only aliases for the three high-risk archetypes: HOTSHOT → CHARGER, HIGHROLLER → PATHFINDER, and JACKPOT → VANGUARD. Canonical backend keys remain unchanged.
 
-Intentionally excluded:
+Intentionally unchanged:
 
-- `/dna/result` personality/report redesign. That surface remains on the existing result/report implementation until its design is reviewed separately.
-- backend, scoring, Match, ownership, migration, and Supabase contract changes.
-
-The persistent research-stage Footer/disclosure is unchanged.
+- canonical questionnaire/scoring logic, Match logic, ownership, migrations, and Supabase contracts;
+- the report's deeper content model. The new shell uses existing server-supported narrative, risk, behavioral, and investment-context fields so copy can be expanded later without changing the visual structure;
+- the persistent research-stage Footer/disclosure.
