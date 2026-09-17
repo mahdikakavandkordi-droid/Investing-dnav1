@@ -21,7 +21,17 @@ On 2026-09-15, source control was reconciled with the live Supabase migration le
 - `20260915084213_assessment_v110_and_context.sql`
 - `20260915084957_protect_official_risk_ratings_and_legacy_claim.sql`
 
-These files are historical source artifacts only. They were restored to source control and were not re-run against the database as part of the repository repair.
+On 2026-09-17, the active redesign branch was checked directly against `supabase_migrations.schema_migrations`. Recent M2/M4 migration source had drifted in timestamp naming and one applied M4 research-boundary migration was absent from the repository. The exact applied SQL was restored from the live ledger under its recorded versions:
+
+- `20260915170353_milestone_2_research_rpc_hardening.sql`
+- `20260916101953_m4_private_research_read_boundary.sql`
+- `20260916113224_m4_scope_match_to_etf_universe.sql`
+- `20260916115027_m4_goal_fit_v7_candidate.sql`
+- `20260916115339_m4_goal_fit_v7_candidate_calibration.sql`
+- `20260916115610_m4_promote_match_v7.sql`
+- `20260916115930_m4_redact_context_only_match_scores.sql`
+
+The non-ledger timestamp copies on this branch were removed after the exact live versions were restored. These are source-control repairs only: none of these already-applied migrations were re-run against the live database.
 
 ## Runtime retirement migrations
 
@@ -35,7 +45,7 @@ On 2026-09-16, a dependency-audited cleanup retired parallel/dead runtime withou
 
 The exact objects removed, replacements, verification, and intentionally retained historical data are documented in `docs/RUNTIME-RETIREMENTS.md`.
 
-In particular, older migrations still contain Portfolio Builder, Match v3/v4/v5/v5.1 and the superseded `v_investment_intelligence` definition because that is their historical purpose. The current canonical Match runtime is v6 through `investor_private.current_match`, and current ETF Investment DNA signals come through `v_investment_dna_v2`; do not resurrect a superseded implementation merely because its creation SQL remains here.
+In particular, older migrations still contain Portfolio Builder, Match v3/v4/v5/v5.1/v6 and the superseded `v_investment_intelligence` definition because that is their historical purpose. The current canonical Match runtime is v7 through `investor_private.current_match`, with Goal Fit v1 as its goal-role layer; current ETF Investment DNA signals come through `v_investment_dna_v2`. Do not resurrect a superseded implementation merely because its creation SQL remains in migration history.
 
 ## Workflow for new changes
 
