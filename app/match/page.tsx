@@ -92,11 +92,11 @@ export default function Matches(){
   if(mismatch.length)return mismatch;
   return match?.status==='no_suitable_options'?unique(match?.results||[]):[];
  },[match]);
- const rows=eligibleRows.length
-  ? eligibleRows
+ const rows=match?.status==='review_required'
+  ? []
   : match?.status==='no_suitable_options'
     ? fallbackRows
-    : [];
+    : eligibleRows;
 
  const idBySymbol=useMemo(()=>new Map(funds.map(fund=>[fund.symbol,fund.id])),[funds]);
  const featured=rows.slice(0,3);
