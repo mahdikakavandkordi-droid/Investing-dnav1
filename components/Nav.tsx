@@ -21,7 +21,7 @@ export function Nav(){
 
    <div className="account-links">
     {!loading&&!user&&<Link className="profile-link profile-link-muted" href="/profile?mode=signup">Create account</Link>}
-    <Link className="profile-link" href={user?'/dashboard':'/profile'}>{user?'Dashboard':loading?'Account':'Sign in'}</Link>
+    <Link className="profile-link" href="/profile">{user?'Dashboard':loading?'Account':'Sign in'}</Link>
    </div>
   </div>
  </header>;
