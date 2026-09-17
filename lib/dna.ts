@@ -207,6 +207,7 @@ export type ClaimTicket = {
 };
 
 export const DRAFT_KEY = "investing-dna:draft:v2";
+export const EPHEMERAL_RESULT_KEY = "investing-dna:result:v1";
 const LEGACY_DRAFT_KEY = "investing-dna:draft:v1";
 const CLAIM_KEY = "investing-dna:claim:v1";
 const MAX_AGE = 24 * 60 * 60 * 1000;
@@ -221,6 +222,19 @@ function removeStoredDraft(){
     localStorage.removeItem(DRAFT_KEY);
     localStorage.removeItem(LEGACY_DRAFT_KEY);
   }catch{}
+}
+
+function removeEphemeralResult(){
+  try{sessionStorage.removeItem(EPHEMERAL_RESULT_KEY);}catch{}
+}
+
+function readEphemeralResult():Draft|null{
+  try{
+    const raw=sessionStorage.getItem(EPHEMERAL_RESULT_KEY);
+    return raw?JSON.parse(raw) as Draft:null;
+  }catch{
+    return null;
+  }
 }
 
 export function normalizePersonalization(value:unknown):PersonalizationProfile|null{
@@ -239,6 +253,15 @@ export function normalizePersonalization(value:unknown):PersonalizationProfile|n
   };
 }
 
+export function hasCompleteInvestmentContext(context?:InvestmentContextProfile|null):boolean{
+  return !!(
+    context?.goal &&
+    context?.time_horizon &&
+    context?.liquidity_need &&
+    context?.principal_required
+  );
+}
+
 export function clearClaimTicket(){
   try{localStorage.removeItem(CLAIM_KEY);}catch{}
 }
@@ -246,6 +269,7 @@ export function clearClaimTicket(){
 export function clearDraft(){
   memory=null;
   removeStoredDraft();
+  removeEphemeralResult();
   clearClaimTicket();
 }
 
@@ -292,6 +316,7 @@ export function readDraft(ownerId:string|null):Draft|null {
       if(raw)d=JSON.parse(raw);
     }catch{}
   }
+  if(!d)d=readEphemeralResult();
 
   try{localStorage.removeItem(LEGACY_DRAFT_KEY);}catch{}
   if(!d)return null;
@@ -319,6 +344,7 @@ export function readDraft(ownerId:string|null):Draft|null {
 
 export function writeDraft(d:Draft):boolean {
   memory=d;
+  removeEphemeralResult();
   try{
     localStorage.setItem(DRAFT_KEY,JSON.stringify(d));
     localStorage.removeItem(LEGACY_DRAFT_KEY);
@@ -329,13 +355,21 @@ export function writeDraft(d:Draft):boolean {
 }
 
 export function writeEphemeralResult(d:Draft):boolean {
-  memory=d;
+  const ephemeral:Draft={
+    ...d,
+    createdAt:Date.now(),
+    answers:{},
+    index:0,
+  };
+  memory=ephemeral;
   let ok=true;
+  removeStoredDraft();
   try{
-    removeStoredDraft();
     if(d.result?.account_linked){
+      removeEphemeralResult();
       localStorage.removeItem(CLAIM_KEY);
     }else{
+      sessionStorage.setItem(EPHEMERAL_RESULT_KEY,JSON.stringify(ephemeral));
       localStorage.setItem(CLAIM_KEY,JSON.stringify({
         version:1,
         createdAt:Date.now(),
