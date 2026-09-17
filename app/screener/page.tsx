@@ -4,8 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {rpc} from '@/lib/supabase';
 import {formatMetric} from '@/lib/investments';
-import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
-import {readDraft} from '@/lib/dna';
+import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
+import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import type {Fund} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
@@ -75,10 +75,13 @@ export default function Screener(){
   return ()=>{active=false};
  },[user?.id]);
 
- const matchStatus=state?.matches?.status;
+ const rawMatchStatus=state?.matches?.status;
+ const context=state?.report?.investment_context||state?.dna?.investment_context||null;
+ const matchStatus=effectiveMatchStatus(rawMatchStatus,hasCompleteInvestmentContext(context))||undefined;
+ const rowsTrusted=!(matchStatus==='context_required'&&rawMatchStatus!=='context_required');
  const matches=useMemo(
-  ()=>new Map(currentMatchRows(state?.matches).map(match=>[match.symbol,match])),
-  [state]
+  ()=>new Map((rowsTrusted?currentMatchRows(state?.matches):[]).map(match=>[match.symbol,match])),
+  [state,rowsTrusted]
  );
 
  useEffect(()=>{
