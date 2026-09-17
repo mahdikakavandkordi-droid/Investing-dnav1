@@ -1,4 +1,3 @@
-import type {ReactNode} from 'react';
 import type {Instrument} from '@/lib/instruments';
 import {assetTypeOf} from '@/lib/instrument-model';
 import {formatMetric} from '@/lib/investments';
@@ -23,7 +22,7 @@ function DepositTerms({instrument}:{instrument:Instrument}){
   present(instrument.interest_payment_frequency)?{label:'Interest payment',value:pretty(instrument.interest_payment_frequency)}:null,
   instrument.registered_account_eligibility?.length?{label:'Registered accounts',value:instrument.registered_account_eligibility.join(' · ')}:null,
   instrument.deposit_insurance_eligible!==null&&instrument.deposit_insurance_eligible!==undefined?{label:'Deposit insurance',value:depositInsuranceLabel(instrument)}:null
- ].filter((row):row is {label:string;value:ReactNode}=>!!row);
+ ].filter((row):row is {label:string;value:string}=>!!row);
 
  return <section className="card instrument-terms-v2">
   <div className="eyebrow">Deposit terms</div>
@@ -44,7 +43,7 @@ function FixedIncomeTerms({instrument,type}:{instrument:Instrument;type:string})
   instrument.remaining_term_months==null?null:{label:'Remaining term',value:`${instrument.remaining_term_months} months`},
   instrument.duration_years==null?null:{label:'Duration',value:formatMetric(instrument.duration_years,' years')},
   present(instrument.credit_rating)?{label:'Credit rating',value:creditRatingLabel(instrument)}:null
- ].filter((row):row is {label:string;value:ReactNode}=>!!row);
+ ].filter((row):row is {label:string;value:string}=>!!row);
 
  return <section className="card instrument-terms-v2">
   <div className="eyebrow">Fixed-income terms</div>
@@ -56,7 +55,7 @@ function FixedIncomeTerms({instrument,type}:{instrument:Instrument;type:string})
  </section>;
 }
 
-function Row({label,value}:{label:string;value:ReactNode}){
+function Row({label,value}:{label:string;value:string}){
  return <div className="term-stat-v2"><span>{label}</span><strong>{value}</strong></div>;
 }
 function SourceLine({url,name,asOf}:{url?:string|null;name:string;asOf?:string|null}){
