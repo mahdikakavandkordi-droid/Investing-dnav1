@@ -63,6 +63,7 @@ assert.match(profileSource,/history\.replaceState\(history\.state,''\s*,\s*url\.
 assert.match(profileSource,/access_token/);
 assert.match(profileSource,/refresh_token/);
 assert.match(profileSource,/dna\/assessment\?fresh=1/);
+assert.match(profileSource,/matches\?\.results\?\.find\(item=>item\.eligibility==='eligible'\)/);
 
 const assessmentSource=readFileSync(new URL('../app/dna/assessment/page.tsx',import.meta.url),'utf8');
 assert.match(assessmentSource,/COGNITIVE_V1_10/);
@@ -87,4 +88,7 @@ assert.match(compareSource,/matchScorePresentation\(match,matchStatus\)/);
 assert.match(screenerSource,/matchScorePresentation\(match,matchStatus\)/);
 assert.match(connectionSource,/matchScorePresentation\(match,status\)/);
 
-console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, cognitive research-code continuity, and payload-level Match redaction wiring');
+const dnaSummarySource=readFileSync(new URL('../components/DnaSummary.tsx',import.meta.url),'utf8');
+assert.doesNotMatch(dnaSummarySource,/aria-hidden="true">●/);
+
+console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, cognitive research-code continuity, dashboard Match fallback, clean DNA matrix highlighting, and payload-level Match redaction wiring');
