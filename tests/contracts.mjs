@@ -70,4 +70,21 @@ assert.match(assessmentSource,/draft\.session\.anonymous_code/);
 assert.match(assessmentSource,/Research code:/);
 assert.match(assessmentSource,/searchParams\.get\('fresh'\)===\'1\'/);
 
-console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, and cognitive research-code continuity');
+// The overall Match run status must override stale row-level numeric fields on
+// every surface. A context_required or review_required payload can never leak a
+// numeric score simply because an older row still says eligible/top_match.
+const matchPresentationSource=readFileSync(new URL('../lib/match-presentation.ts',import.meta.url),'utf8');
+assert.match(matchPresentationSource,/payloadStatus==='context_required'/);
+assert.match(matchPresentationSource,/payloadStatus==='review_required'/);
+const resultSource=readFileSync(new URL('../app/dna/result/page.tsx',import.meta.url),'utf8');
+const matchPageSource=readFileSync(new URL('../app/match/page.tsx',import.meta.url),'utf8');
+const compareSource=readFileSync(new URL('../app/compare/page.tsx',import.meta.url),'utf8');
+const screenerSource=readFileSync(new URL('../app/screener/page.tsx',import.meta.url),'utf8');
+const connectionSource=readFileSync(new URL('../components/InstrumentConnection.tsx',import.meta.url),'utf8');
+assert.match(resultSource,/matchScorePresentation\(match,matchStatus\)/);
+assert.match(matchPageSource,/matchScorePresentation\(item,match\?\.status\)/);
+assert.match(compareSource,/matchScorePresentation\(match,matchStatus\)/);
+assert.match(screenerSource,/matchScorePresentation\(match,matchStatus\)/);
+assert.match(connectionSource,/matchScorePresentation\(match,status\)/);
+
+console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, cognitive research-code continuity, and payload-level Match redaction wiring');
