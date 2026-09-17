@@ -135,6 +135,11 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
   },{draftKey:DRAFT_KEY,resultKey:EPHEMERAL_RESULT_KEY,claimKey:CLAIM_KEY,value:draft});
  }
 
+ async function waitForResult(archetype='MAVERICK'){
+  const publicName=archetype==='HOTSHOT'?'CHARGER':archetype==='HIGHROLLER'?'PATHFINDER':archetype==='JACKPOT'?'VANGUARD':archetype;
+  await page.getByRole('heading',{name:publicName,exact:true}).waitFor();
+ }
+
  for(const [canonical,display] of archetypes){
   await seed(draftFor(canonical,'context_required'));
   await page.goto(ORIGIN+'/dna/result');
@@ -151,6 +156,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
 
  await seed(draftFor('MAVERICK','context_required',null,false));
  await page.goto(ORIGIN+'/dna/result');
+ await waitForResult('MAVERICK');
  const noBehaviorText=await page.locator('body').innerText();
  assert.match(noBehaviorText,/Not enough data/i);
  assert.doesNotMatch(noBehaviorText,/Possible signal/i);
@@ -160,6 +166,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  // has no complete money context must not expose numeric or goal-aware output.
  await seed(draftFor('MAVERICK','available'));
  await page.goto(ORIGIN+'/dna/result');
+ await waitForResult('MAVERICK');
  let text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/,'Result leaked numeric Match without complete context');
  assert.match(text,/DNA-only|investment context|Tell us what this money is for/i);
@@ -187,6 +194,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  const context={first_name:'Mahdi',age:35,goal:'growth',time_horizon:'gt_10y',liquidity_need:'low',principal_required:'no',amount_to_invest:null};
  await seed(draftFor('MAVERICK','available',context));
  await page.goto(ORIGIN+'/dna/result');
+ await waitForResult('MAVERICK');
  await page.getByText('91').first().waitFor();
  text=await page.locator('body').innerText();
  assert.match(text,/Mahdi, see what your DNA means for this money\./);
@@ -214,10 +222,12 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
 
  await seed(draftFor('MAVERICK','review_required',context));
  await page.goto(ORIGIN+'/dna/result');
+ await waitForResult('MAVERICK');
  text=await page.locator('body').innerText();
  assert.match(text,/DNA Match paused/i);
  assert.doesNotMatch(text,/91\/100|84\/100/);
  await page.goto(ORIGIN+'/match');
+ await page.getByRole('heading',{name:'See how your DNA lines up with ETFs'}).waitFor();
  text=await page.locator('body').innerText();
  assert.match(text,/Review this money before ranking ETFs/i);
  assert.doesNotMatch(text,/91\/100|84\/100/);
