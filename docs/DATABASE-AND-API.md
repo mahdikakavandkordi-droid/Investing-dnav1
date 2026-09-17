@@ -1,7 +1,7 @@
 # Investor DNA database and API guide
 
 Status: canonical backend contract reference  
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
 
 This document explains how the browser reaches Supabase and where backend responsibilities live. Migration history records how the schema got here; this document describes the current runtime.
 
@@ -90,11 +90,14 @@ Canonical Match runtime:
 ```text
 current app contracts
  -> investor_private.current_match(assessment_id)
- -> calculate_investment_match_v6(assessment_id)
+ -> calculate_investment_match_v7(assessment_id)
+ -> investor_private.goal_role_fit_v7(...)
  -> current Match run/results
 ```
 
-Match remains ETF-only. Legacy Match generations and parallel recommendation/explainability helpers were intentionally retired from runtime; see `RUNTIME-RETIREMENTS.md`.
+Current versions are Match `investment-dna-match-v7` and Goal Fit `goal-fit-v1`. Match remains ETF-only. Historical v6 remains server-side for reproducibility; older Match generations and parallel recommendation/explainability helpers were intentionally retired from runtime; see `RUNTIME-RETIREMENTS.md`.
+
+When money context is incomplete, the persisted v7 run can retain an internal comparison value for reproducibility and ordering, but `investor_private.current_match()` redacts the consumer-facing overall score and returns `context_only_score_policy = hidden_until_context_complete`. Browser presentation must also treat the payload status as authoritative so stale row-level values cannot surface a numeric score in `context_required` or `review_required` states.
 
 ## 4. Assessment / pilot Edge Function
 
@@ -210,7 +213,7 @@ After runtime/API hardening:
 - legacy browser RPCs / old app shells / old Match engines were retired rather than left as parallel public paths;
 - Portfolio Builder callable runtime is retired during M4.
 
-Remaining `SECURITY DEFINER` views are classified individually. Some are active read-model/diagnostic dependencies and must not be batch-converted or deleted solely to reduce Advisor counts.
+Current Supabase security Advisor output should be interpreted against these boundaries. RLS-with-no-policy findings are expected for service/internal tables that intentionally expose no browser policy. The two authenticated `SECURITY DEFINER` helper warnings remain a tracked canary item rather than something to change blindly.
 
 ## 9. Portfolio Builder freeze
 
@@ -236,7 +239,7 @@ For a new database change:
 
 A timeout/connector error is unknown state, not success. Re-read live state before retrying.
 
-If an already-applied migration is missing from source control, restore its exact historical source without re-running it.
+If an already-applied migration is missing from source control, restore its exact historical source without re-running it. Source filenames and contents for applied migrations must match the live ledger rather than a reconstructed convenience timestamp.
 
 ## 11. Data provenance
 
