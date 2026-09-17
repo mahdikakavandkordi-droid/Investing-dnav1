@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - codex/platform-v4-account-continuity
+      - codex/visual-redesign-v1
 
 jobs:
   verify:
