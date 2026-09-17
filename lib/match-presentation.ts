@@ -19,11 +19,19 @@ export type MatchScorePresentation = {
 };
 
 /**
- * State semantics take precedence over a numeric payload. This keeps the UI
- * defensive if a future backend regression accidentally serializes a score for
- * a context-only or review-gated row.
+ * Payload status is allowed to override row-level data. This keeps every UI
+ * surface safe even if a stale/backend-regression row accidentally carries a
+ * numeric score while the overall Match run is context-required or paused.
  */
-export function matchScorePresentation(match:MatchDisplayLike):MatchScorePresentation{
+export function matchScorePresentation(match:MatchDisplayLike,payloadStatus?:string|null):MatchScorePresentation{
+  if(payloadStatus==='context_required'){
+    return {kind:'context_only',text:'DNA-only',numericValue:null};
+  }
+
+  if(payloadStatus==='review_required'){
+    return {kind:'review',text:'Review',numericValue:null};
+  }
+
   if(match.eligibility==='context_required'||match.recommendation_tier==='consider'){
     return {kind:'context_only',text:'DNA-only',numericValue:null};
   }
@@ -40,7 +48,10 @@ export function matchScorePresentation(match:MatchDisplayLike):MatchScorePresent
   return {kind:'unavailable',text:'—',numericValue:null};
 }
 
-export function matchFitLabel(match:MatchDisplayLike):string{
+export function matchFitLabel(match:MatchDisplayLike,payloadStatus?:string|null):string{
+  if(payloadStatus==='context_required')return 'DNA-only comparison';
+  if(payloadStatus==='review_required')return 'Review required';
+
   return match.explanation?.fit_label ||
     match.fit_label ||
     ({
@@ -51,6 +62,6 @@ export function matchFitLabel(match:MatchDisplayLike):string{
     }[match.recommendation_tier||'']||'Compatibility');
 }
 
-export function isContextOnlyMatch(match:MatchDisplayLike):boolean{
-  return match.eligibility==='context_required'||match.recommendation_tier==='consider';
+export function isContextOnlyMatch(match:MatchDisplayLike,payloadStatus?:string|null):boolean{
+  return payloadStatus==='context_required'||match.eligibility==='context_required'||match.recommendation_tier==='consider';
 }
