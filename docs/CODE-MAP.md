@@ -1,7 +1,7 @@
 # Investor DNA — code map
 
 Status: canonical navigation guide for engineers  
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
 
 This is the fastest way to answer **“where does this behavior live?”** without reading the repository from top to bottom.
 
@@ -122,9 +122,9 @@ Context describes the current pool of money. It is not Risk Tolerance and must n
 **Presentation helpers:** `lib/dna-presentation.ts`  
 **Persisted account state:** `get_current_investor_app_state()` browser contract.
 
-Guest result state is intentionally ephemeral. Full guest reports are not a permanent localStorage database. The same SPA session can continue into Context, Match, Detail and Compare; a full refresh is allowed to lose the unpersisted full report while the narrow claim ticket can remain for optional account attachment.
+Guest result state is intentionally short-lived, not durable account storage. The completed guest report is copied into `sessionStorage` through `EPHEMERAL_RESULT_KEY`, so it survives reloads and same-tab navigation during the current browser session across Result, Context, Match, Detail and Compare. It is deliberately not stored as a full report in `localStorage`; only the narrow claim ticket needed for optional account attachment is kept there. Durable cross-session and cross-device continuity belongs to the optional account flow.
 
-A `review_required` Match state must render as a paused/review callout rather than a ranked ETF preview. A missing/NULL Match score is never rendered as `0/100`.
+A `review_required` Match state must render as a paused/review callout rather than a ranked ETF preview. A missing/NULL Match score is never rendered as `0/100`. A `context_required` run must also suppress any stale row-level numeric score before context is complete.
 
 **Tests:** `tests/flow.cjs`, account/platform DB regression.
 
@@ -173,7 +173,7 @@ Do not make GIC/Bond/T-Bill pretend to have ETF metrics such as MER/holdings mer
 
 **Route:** `app/match/page.tsx`  
 **Client contract:** `MatchPayload` / `MatchItem` in `lib/dna.ts`  
-**Canonical server model:** `investment-dna-match-v6` via current Match run/read path.
+**Canonical server model:** `investment-dna-match-v7` through `investor_private.current_match(assessment_id)`, with `goal-fit-v1` as the separately versioned goal-role layer.
 
 The route accepts either persisted signed-in app state or the same-session ephemeral guest result. It must not force account creation merely to display a Match the guest just generated.
 
@@ -183,9 +183,9 @@ Meaningful states:
 - `no_suitable_options`
 - `available`
 
-`NULL` match score under review is intentional. Never turn it into `0`.
+`NULL` match score under review is intentional. Never turn it into `0`. When status is `context_required`, the consumer-facing overall `/100` score is hidden even if an internal persisted run contains an ordering value.
 
-**Tests:** M1 DB regression, fund/browser flow.
+**Tests:** M1 DB regression, fund/browser flow, `m4_match_hard_stress.sql`.
 
 ### `/screener` — ETF screener
 
@@ -248,7 +248,7 @@ These are product trust surfaces. Changes that alter claims or data handling sho
 ### `dna.ts`
 Browser contracts for questionnaire/result/Match plus in-progress recovery, same-session ephemeral completed result and limited claim-ticket state.
 
-**Not allowed here:** canonical scoring calculations or permanent storage of the full guest report.
+**Not allowed here:** canonical scoring calculations or durable storage of the full guest report.
 
 ### `assessment-copy.ts`
 Localized assessment UI copy only.
@@ -380,7 +380,7 @@ When adding an action, update:
 ### Browser/contract layer (`tests/`)
 
 - `contracts.mjs` — static public contract invariants (including questionnaire DTO leakage guard).
-- `flow.cjs` — Investing DNA guest journey, same-session Match/Context continuity, review-required safety rendering and optional save/claim flow.
+- `flow.cjs` — Investing DNA guest journey, report refresh continuity, Result/Context/Match state transitions, review-required safety rendering and optional save/claim flow.
 - `funds-flow.cjs` — ETF research/Match/product paths.
 - `assets-flow.cjs` — cross-asset Explore/Detail/Compare behavior.
 - `m4-launch-flow.cjs` — transparency/privacy/launch-surface checks.
@@ -393,6 +393,7 @@ When adding an action, update:
 - `milestone_3_pilot_readiness.sql` — pilot analytics privacy/write boundaries.
 - `m4_cross_asset_research.sql` — cross-asset structure/source integrity.
 - `m4_security_hardening.sql` — privileged RPC/claim/retired Portfolio Builder boundaries.
+- `m4_match_hard_stress.sql` — Match v7 safety, eligibility and context-score regression coverage.
 
 A mocked browser test does not replace a live DB permission regression.
 
