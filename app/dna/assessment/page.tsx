@@ -12,7 +12,7 @@ import {
  writeEphemeralResult,
  clearDraft
 } from "@/lib/dna";
-import type {Draft,PersonalizationProfile,Question,Submission} from "@/lib/dna";
+import type {Draft,Question,Submission} from "@/lib/dna";
 import {ASSESSMENT_COPY} from "@/lib/assessment-copy";
 import type {AssessmentCohort,AssessmentLocale} from "@/lib/assessment-copy";
 import {DnaJourneyVisual} from "@/components/DnaJourneyVisual";
