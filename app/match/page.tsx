@@ -5,9 +5,9 @@ import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import type {Fund} from '@/lib/investments';
-import {readDraft} from '@/lib/dna';
+import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import {formatInvestmentContext} from '@/lib/dna-presentation';
-import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
+import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 import type {AppState,InvestmentContextProfile,MatchItem,MatchPayload} from '@/lib/dna';
 
 type ConstraintShape={
@@ -79,7 +79,15 @@ export default function Matches(){
   return ()=>{active=false};
  },[user?.id]);
 
- const match=state?.matches;
+ const context=state?.report?.investment_context||state?.dna?.investment_context||null;
+ const rawMatch=state?.matches;
+ const displayStatus=effectiveMatchStatus(rawMatch?.status,hasCompleteInvestmentContext(context))||undefined;
+ const staleContextRows=displayStatus==='context_required'&&rawMatch?.status!=='context_required';
+ const match:MatchPayload|undefined=rawMatch?{
+  ...rawMatch,
+  status:displayStatus,
+  ...(staleContextRows?{results:[],top_matches:[],alternatives:[],consider:[],mismatch:[],eligible_count:0}:{})
+ }:undefined;
  const constraints=constraintShape(match);
 
  const eligibleRows=useMemo(()=>{
@@ -101,7 +109,6 @@ export default function Matches(){
  const idBySymbol=useMemo(()=>new Map(funds.map(fund=>[fund.symbol,fund.id])),[funds]);
  const featured=rows.slice(0,3);
  const more=rows.slice(3,9);
- const context=state?.report?.investment_context||state?.dna?.investment_context||null;
  const compareIds=featured
   .map(item=>idBySymbol.get(item.symbol))
   .filter((id):id is string=>!!id);
@@ -310,12 +317,14 @@ function FeaturedMatches({featured,match,idBySymbol}:{featured:MatchItem[];match
 }
 
 function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;match?:MatchPayload;investmentId?:string}){
- const good=strengths(item);
- const watch=watchouts(item);
  const contextOnly=match?.status==='context_required';
+ const rowContextOnly=item.eligibility==='context_required'||item.recommendation_tier==='consider';
+ const allowExplanation=!contextOnly||rowContextOnly;
+ const good=allowExplanation?strengths(item):[];
+ const watch=allowExplanation?watchouts(item):[];
  const scores=contextOnly?[]:breakdown(item);
  const score=matchScorePresentation(item,match?.status);
- const summary=contextOnly||match?.status==='no_suitable_options'?item.explanation?.summary:null;
+ const summary=allowExplanation&&(contextOnly||match?.status==='no_suitable_options')?item.explanation?.summary:null;
 
  return <article className="match-dna-card">
   <div className="match-card-top">
