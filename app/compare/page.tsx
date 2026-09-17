@@ -68,14 +68,15 @@ export default function Compare(){
  const matchStatus=state?.matches?.status;
 
  async function runComparison(override?:string[]){
-  const ids=(override||selected).filter(validId);
-  if(ids.length<2){setError('Choose at least two investments to compare.');return;}
+  const ids=[...new Set((override||selected).filter(validId))];
+  if(ids.length<2){setRows([]);setError('Choose at least two different investments to compare.');return;}
   setBusy(true);setError('');
   try{
    const data=await compareInstruments(ids);
+   if(data.length<2){setRows([]);setError('At least two of the selected investments must still be available in the research catalog.');return;}
    setRows(data);
    history.replaceState(null,'',`/compare?ids=${ids.join(',')}`);
-  }catch(e){setError(e instanceof Error?e.message:'Could not compare these investments.');}
+  }catch(e){setRows([]);setError(e instanceof Error?e.message:'Could not compare these investments.');}
   finally{setBusy(false);}
  }
 
@@ -109,7 +110,7 @@ function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instru
    </select></label>)}
   </div>
   <div className="actions"><button className="btn primary" disabled={busy} onClick={onCompare}>{busy?'Comparing…':'Compare investments'}</button><Link className="btn" href="/explore">Back to Explore</Link></div>
- </>;
+  </>;
 }
 
 function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dnaPresent:boolean;matchStatus?:string;match?:MatchItem;}){
@@ -138,14 +139,15 @@ function FitSummary({canMatch,match,matchStatus,dnaPresent}:{canMatch:boolean;ma
  if(!canMatch)return <div className="notice"><span>Research profile · personalized Match not enabled for this asset type yet</span></div>;
  if(!match)return <div className="notice"><span>{dnaPresent?'No ETF compatibility row is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span></div>;
  const score=matchScorePresentation(match,matchStatus);
- return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match,matchStatus)}</strong><p className="fine muted">{matchStatus==='context_required'?'DNA-only ETF compatibility layer':'Personal ETF compatibility layer'}</p></div>;
+ const layerCopy=matchStatus==='context_required'?'DNA-only ETF compatibility layer':matchStatus==='review_required'?'Personalized ranking paused':'Personal ETF compatibility layer';
+ return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match,matchStatus)}</strong><p className="fine muted">{layerCopy}</p></div>;
 }
 
 function currentMatchRows(state:AppState|null):MatchItem[]{
  const payload=state?.matches;if(!payload)return [];if(Array.isArray(payload.results)&&payload.results.length)return payload.results;
  return [...(payload.top_matches||[]),...(payload.alternatives||[]),...(payload.consider||[]),...(payload.mismatch||[])];
 }
-function readRequestedIds(){return new URLSearchParams(location.search).get('ids')?.split(',').filter(validId).slice(0,3)||[];}
+function readRequestedIds(){const raw=new URLSearchParams(location.search).get('ids')?.split(',').filter(validId)||[];return [...new Set(raw)].slice(0,3);}
 function displayValue(item:Instrument,key:string,suffix='',digits=2){
  const raw=(item as unknown as Record<string,unknown>)[key];
  if(raw===null||raw===undefined||raw==='')return '—';
