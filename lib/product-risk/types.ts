@@ -10,6 +10,7 @@ export type RiskBand =
  | 'N/A';
 
 export type RiskConfidence = 'High' | 'Medium' | 'Low' | 'Insufficient';
+export type ProductRiskDirection = 'higher_is_worse'|'higher_is_better'|'neutral';
 
 export type ConsumerRiskDimensionCode =
  | 'loss_potential'
@@ -43,7 +44,8 @@ export type ProductRiskFlag = {
 
 export type ProductRiskDimension = {
  code:ConsumerRiskDimensionCode;
- band:RiskBand;
+ level:RiskBand;
+ direction:ProductRiskDirection;
  confidence:RiskConfidence;
  headline?:string|null;
  explanation?:string|null;

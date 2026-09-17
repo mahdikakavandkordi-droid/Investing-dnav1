@@ -874,7 +874,7 @@ Show only:
 - **Access to Money** — how easily the investor can exit or redeem without major delay or value concession;
 - **Diversification** — how widely the product itself spreads exposure.
 
-Each dimension has an info control that explains both **what it means** and **why it matters**. High diversification must never be described as protection against broad market losses.
+Each dimension has an info control that explains both **what it means** and **why it matters**. The scales have explicit direction: higher Loss Potential or Price Movement means more risk pressure; higher Access to Money or Diversification means more of a beneficial property. High diversification must never be described as protection against broad market losses.
 
 ### Asset-specific flags
 
@@ -902,18 +902,28 @@ This design is informed by, but does not clone, existing regulatory/research fra
 - CIRO Canadian crypto guidance emphasizing volatility, platform/custody, fraud/cyber and investor-protection differences.
 - Bank of Canada CP/ABCP research and collateral criteria covering credit quality, liquidity support, asset pools, concentration, transparency, maturity mismatch and structural support.
 
-## 12. Next validation work
+## 12. Current shadow-calibration status
 
-Before runtime implementation:
+Implemented on 2026-09-17:
 
-1. build a sensor matrix with exact raw fields + thresholds for each current V1 asset;
-2. benchmark at least 5 representative instruments per supported asset class;
-3. test monotonicity (e.g. longer duration must not lower rate risk all else equal);
-4. test obvious-ordering invariants (cashable GIC more liquid than otherwise identical non-redeemable GIC, etc.);
-5. expert-review weights and hard floors;
-6. separate source-backed fact from model inference in the schema;
-7. version the model (`product-risk-dna-v1-research`);
-8. only then implement database tables/RPC/UI.
+- modular database foundation and service-only evidence boundary;
+- asset-specific input adapters for all six current asset types;
+- deterministic shadow evaluators for ETF, GIC, T-Bill and Bond;
+- conservative Unknown/Insufficient handling for identity-only Commercial Paper and ABCP references;
+- four consumer dimensions with explicit scale direction;
+- service-only batch refresh of draft profiles;
+- invariant checks for cashable vs non-redeemable GIC access, short vs long Government of Canada bond price movement, ETF official-risk preservation and no accidental publication.
+
+The live research database currently holds **55 draft profiles and 0 published Product Risk DNA profiles**. These drafts are calibration evidence, not a public product claim.
+
+Next validation before publication:
+
+1. review the draft ordering and plain-language summaries across representative products;
+2. improve missing ETF official-risk and market-liquidity evidence;
+3. add verified bond rating/duration evidence where available instead of relying only on structural labels;
+4. build issue-level CP/ABCP evidence before allowing non-Unknown outputs;
+5. expert-review hard floors, wording and the separation between Overall Risk and the four dimensions;
+6. only after acceptance, publish a controlled pilot subset and add the UI layer.
 
 ## 13. Modular implementation contract
 

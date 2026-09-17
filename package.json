@@ -16,7 +16,8 @@
     "test:m4": "node tests/run-flow.cjs tests/m4-launch-flow.cjs",
     "test:assets": "node tests/run-flow.cjs tests/assets-flow.cjs",
     "test:hard": "node tests/run-flow.cjs tests/hard-user-flow.cjs",
-    "test:all": "npm test && npm run test:hygiene && npm run typecheck && npm run typecheck:hygiene && npm run build && npm run test:flow && npm run test:assessment && npm run test:funds && npm run test:m4 && npm run test:assets && npm run test:hard"
+    "test:all": "npm test && npm run test:risk && npm run test:hygiene && npm run typecheck && npm run typecheck:hygiene && npm run build && npm run test:flow && npm run test:assessment && npm run test:funds && npm run test:m4 && npm run test:assets && npm run test:hard",
+    "test:risk": "node tests/product-risk-contract.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

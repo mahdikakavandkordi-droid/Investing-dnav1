@@ -5,6 +5,7 @@ on:
     branches:
       - codex/platform-v4-account-continuity
       - codex/visual-redesign-v1
+      - codex/product-risk-dna-research
   workflow_dispatch:
 
 jobs:
@@ -19,6 +20,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npm run test:risk
       - run: npm run test:hygiene
       - run: npm run typecheck
       - run: npm run typecheck:hygiene

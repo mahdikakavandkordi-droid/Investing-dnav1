@@ -1,7 +1,7 @@
 # Investor DNA architecture
 
 Status: canonical engineering reference  
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-17
 
 ## 1. Product vocabulary
 
@@ -109,6 +109,22 @@ Account creation is optional.
 
 Public research catalog currently includes ETF, GIC, T-Bill, Bond, Commercial Paper and ABCP references.
 
+### Product Risk DNA shadow calibration
+
+```text
+verified research facts
+  -> service-only asset input adapters
+  -> asset evaluator
+  -> four consumer dimensions + overall band
+  -> draft Product Risk DNA profile
+  -> explicit review/publication gate
+  -> app_get_product_risk
+```
+
+The current calibration engine covers ETF, GIC, T-Bill and Bond directly; Commercial Paper and ABCP remain Unknown/Insufficient reference profiles until issue-level evidence is adequate. Draft refreshes are service-only. No draft is visible through the public RPC.
+
+The consumer dimensions have explicit polarity: higher Loss Potential/Price Movement is worse, while higher Access to Money/Diversification is better. UI must not treat all four as a single “higher risk” scale.
+
 ### DNA Match
 
 DNA Match remains **ETF-only**. Non-ETF instruments are research-only until a separately designed compatibility model exists.
@@ -128,6 +144,7 @@ Current versions:
 
 - Match: `investment-dna-match-v7`
 - Goal Fit: `goal-fit-v1`
+- Product Risk DNA: `product-risk-dna-v1-research` (shadow calibration; not publicly published)
 - historical retained engine: `investment-dna-match-v6`
 
 There is only one current read path: `investor_private.current_match()`. The temporary v7 candidate wrapper was removed after promotion.

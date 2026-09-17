@@ -33,6 +33,17 @@ On 2026-09-17, the active redesign branch was checked directly against `supabase
 
 The non-ledger timestamp copies on this branch were removed after the exact live versions were restored. These are source-control repairs only: none of these already-applied migrations were re-run against the live database.
 
+Later on 2026-09-17, Product Risk DNA research migrations were applied and the repository was reconciled to the exact live ledger versions:
+
+- `20260917232138_product_risk_dna_modular_foundation.sql`
+- `20260917232316_product_risk_sensor_evidence_service_policy.sql`
+- `20260917232555_product_risk_modular_input_adapters.sql`
+- `20260917233349_product_risk_shadow_evaluators.sql`
+- `20260917233435_product_risk_shadow_drafts_and_consumer_contract.sql`
+
+The Product Risk runtime is deliberately shadow-only at this stage: draft profiles may be refreshed service-side, while public reads return only explicitly published profiles.
+
+
 ## Runtime retirement migrations
 
 On 2026-09-16, a dependency-audited cleanup retired parallel/dead runtime without deleting historical migration evidence:
