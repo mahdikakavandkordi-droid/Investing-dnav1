@@ -208,7 +208,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/Long-term growth/i);
 
  await page.goto(ORIGIN+'/screener');
- await page.locator('option[value="dna_desc"]').waitFor();
+ await page.locator('option[value="dna_desc"]').waitFor({state:'attached'});
  await page.getByText(etf1.name,{exact:true}).waitFor();
  assert.equal(await page.locator('option[value="dna_desc"]').count(),1,'Context-aware DNA ranking sort missing');
  text=await page.locator('body').innerText();
