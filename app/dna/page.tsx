@@ -1,7 +1,7 @@
 import {DnaEntryActions} from "@/components/DnaEntryActions";
 
 const PILLARS:[string,string][]=[
- ["Risk comfort","How much uncertainty and market movement you are emotionally comfortable accepting."],
+ ["Risk tolerance","How much uncertainty and market movement you are emotionally comfortable accepting."],
  ["Financial capacity","How much risk your finances can realistically absorb without disrupting important needs."],
  ["Decision patterns","How you tend to react to evidence, pressure, other people and changing markets."],
  ["Investing experience","The experience you already have making decisions and living through market moves."]
@@ -34,7 +34,7 @@ export default function DNA(){
     <div className="home-belief-mark">✦</div>
     <div>
      <strong>Your archetype is a summary, not a verdict.</strong>
-     <p>Your result is meant to help you understand trade-offs and ask better questions. Your goal, time horizon and liquidity needs are added separately after the assessment.</p>
+     <p>Your result is meant to help you understand trade-offs and ask better questions. Your goal, time horizon, liquidity need and principal-protection requirement are added separately after the assessment.</p>
     </div>
    </div>
   </div>
