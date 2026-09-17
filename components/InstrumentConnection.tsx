@@ -5,8 +5,8 @@ import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import {trackProductEvent} from '@/lib/analytics';
-import {readDraft} from '@/lib/dna';
-import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
+import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
+import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 import type {MatchItem} from '@/lib/dna';
 import {instrumentWatchlist,saveInstrument,removeInstrument} from '@/lib/instruments';
 import {matchEligible,assetLabel} from '@/lib/instrument-model';
@@ -150,17 +150,18 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
 function GuestEtfFit({guest}:{guest:GuestMatch}){
  const {match,status}=guest;
  const score=matchScorePresentation(match,status);
- const strengths=match.explanation?.strengths||match.strengths||[];
- const watchouts=match.explanation?.watchouts||match.watchouts||[];
- const review=status==='review_required';
+ const rowContextOnly=match.eligibility==='context_required'||match.recommendation_tier==='consider';
+ const allowExplanation=score.kind!=='review'&&(score.kind!=='context_only'||rowContextOnly);
+ const strengths=allowExplanation?(match.explanation?.strengths||match.strengths||[]):[];
+ const watchouts=allowExplanation?(match.explanation?.watchouts||match.watchouts||[]):[];
 
  return <div className="guest-fit-block">
   <div className="eyebrow">Your current-session ETF match</div>
   <div className="kpi">{score.text}</div>
   <strong>{matchFitLabel(match,status)}</strong>
-  {!review&&match.explanation?.summary&&<p>{match.explanation.summary}</p>}
-  {!review&&strengths.length>0&&<p className="muted fine">{score.kind==='context_only'?'DNA-only alignment':'Why it may fit'}: {strengths[0]}</p>}
-  {!review&&watchouts.length>0&&<p className="muted fine">What to consider: {watchouts[0]}</p>}
+  {allowExplanation&&match.explanation?.summary&&<p>{match.explanation.summary}</p>}
+  {strengths.length>0&&<p className="muted fine">{score.kind==='context_only'?'DNA-only alignment':'Why it may fit'}: {strengths[0]}</p>}
+  {watchouts.length>0&&<p className="muted fine">What to consider: {watchouts[0]}</p>}
   <p className="muted fine">{score.kind==='context_only'
    ? 'This is a DNA-only comparison. Add complete investment context before a numeric context-aware Match is shown.'
    : score.kind==='review'
@@ -206,8 +207,12 @@ function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
 }
 
 function guestMatchFor(investmentId:string):GuestMatch|null{
- const payload=readDraft(null)?.result?.match;
+ const draft=readDraft(null);
+ const payload=draft?.result?.match;
  if(!payload)return null;
+ const context=draft?.result?.report?.report?.investment_context||draft?.result?.result.investment_context||null;
+ const status=effectiveMatchStatus(payload.status,hasCompleteInvestmentContext(context))||undefined;
+ if(status==='context_required'&&payload.status!=='context_required')return null;
  const rows=Array.isArray(payload.results)&&payload.results.length
   ? payload.results
   : [
@@ -217,5 +222,5 @@ function guestMatchFor(investmentId:string):GuestMatch|null{
      ...(payload.mismatch||[])
     ];
  const match=rows.find(item=>item.investment_id===investmentId);
- return match?{match,status:payload.status}:null;
+ return match?{match,status}:null;
 }
