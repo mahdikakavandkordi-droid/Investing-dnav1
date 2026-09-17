@@ -12,6 +12,8 @@ import {instrumentWatchlist,saveInstrument,removeInstrument} from '@/lib/instrum
 import {matchEligible,assetLabel} from '@/lib/instrument-model';
 import type {Fit} from '@/lib/investments';
 
+type GuestMatch={match:MatchItem;status?:string};
+
 /**
  * Account/watchlist connection for any research instrument.
  *
@@ -108,7 +110,7 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
 
  if(!user){
   return <div className="card instrument-connection-card">
-   {guestMatch&&<GuestEtfFit match={guestMatch}/>} 
+   {guestMatch&&<GuestEtfFit guest={guestMatch}/>} 
    <div className={guestMatch?'connection-save-block':''}>
     <h2>{guestMatch?'Save this research for later':`Keep this ${typeLabel.toLowerCase()} on your radar`}</h2>
     <p>Create a free passwordless account only if you want to save research items and return to your watchlist later.</p>
@@ -145,21 +147,25 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
  </div>;
 }
 
-function GuestEtfFit({match}:{match:MatchItem}){
- const score=matchScorePresentation(match);
+function GuestEtfFit({guest}:{guest:GuestMatch}){
+ const {match,status}=guest;
+ const score=matchScorePresentation(match,status);
  const strengths=match.explanation?.strengths||match.strengths||[];
  const watchouts=match.explanation?.watchouts||match.watchouts||[];
+ const review=status==='review_required';
 
  return <div className="guest-fit-block">
   <div className="eyebrow">Your current-session ETF match</div>
   <div className="kpi">{score.text}</div>
-  <strong>{matchFitLabel(match)}</strong>
-  {match.explanation?.summary&&<p>{match.explanation.summary}</p>}
-  {strengths.length>0&&<p className="muted fine">Why it may fit: {strengths[0]}</p>}
-  {watchouts.length>0&&<p className="muted fine">What to consider: {watchouts[0]}</p>}
+  <strong>{matchFitLabel(match,status)}</strong>
+  {!review&&match.explanation?.summary&&<p>{match.explanation.summary}</p>}
+  {!review&&strengths.length>0&&<p className="muted fine">{score.kind==='context_only'?'DNA-only alignment':'Why it may fit'}: {strengths[0]}</p>}
+  {!review&&watchouts.length>0&&<p className="muted fine">What to consider: {watchouts[0]}</p>}
   <p className="muted fine">{score.kind==='context_only'
-   ? 'This is a DNA-only comparison. Add investment context before treating it as a context-aware Match.'
-   : 'This is a compatibility signal from your current guest session, not a recommendation to buy.'}</p>
+   ? 'This is a DNA-only comparison. Add complete investment context before a numeric context-aware Match is shown.'
+   : score.kind==='review'
+     ? 'Personalized ranking is paused while this Match requires review.'
+     : 'This is a compatibility signal from your current guest session, not a recommendation to buy.'}</p>
  </div>;
 }
 
@@ -171,14 +177,16 @@ function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
   return <>
    <div className="kpi">{score.text}</div>
    <p>{matchFitLabel(fit.fit)}</p>
-   {fit.fit.explanation?.summary&&<p>{fit.fit.explanation.summary}</p>}
-   {watchouts.length>0&&<>
+   {score.kind!=='review'&&fit.fit.explanation?.summary&&<p>{fit.fit.explanation.summary}</p>}
+   {score.kind!=='review'&&watchouts.length>0&&<>
     <h3>What to consider</h3>
     <ul>{watchouts.map((item,index)=><li key={index}>{item}</li>)}</ul>
    </>}
    <p className="muted fine">{score.kind==='context_only'
     ? 'Add the goal, horizon, access and principal-protection needs for this money before a numeric Match score is shown.'
-    : 'Based on your saved DNA and available ETF data. A compatibility signal, not a recommendation to buy.'}</p>
+    : score.kind==='review'
+      ? 'Personalized ranking is paused while this Match requires review.'
+      : 'Based on your saved DNA and available ETF data. A compatibility signal, not a recommendation to buy.'}</p>
   </>;
  }
 
@@ -197,10 +205,10 @@ function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
  return null;
 }
 
-function guestMatchFor(investmentId:string):MatchItem|null{
+function guestMatchFor(investmentId:string):GuestMatch|null{
  const payload=readDraft(null)?.result?.match;
  if(!payload)return null;
- const rows=Array.isArray(payload.results)
+ const rows=Array.isArray(payload.results)&&payload.results.length
   ? payload.results
   : [
      ...(payload.top_matches||[]),
@@ -208,5 +216,6 @@ function guestMatchFor(investmentId:string):MatchItem|null{
      ...(payload.consider||[]),
      ...(payload.mismatch||[])
     ];
- return rows.find(item=>item.investment_id===investmentId)||null;
+ const match=rows.find(item=>item.investment_id===investmentId);
+ return match?{match,status:payload.status}:null;
 }
