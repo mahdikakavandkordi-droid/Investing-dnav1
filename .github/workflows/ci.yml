@@ -5,6 +5,7 @@ on:
     branches:
       - codex/platform-v4-account-continuity
       - codex/visual-redesign-v1
+  workflow_dispatch:
 
 jobs:
   verify:
