@@ -104,7 +104,7 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
     <p className="detail-summary-v2">{facts?.summary||item.profile_summary||item.description||'A research description is not available yet.'}</p>
    </div>
    <div className="detail-hero-actions-v2">
-    <Link className="btn" href="/compare">Compare</Link>
+    <Link className="btn" href={`/compare?ids=${item.id}`}>Compare</Link>
    </div>
   </section>
 
