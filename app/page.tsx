@@ -37,13 +37,13 @@ export default function Home(){
       <div className="home-preview-main">
        <div>
         <span>Your Investor DNA</span>
-        <strong>Balanced Explorer</strong>
+        <strong>Maverick</strong>
        </div>
        <div className="home-dna-orbit" aria-hidden="true"><span/><span/><span/></div>
       </div>
       <div className="home-preview-stats">
-       <div><span>Risk comfort</span><strong>Moderate</strong></div>
-       <div><span>Risk capacity</span><strong>Moderate</strong></div>
+       <div><span>Risk tolerance</span><strong>Moderate</strong></div>
+       <div><span>Financial capacity</span><strong>Moderate</strong></div>
        <div><span>Decision style</span><strong>Measured</strong></div>
       </div>
       <div className="home-match-strip">
@@ -60,7 +60,7 @@ export default function Home(){
     <article className="home-pillar home-pillar-dna">
      <div className="eyebrow">01 · Discover</div>
      <h2>Your Investor DNA</h2>
-     <p>Understand your risk comfort, financial capacity, decision patterns and investing experience.</p>
+     <p>Understand your risk tolerance, financial capacity, decision patterns and investing experience.</p>
      <Link href="/dna/assessment">Start the assessment →</Link>
     </article>
     <article className="home-pillar home-pillar-explore">
@@ -73,7 +73,7 @@ export default function Home(){
     <article className="home-pillar home-pillar-match">
      <div className="eyebrow">03 · Connect</div>
      <h2>Understand the fit</h2>
-     <p>Add the goal, horizon and access needs for this money. DNA Match explains compatibility without turning it into a buy recommendation.</p>
+     <p>Add the goal, horizon, access needs and principal-protection requirement for this money. DNA Match explains compatibility without turning it into a buy recommendation.</p>
      <Link href="/match">See how Match works →</Link>
     </article>
    </div>
