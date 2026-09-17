@@ -46,6 +46,14 @@ export default function Assessment(){
   let active=true;
   (async()=>{
    const {data:{session}}=await supabase.auth.getSession();
+   try{
+    const url=new URL(location.href);
+    if(url.searchParams.get('fresh')==='1'){
+     clearDraft();
+     url.searchParams.delete('fresh');
+     history.replaceState(history.state,'',url.pathname+(url.searchParams.size?`?${url.searchParams.toString()}`:''));
+    }
+   }catch{}
    const saved=readDraft(session?.user.id||null);
    if(!active)return;
    if(saved?.result){router.replace('/dna/result');return;}
