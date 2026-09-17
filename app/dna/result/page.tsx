@@ -6,6 +6,7 @@ import Link from "next/link";
 import {supabase,rpc} from "@/lib/supabase";
 import {trackProductEvent} from "@/lib/analytics";
 import {
+ hasCompleteInvestmentContext,
  normalizePersonalization,
  readDraft,
  writeClaimPersonalization
@@ -52,7 +53,8 @@ export default function Result(){
  },[]);
 
  const topMatches=useMemo(()=>normalizeMatches(matches).slice(0,3),[matches]);
- const hasContext=!!report?.investment_context?.goal&&!!report?.investment_context?.time_horizon;
+ const investmentContext=report?.investment_context||dna?.investment_context;
+ const hasContext=hasCompleteInvestmentContext(investmentContext);
  const reviewRequired=matches?.status==='review_required';
 
  async function emailSaveLink(email:string,profile:PersonalizationProfile){
@@ -108,7 +110,7 @@ function GuestSaveCard({personal,sending,message,onSubmit}:{personal:Personaliza
 }
 
 function MatchReviewCallout({matches}:{matches:MatchPayload}){const reasons=(matches.constraints?.reasons as string[]|undefined)||[];return <section className="result-next-card result-match-review"><div><div className="eyebrow">DNA Match paused</div><h2>This money needs review before ranking ETFs.</h2><p>The current context triggered a safety or product-data gate, so Investor DNA is not turning it into a ranked ETF list.</p>{reasons.length>0&&<ul className="result-list">{reasons.slice(0,3).map(reason=><li key={reason}>{reason}</li>)}</ul>}</div><Link className="btn primary" href="/match">Review Match status</Link></section>}
-function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boolean}){return <section className="report-section matches-section"><div className="eyebrow">From DNA to research</div><h2>{hasContext?'Context-aware ETF comparisons':'DNA-only ETF comparisons'}</h2><p className="report-lede">{hasContext?'These are compatibility signals based on your DNA and the context you added. They are not buy recommendations.':'These comparisons use your DNA only. Add the purpose, horizon and access needs for context-aware Match.'}</p><div className="match-preview-grid">{matches.map(match=><MatchPreviewCard key={match.investment_id||match.symbol} match={match}/>)}</div><div className="matches-more"><Link className="btn primary" href="/match">See all DNA matches</Link></div></section>}
+function MatchPreview({matches,hasContext}:{matches:MatchItem[];hasContext:boolean}){return <section className="report-section matches-section"><div className="eyebrow">From DNA to research</div><h2>{hasContext?'Context-aware ETF comparisons':'DNA-only ETF comparisons'}</h2><p className="report-lede">{hasContext?'These are compatibility signals based on your DNA and the context you added. They are not buy recommendations.':'These comparisons use your DNA only. Add the purpose, horizon, access needs and principal-protection choice for context-aware Match.'}</p><div className="match-preview-grid">{matches.map(match=><MatchPreviewCard key={match.investment_id||match.symbol} match={match}/>)}</div><div className="matches-more"><Link className="btn primary" href="/match">See all DNA matches</Link></div></section>}
 function MatchPreviewCard({match}:{match:MatchItem}){const why=match.explanation?.strengths?.[0]||match.explanation?.why_it_fits?.[0]||match.explanation?.watchouts?.[0];const score=matchScorePresentation(match);return <article className="match-preview-card"><div className="match-preview-top"><span className="pill">{match.symbol}</span><strong>{score.numericValue==null?score.text:<>{score.numericValue}<small>/100</small></>}</strong></div><h3>{match.name||match.symbol}</h3><p className="match-fit-label">{matchFitLabel(match)}</p>{why&&<p className="muted">{why}</p>}{match.investment_id?<Link className="btn" href={`/investment/${match.investment_id}`}>Open ETF research</Link>:<Link className="btn" href="/match">Open DNA Match</Link>}</article>}
 function SavedResultCard(){return <section className="result-save-card"><div><strong>Your Investor DNA is saved.</strong><p>You can return to it from your dashboard and use it across Match, Explore and your watchlist.</p></div><div className="result-actions"><Link className="btn primary" href="/profile">My dashboard</Link><Link className="btn" href="/explore">Explore investments</Link></div></section>}
 function PilotFeedbackCard(){return <section className="result-next-card"><div><div className="eyebrow">Pilot feedback</div><h2>Did the result actually make sense?</h2><p>Give us one minute of feedback. It helps us validate clarity and usefulness before launch.</p></div><Link className="btn" href="/feedback">Give pilot feedback</Link></section>}

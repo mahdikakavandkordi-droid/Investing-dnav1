@@ -11,8 +11,8 @@ type DnaAvailability='checking'|'current'|'saved'|'none';
 
 /**
  * Keep the neutral /dna overview useful for both new and returning visitors.
- * Completed guest DNA remains session-memory only; this component merely makes
- * that existing result discoverable without persisting it or changing privacy.
+ * Completed guest DNA remains browser-session only; this component merely makes
+ * that existing result discoverable without turning it into an account record.
  */
 export function DnaEntryActions(){
  const {user,loading:authLoading}=useAccount();
@@ -49,14 +49,14 @@ export function DnaEntryActions(){
  if(availability==='current'){
   return <div className="actions">
    <Link className="btn primary" href="/dna/result">View my current DNA</Link>
-   <Link className="btn" href="/dna/assessment">Start a new assessment</Link>
+   <Link className="btn" href="/dna/assessment?fresh=1">Start a new assessment</Link>
   </div>;
  }
 
  if(availability==='saved'){
   return <div className="actions">
    <Link className="btn primary" href="/dna/result">View my saved DNA</Link>
-   <Link className="btn" href="/dna/assessment">Retake assessment</Link>
+   <Link className="btn" href="/dna/assessment?fresh=1">Retake assessment</Link>
   </div>;
  }
 

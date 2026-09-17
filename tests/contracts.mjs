@@ -3,7 +3,9 @@ import {readFileSync} from 'node:fs';
 import * as d from '../lib/dna.ts';
 
 const data=new Map();
+const sessionData=new Map();
 globalThis.localStorage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
+globalThis.sessionStorage={getItem:k=>sessionData.get(k)||null,setItem:(k,v)=>sessionData.set(k,v),removeItem:k=>sessionData.delete(k)};
 
 assert.deepEqual(d.answerRows({RC01:'A',RT01:'7'}),[
   {question_id:'RC01',answer_value:{value:'A'}},
@@ -12,6 +14,8 @@ assert.deepEqual(d.answerRows({RC01:'A',RT01:'7'}),[
 assert.equal(d.optionsFor({question_id:'RT01',prompt:'Example',question_type:'scale',options:[]}).length,11);
 assert.equal(d.score(undefined),'—');
 assert.equal(d.score(0),'0');
+assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y'}),false);
+assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y',liquidity_need:'low',principal_required:'no'}),true);
 
 const draft={version:1,createdAt:Date.now(),ownerId:null,session:{assessment_id:'id',session_token:'token'},answers:{RC01:'A'},index:0};
 d.writeDraft(draft);
@@ -21,6 +25,17 @@ assert.equal(d.readDraft('bob'),null);
 d.writeDraft({...draft,createdAt:Date.now()-25*3600000});
 assert.equal(d.readDraft(null),null);
 assert.equal(data.size,0);
+assert.equal(sessionData.size,0);
+
+d.writeDraft(draft);
+const guestResult={...draft,personalization:{first_name:'Mahdi',age:35},result:{result:{archetype:'MAVERICK'},account_linked:false}};
+assert.equal(d.writeEphemeralResult(guestResult),true);
+assert.equal(localStorage.getItem(d.DRAFT_KEY),null);
+assert.ok(sessionStorage.getItem(d.EPHEMERAL_RESULT_KEY));
+assert.equal(d.readDraft(null)?.result?.result.archetype,'MAVERICK');
+d.clearDraft();
+assert.equal(sessionStorage.getItem(d.EPHEMERAL_RESULT_KEY),null);
+
 localStorage.setItem=()=>{throw Error('blocked')};
 assert.equal(d.writeDraft(draft),false);
 assert.equal(d.readDraft(null).answers.RC01,'A');
@@ -47,10 +62,12 @@ const profileSource=readFileSync(new URL('../app/profile/page.tsx',import.meta.u
 assert.match(profileSource,/history\.replaceState\(history\.state,''\s*,\s*url\.pathname\+url\.search\)/);
 assert.match(profileSource,/access_token/);
 assert.match(profileSource,/refresh_token/);
+assert.match(profileSource,/dna\/assessment\?fresh=1/);
 
 const assessmentSource=readFileSync(new URL('../app/dna/assessment/page.tsx',import.meta.url),'utf8');
 assert.match(assessmentSource,/COGNITIVE_V1_10/);
 assert.match(assessmentSource,/draft\.session\.anonymous_code/);
 assert.match(assessmentSource,/Research code:/);
+assert.match(assessmentSource,/searchParams\.get\('fresh'\)===\'1\'/);
 
-console.log('PASS assessment envelope, scale options, missing versus zero score, guest recovery/isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, and cognitive research-code continuity');
+console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, and cognitive research-code continuity');

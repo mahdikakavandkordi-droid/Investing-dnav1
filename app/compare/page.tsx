@@ -10,6 +10,7 @@ import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
 import {readDraft} from '@/lib/dna';
 import type {AppState,MatchItem} from '@/lib/dna';
+import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 
 const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
  ['capital_protection','Capital protection'],
@@ -133,7 +134,8 @@ function ComparisonCard({item,dnaPresent,match}:{item:Instrument;dnaPresent:bool
 function FitSummary({canMatch,match,dnaPresent}:{canMatch:boolean;match?:MatchItem;dnaPresent:boolean}){
  if(!canMatch)return <div className="notice"><span>Research profile · personalized Match not enabled for this asset type yet</span></div>;
  if(!match)return <div className="notice"><span>{dnaPresent?'No ranked ETF fit is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span></div>;
- return <div><div className="compare-score">{match.match_score==null?'Review':`${Math.round(match.match_score)}/100`}</div><strong>{fitLabel(match)}</strong><p className="fine muted">Personal ETF compatibility layer</p></div>;
+ const score=matchScorePresentation(match);
+ return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match)}</strong><p className="fine muted">Personal ETF compatibility layer</p></div>;
 }
 
 function currentMatchRows(state:AppState|null):MatchItem[]{
@@ -141,7 +143,6 @@ function currentMatchRows(state:AppState|null):MatchItem[]{
  return [...(payload.top_matches||[]),...(payload.alternatives||[]),...(payload.consider||[]),...(payload.mismatch||[])];
 }
 function readRequestedIds(){return new URLSearchParams(location.search).get('ids')?.split(',').filter(validId).slice(0,3)||[];}
-function fitLabel(match?:MatchItem){return match?.explanation?.fit_label||match?.fit_label||match?.recommendation_tier?.replaceAll('_',' ')||'Not matched';}
 function displayValue(item:Instrument,key:string,suffix='',digits=2){
  const raw=(item as unknown as Record<string,unknown>)[key];
  if(raw===null||raw===undefined||raw==='')return '—';
