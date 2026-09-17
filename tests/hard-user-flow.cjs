@@ -172,21 +172,21 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/DNA-only|investment context|Tell us what this money is for/i);
 
  await page.goto(ORIGIN+'/match');
- await page.getByRole('heading',{name:'See how your DNA lines up with ETFs'}).waitFor();
+ await page.getByRole('heading',{name:'Add the purpose of this money for a more useful match'}).waitFor();
  text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/,'Match leaked numeric score from stale available state without context');
  assert.match(text,/DNA-only|Add investment context/i);
 
  await page.goto(ORIGIN+'/screener');
- await page.getByRole('heading',{name:'Find ETFs, then see how they relate to you'}).waitFor();
+ await page.getByText('You are seeing DNA-only ETF comparisons until you add complete investment context. Numeric Match scores stay hidden until then.',{exact:true}).waitFor();
  text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/,'Screener leaked numeric score without complete context');
  assert.equal(await page.locator('option[value="dna_desc"]').count(),0,'DNA ranking sort appeared without complete context');
 
  await page.goto(ORIGIN+`/compare?ids=${ETF1},${ETF2}`);
- await page.getByRole('heading',{name:'Compare Investment DNA side by side'}).waitFor();
  await page.getByText('AAA',{exact:true}).first().waitFor();
  await page.getByText('BBB',{exact:true}).first().waitFor();
+ await page.getByText('No ETF compatibility row is available for this item',{exact:true}).first().waitFor();
  text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/,'Compare leaked numeric score without complete context');
  console.log('PASS stale available client state cannot bypass the complete-context rule across Result, Match, Screener or Compare');
@@ -208,6 +208,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/Long-term growth/i);
 
  await page.goto(ORIGIN+'/screener');
+ await page.locator('option[value="dna_desc"]').waitFor();
  await page.getByText(etf1.name,{exact:true}).waitFor();
  assert.equal(await page.locator('option[value="dna_desc"]').count(),1,'Context-aware DNA ranking sort missing');
  text=await page.locator('body').innerText();
@@ -216,6 +217,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  await page.goto(ORIGIN+`/compare?ids=${ETF1},${ETF2}`);
  await page.getByText('AAA',{exact:true}).first().waitFor();
  await page.getByText('BBB',{exact:true}).first().waitFor();
+ await page.getByText('91/100',{exact:true}).first().waitFor();
  text=await page.locator('body').innerText();
  assert.match(text,/91\/100/);
  console.log('PASS complete context unlocks numeric compatibility consistently across the connected ETF surfaces');
@@ -227,9 +229,8 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/DNA Match paused/i);
  assert.doesNotMatch(text,/91\/100|84\/100/);
  await page.goto(ORIGIN+'/match');
- await page.getByRole('heading',{name:'See how your DNA lines up with ETFs'}).waitFor();
+ await page.getByRole('heading',{name:'Review this money before ranking ETFs'}).waitFor();
  text=await page.locator('body').innerText();
- assert.match(text,/Review this money before ranking ETFs/i);
  assert.doesNotMatch(text,/91\/100|84\/100/);
  assert.equal(await page.locator('.match-dna-card').count(),0);
  console.log('PASS review-required remains a true ranking stop even when stale numeric rows are present');
