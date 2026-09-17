@@ -1,0 +1,59 @@
+/* Approved Investor DNA result/report redesign. Presentation only. */
+
+.result-page{background:linear-gradient(180deg,#f7fbfb 0,#f7f9fa 320px,#f7f9f9 100%);padding:30px 0 76px}
+.result-container{max-width:1120px}
+.dna-report-v2{gap:18px}
+
+/* Hero — pale, editorial and personal rather than a dashboard banner. */
+.dna-hero-v2{position:relative;isolation:isolate;min-height:360px;grid-template-columns:minmax(0,1fr) 360px;padding:42px 44px;background:linear-gradient(135deg,#f3fbfa 0%,#eef7f8 48%,#f8fbfb 100%);color:var(--dna-ink);border:1px solid #dce9e8;border-radius:28px;box-shadow:0 18px 48px rgba(7,26,52,.075)}
+.dna-hero-v2 .dna-hero-copy{position:relative;z-index:3;align-self:center;max-width:690px}
+.dna-hero-v2 .eyebrow{color:#087d74}
+.dna-hero-v2 .dna-greeting{color:#607484;font-size:13px;margin-bottom:12px}
+.dna-hero-v2 h1{color:#071a34;font-size:64px;line-height:.94;margin:0 0 9px;letter-spacing:-.06em}
+.dna-hero-v2 h2{color:#29485d;font-size:21px;font-weight:720;margin:0 0 13px}
+.dna-hero-v2 .dna-tagline{color:#526878;font-size:16px;line-height:1.62;max-width:660px;margin:0}
+.dna-hero-v2 .consistency-pill{display:inline-flex;margin-top:16px;background:#fff6e9;border:1px solid #ecd8b6;color:#785b2e;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:750}
+.dna-hero-v2 .dna-character{position:relative;z-index:3;align-self:end;justify-content:flex-end}
+.dna-hero-v2 .dna-character img{width:310px;height:310px;object-fit:contain;filter:drop-shadow(0 18px 28px rgba(7,26,52,.13))}
+.dna-hero-scenery{position:absolute;inset:0;overflow:hidden;border-radius:28px;z-index:1;pointer-events:none}
+.dna-hero-sun{position:absolute;width:120px;height:120px;border-radius:50%;right:106px;top:38px;background:rgba(247,222,165,.45)}
+.dna-hero-mountain{position:absolute;display:block;width:300px;height:180px;background:linear-gradient(150deg,#d7e8ea,#bfdcdb);clip-path:polygon(0 100%,45% 22%,61% 48%,72% 36%,100% 100%);opacity:.78;bottom:0}.mountain-a{right:0}.mountain-b{right:210px;width:250px;height:145px;opacity:.46;background:linear-gradient(150deg,#e1edef,#cce3e2)}
+.dna-hero-path{position:absolute;width:330px;height:95px;border:13px solid rgba(255,255,255,.78);border-color:transparent transparent rgba(255,255,255,.78) transparent;border-radius:50%;right:34px;bottom:18px;transform:rotate(-12deg)}
+
+/* Snapshot ribbon — supports both pre-context and context-complete states. */
+.report-snapshot{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:#fff;border:1px solid #e0e8e9;border-radius:20px;box-shadow:0 8px 26px rgba(7,26,52,.035);overflow:hidden}
+.report-snapshot-item{padding:16px 15px;min-width:0;border-right:1px solid #edf1f1;display:grid;gap:5px}.report-snapshot-item:last-child{border-right:0}.report-snapshot-item span{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#82909a;font-weight:780}.report-snapshot-item strong{font-size:14px;line-height:1.35;color:#17354b;overflow-wrap:anywhere}
+
+/* Approved top report layout: DNA map + concise interpretation. */
+.report-overview-grid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:16px}
+.report-overview-card{background:#fff;border:1px solid #e0e8e9;border-radius:24px;padding:27px;box-shadow:0 9px 28px rgba(7,26,52,.04)}
+.report-overview-card h2{font-size:27px;line-height:1.15;letter-spacing:-.035em;color:#102e45;margin:8px 0 8px}.report-card-intro{color:#667885;font-size:13px;line-height:1.55;margin:0 0 19px}
+.risk-matrix-wrap-v2{background:#f8fbfa;padding:16px}.risk-matrix-wrap-v2 .matrix-cell{min-height:62px}.risk-matrix-wrap-v2 .matrix-cell span{font-size:9px}.risk-matrix-wrap-v2 .matrix-cell.active{background:#e8f8f4;border-color:#129587;color:#08776e;box-shadow:0 0 0 1px rgba(18,149,135,.25) inset}
+.overview-risk-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.overview-risk-metric{border:1px solid #e3eaea;border-radius:13px;padding:12px;background:#fff;display:grid;gap:4px}.overview-risk-metric span{font-size:10px;color:#7e8d97}.overview-risk-metric strong{font-size:15px;color:#17364b}.overview-risk-metric small{font-size:10px;color:#8b979f}
+.meaning-list{display:grid;gap:10px}.meaning-item{display:grid;grid-template-columns:30px 1fr;gap:11px;align-items:start;padding:13px 14px;border:1px solid #e8eded;border-radius:14px;background:#fbfdfd}.meaning-item>span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#e8f7f4;color:#087c73;font-size:11px;font-weight:850}.meaning-item p{margin:2px 0 0;color:#526676;font-size:13px;line-height:1.55}
+
+/* Deeper report retains richness below the summary fold. */
+.report-section-v2{border-radius:24px;padding:29px;box-shadow:0 9px 28px rgba(7,26,52,.035)}
+.report-section-v2 h2,.report-story-v2 h2,.context-summary-v2 h2{color:#102f46}
+.report-story-v2{border-left:0;position:relative;overflow:hidden;background:linear-gradient(145deg,#fff,#f8fcfb)}.report-story-v2:before{content:"“";position:absolute;right:30px;top:3px;font:700 92px/1 Georgia,serif;color:#e2f2ef}.report-story-v2>p{max-width:850px;position:relative;z-index:1}
+.context-summary-v2{background:#fff}.context-summary-v2 .context-summary-grid>div{background:#f7faf9}
+
+/* Existing result actions are pulled into the same system. */
+.result-next-card,.result-save-card{border-radius:22px!important;border-color:#e0e8e9!important;box-shadow:0 8px 26px rgba(7,26,52,.035)!important}.result-context-cta{background:linear-gradient(145deg,#f1faf8,#fff)!important}.matches-section{border-radius:24px!important}.match-preview-card{border-radius:16px!important}.guest-save-card{border-radius:22px!important}
+
+@media(max-width:980px){
+ .dna-hero-v2{grid-template-columns:minmax(0,1fr) 270px;min-height:330px;padding:36px}.dna-hero-v2 h1{font-size:54px}.dna-hero-v2 .dna-character img{width:250px;height:250px}
+ .report-snapshot{grid-template-columns:repeat(3,1fr)}.report-snapshot-item:nth-child(3n){border-right:0}.report-snapshot-item:nth-child(-n+3){border-bottom:1px solid #edf1f1}
+ .report-overview-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:760px){
+ .result-page{padding-top:18px}.result-container{padding:0 14px}
+ .dna-hero-v2{display:grid;grid-template-columns:1fr;min-height:430px;padding:27px 22px 0;overflow:hidden}.dna-hero-v2 .dna-hero-copy{padding-bottom:190px}.dna-hero-v2 h1{font-size:45px}.dna-hero-v2 h2{font-size:18px}.dna-hero-v2 .dna-tagline{font-size:14px}.dna-hero-v2 .dna-character{position:absolute;right:8px;bottom:-8px;margin:0}.dna-hero-v2 .dna-character img{width:220px;height:220px;opacity:.97}.dna-hero-sun{right:36px;top:150px;width:95px;height:95px}.mountain-a{right:-35px}.mountain-b{right:130px}
+ .report-snapshot{grid-template-columns:repeat(2,1fr)}.report-snapshot-item{border-bottom:1px solid #edf1f1}.report-snapshot-item:nth-child(2n){border-right:0}.report-snapshot-item:nth-last-child(-n+2){border-bottom:0}
+ .report-overview-card{padding:20px}.report-overview-card h2{font-size:23px}.overview-risk-metrics{grid-template-columns:1fr 1fr}.report-section-v2{padding:20px}
+}
+
+@media(max-width:480px){
+ .dna-hero-v2{min-height:455px;padding:24px 18px 0}.dna-hero-v2 .dna-hero-copy{padding-bottom:205px}.dna-hero-v2 h1{font-size:40px}.dna-hero-v2 .dna-character img{width:205px;height:205px}.report-snapshot{grid-template-columns:1fr 1fr}.report-snapshot-item strong{font-size:13px}.overview-risk-metrics{grid-template-columns:1fr}.risk-matrix-wrap-v2 .matrix-cell{min-height:55px;padding:5px}.risk-matrix-wrap-v2 .matrix-cell span{font-size:8px}
+}
