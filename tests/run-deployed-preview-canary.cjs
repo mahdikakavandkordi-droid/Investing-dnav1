@@ -10,9 +10,9 @@ if (!token) {
 
 const sourcePath = path.join(__dirname, 'deployed-preview-flow.cjs');
 const source = fs.readFileSync(sourcePath, 'utf8');
-const marker = "  const response = await page.goto(ORIGIN + '/dna/assessment', { waitUntil: 'domcontentloaded' });";
-const screenerMarker = "  await page.goto(ORIGIN + '/screener');";
-const compareMarker = "  await page.getByRole('heading', { name: 'Compare Investment DNA side by side' }).waitFor();";
+const marker = "const response=await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});";
+const screenerMarker = "await page.goto(ORIGIN+'/screener');";
+const compareMarker = "await page.getByRole('heading',{name:'Compare Investment DNA side by side'}).waitFor();";
 
 if (!source.includes(marker)) {
   console.error('Deployed-preview canary bootstrap marker not found.');
@@ -28,10 +28,10 @@ if (!source.includes(compareMarker)) {
 }
 
 const bootstrap = [
-  "  const shareToken = process.env.VERCEL_PREVIEW_SHARE_TOKEN;",
-  "  assert.ok(shareToken, 'VERCEL_PREVIEW_SHARE_TOKEN is required');",
-  "  await page.goto(ORIGIN + '/?_vercel_share=' + encodeURIComponent(shareToken), { waitUntil: 'domcontentloaded' });",
-  "  assert.equal(new URL(page.url()).host, expectedHost, 'Share bootstrap redirected away from app to ' + page.url());",
+  "const shareToken = process.env.VERCEL_PREVIEW_SHARE_TOKEN;",
+  "assert.ok(shareToken, 'VERCEL_PREVIEW_SHARE_TOKEN is required');",
+  "await page.goto(ORIGIN + '/?_vercel_share=' + encodeURIComponent(shareToken), { waitUntil: 'domcontentloaded' });",
+  "assert.equal(new URL(page.url()).host, expectedHost, 'Share bootstrap redirected away from app to ' + page.url());",
   '',
   marker
 ].join('\n');
@@ -41,11 +41,11 @@ const bootstrap = [
 // creation is the cross-visit persistence boundary. Navigate back to Match and
 // follow the real product CTA into the screener instead of forcing page.goto().
 const screenerNavigation = [
-  "  await page.goBack();",
-  "  await page.waitForURL(url => url.pathname === '/match');",
-  "  await page.getByText('Context-aware match', { exact: true }).waitFor();",
-  "  await page.getByRole('link', { name: 'Open ETF screener', exact: true }).click();",
-  "  await page.waitForURL(url => url.pathname === '/screener');"
+  "await page.goBack();",
+  "await page.waitForURL(url => url.pathname === '/match');",
+  "await page.getByText('Context-aware match', { exact: true }).waitFor();",
+  "await page.getByRole('link', { name: 'Open ETF screener', exact: true }).click();",
+  "await page.waitForURL(url => url.pathname === '/screener');"
 ].join('\n');
 
 // The deployed Compare route resolves its selected-instrument research
@@ -54,8 +54,8 @@ const screenerNavigation = [
 // turn a healthy deployment into a false negative.
 const compareWait = [
   compareMarker,
-  "  await page.getByText('ZAG', { exact: true }).first().waitFor();",
-  "  await page.getByText('VBAL', { exact: true }).first().waitFor();"
+  "await page.getByText('ZAG', { exact: true }).first().waitFor();",
+  "await page.getByText('VBAL', { exact: true }).first().waitFor();"
 ].join('\n');
 
 const runtimePath = path.join(__dirname, '.deployed-preview-flow.runtime.cjs');
