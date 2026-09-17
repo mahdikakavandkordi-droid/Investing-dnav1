@@ -11,7 +11,7 @@ import {
  readDraft,
  writeClaimPersonalization
 } from "@/lib/dna";
-import {matchFitLabel,matchScorePresentation} from "@/lib/match-presentation";
+import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from "@/lib/match-presentation";
 import type {AppState,DNA,MatchItem,MatchPayload,PersonalizationProfile} from "@/lib/dna";
 import {DnaSummary} from "@/components/DnaSummary";
 
@@ -52,11 +52,11 @@ export default function Result(){
   return ()=>{active=false};
  },[]);
 
- const topMatches=useMemo(()=>normalizeMatches(matches).slice(0,3),[matches]);
  const investmentContext=report?.investment_context||dna?.investment_context;
  const hasContext=hasCompleteInvestmentContext(investmentContext);
- const matchStatus=matches?.status;
- const reviewRequired=matchStatus==='review_required';
+ const displayMatchStatus=effectiveMatchStatus(matches?.status,hasContext)||undefined;
+ const topMatches=useMemo(()=>normalizeMatches(matches,displayMatchStatus).slice(0,3),[matches,displayMatchStatus]);
+ const reviewRequired=displayMatchStatus==='review_required';
 
  async function emailSaveLink(email:string,profile:PersonalizationProfile){
   if(!supabase||sendingEmail||!pending)return;
@@ -82,8 +82,8 @@ export default function Result(){
   {pending
    ? <GuestSaveCard personal={personal} sending={sendingEmail} message={emailMessage} onSubmit={emailSaveLink}/>
    : <SavedResultCard/>}
-  <ContextCallout hasContext={hasContext} matchStatus={matchStatus}/>
-  {reviewRequired?<MatchReviewCallout matches={matches!}/>:topMatches.length>0&&<MatchPreview matches={topMatches} matchStatus={matchStatus} hasContext={hasContext}/>} 
+  <ContextCallout hasContext={hasContext} matchStatus={displayMatchStatus}/>
+  {reviewRequired?<MatchReviewCallout matches={matches!}/>:topMatches.length>0&&<MatchPreview matches={topMatches} matchStatus={displayMatchStatus} hasContext={hasContext}/>} 
   <PilotFeedbackCard/>
   {error&&<p className="notice" role="alert">{error}</p>}
  </div></main>;
@@ -121,8 +121,8 @@ function GuestSaveCard({personal,sending,message,onSubmit}:{personal:Personaliza
 
 function MatchReviewCallout({matches}:{matches:MatchPayload}){const reasons=(matches.constraints?.reasons as string[]|undefined)||[];return <section className="result-next-card result-match-review"><div><div className="eyebrow">DNA Match paused</div><h2>This money needs review before ranking ETFs.</h2><p>The current context triggered a safety or product-data gate, so Investor DNA is not turning it into a ranked ETF list.</p>{reasons.length>0&&<ul className="result-list">{reasons.slice(0,3).map(reason=><li key={reason}>{reason}</li>)}</ul>}</div><Link className="btn primary" href="/match">Review Match status</Link></section>}
 function MatchPreview({matches,matchStatus,hasContext}:{matches:MatchItem[];matchStatus?:string;hasContext:boolean}){const contextAware=matchStatus==='available'&&hasContext;return <section className="report-section matches-section"><div className="eyebrow">From DNA to research</div><h2>{contextAware?'Context-aware ETF comparisons':'DNA-only ETF comparisons'}</h2><p className="report-lede">{contextAware?'These are compatibility signals based on your DNA and the context you added. They are not buy recommendations.':'These comparisons use your DNA only. Add the purpose, horizon, access needs and principal-protection choice for context-aware Match.'}</p><div className="match-preview-grid">{matches.map(match=><MatchPreviewCard key={match.investment_id||match.symbol} match={match} matchStatus={matchStatus}/>)}</div><div className="matches-more"><Link className="btn primary" href="/match">See all DNA matches</Link></div></section>}
-function MatchPreviewCard({match,matchStatus}:{match:MatchItem;matchStatus?:string}){const why=match.explanation?.strengths?.[0]||match.explanation?.why_it_fits?.[0]||match.explanation?.watchouts?.[0];const score=matchScorePresentation(match,matchStatus);return <article className="match-preview-card"><div className="match-preview-top"><span className="pill">{match.symbol}</span><strong>{score.numericValue==null?score.text:<>{score.numericValue}<small>/100</small></>}</strong></div><h3>{match.name||match.symbol}</h3><p className="match-fit-label">{matchFitLabel(match,matchStatus)}</p>{why&&<p className="muted">{why}</p>}{match.investment_id?<Link className="btn" href={`/investment/${match.investment_id}`}>Open ETF research</Link>:<Link className="btn" href="/match">Open DNA Match</Link>}</article>}
+function MatchPreviewCard({match,matchStatus}:{match:MatchItem;matchStatus?:string}){const contextOnly=matchStatus==='context_required';const rowContextOnly=match.eligibility==='context_required'||match.recommendation_tier==='consider';const allowExplanation=!contextOnly||rowContextOnly;const why=allowExplanation?(match.explanation?.strengths?.[0]||match.explanation?.why_it_fits?.[0]||match.explanation?.watchouts?.[0]):undefined;const score=matchScorePresentation(match,matchStatus);return <article className="match-preview-card"><div className="match-preview-top"><span className="pill">{match.symbol}</span><strong>{score.numericValue==null?score.text:<>{score.numericValue}<small>/100</small></>}</strong></div><h3>{match.name||match.symbol}</h3><p className="match-fit-label">{matchFitLabel(match,matchStatus)}</p>{why&&<p className="muted">{why}</p>}{match.investment_id?<Link className="btn" href={`/investment/${match.investment_id}`}>Open ETF research</Link>:<Link className="btn" href="/match">Open DNA Match</Link>}</article>}
 function SavedResultCard(){return <section className="result-save-card"><div><strong>Your Investor DNA is saved.</strong><p>You can return to it from your dashboard and use it across Match, Explore and your watchlist.</p></div><div className="result-actions"><Link className="btn primary" href="/profile">My dashboard</Link><Link className="btn" href="/explore">Explore investments</Link></div></section>}
 function PilotFeedbackCard(){return <section className="result-next-card"><div><div className="eyebrow">Pilot feedback</div><h2>Did the result actually make sense?</h2><p>Give us one minute of feedback. It helps us validate clarity and usefulness before launch.</p></div><Link className="btn" href="/feedback">Give pilot feedback</Link></section>}
-function normalizeMatches(payload?:MatchPayload|null):MatchItem[]{if(!payload)return [];const raw=Array.isArray(payload.results)&&payload.results.length?[...payload.results]:[...(payload.top_matches||[]),...(payload.alternatives||[]),...(payload.consider||[])];const seen=new Set<string>();const rows=raw.filter(item=>{if(seen.has(item.symbol))return false;seen.add(item.symbol);return true});return payload.status==='available'?rows.sort((a,b)=>(b.match_score??-1)-(a.match_score??-1)):rows}
+function normalizeMatches(payload?:MatchPayload|null,status?:string):MatchItem[]{if(!payload)return [];const raw=Array.isArray(payload.results)&&payload.results.length?[...payload.results]:[...(payload.top_matches||[]),...(payload.alternatives||[]),...(payload.consider||[])];const seen=new Set<string>();const rows=raw.filter(item=>{if(seen.has(item.symbol))return false;seen.add(item.symbol);return true});return status==='available'?rows.sort((a,b)=>(b.match_score??-1)-(a.match_score??-1)):rows}
 function personalFromContext(context?:DNA['investment_context']):PersonalizationProfile|null{return normalizePersonalization({first_name:context?.first_name,age:context?.age})}
