@@ -49,52 +49,64 @@ export default function Explore(){
   });
  },[items,tab,query]);
 
- return <section className="section">
-  <div className="container">
-   <div className="eyebrow">Explore</div>
-   <h1>Compare what different investments are built to do</h1>
-   <p className="muted" style={{maxWidth:820}}>
-    Start with the job your money needs to do — protect capital, stay accessible, produce income, or participate in growth — then compare structures using the same Investment DNA language.
-   </p>
-   <p className="fine muted">DNA Match is currently available for ETFs. GICs, T-Bills, bonds and money-market examples are research profiles for structural comparison.</p>
+ return <main className="explore-page-v2">
+  <section className="explore-hero-v2">
+   <div className="container">
+    <div className="eyebrow">Explore investments</div>
+    <div className="explore-hero-row">
+     <div>
+      <h1>Research different structures without the jargon.</h1>
+      <p>Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</p>
+     </div>
+     <Link className="btn" href="/compare">Compare investments</Link>
+    </div>
 
-   <div className="toolbar">
-    <label>
-     <span className="fine muted">Search investments</span><br/>
+    <label className="explore-search-v2">
+     <span className="sr-only">Search investments</span>
+     <span className="explore-search-icon" aria-hidden="true">⌕</span>
      <input
-      className="field"
       value={query}
       onChange={event=>setQuery(event.target.value)}
-      placeholder="Name, symbol, issuer or asset type"
+      placeholder="Search by name, symbol, issuer or asset type"
       aria-label="Search investments"
      />
     </label>
+
+    <ExploreTabs selected={tab} onSelect={setTab}/>
    </div>
+  </section>
 
-   <ExploreTabs selected={tab} onSelect={setTab}/>
+  <section className="explore-catalog-v2">
+   <div className="container">
+    <div className="explore-catalog-head">
+     <div>
+      <strong>{loading?'Loading research…':`${visible.length} investment${visible.length===1?'':'s'}`}</strong>
+      <span>Only sourced research fields are shown. Missing optional facts are hidden instead of filled with placeholders.</span>
+     </div>
+     <span className="pill">DNA Match: ETFs</span>
+    </div>
 
-   {!loading&&!error&&<p className="fine muted">{visible.length} investment{visible.length===1?'':'s'} shown</p>}
-
-   {loading
-    ? <p>Loading investments…</p>
-    : error
-      ? <CatalogError error={error} onRetry={()=>setRetry(value=>value+1)}/>
-      : visible.length===0
-        ? <EmptyCategory query={query}/>
-        : <div className="grid3">
-           {visible.map(item=><InvestmentCard key={item.id} item={item}/>) }
-          </div>}
-  </div>
- </section>;
+    {loading
+     ? <div className="explore-loading-grid">{[0,1,2,3,4,5].map(i=><div className="explore-skeleton" key={i}/>)}</div>
+     : error
+       ? <CatalogError error={error} onRetry={()=>setRetry(value=>value+1)}/>
+       : visible.length===0
+         ? <EmptyCategory query={query}/>
+         : <div className="explore-grid-v2">
+            {visible.map(item=><InvestmentCard key={item.id} item={item}/>) }
+           </div>}
+   </div>
+  </section>
+ </main>;
 }
 
 function ExploreTabs({selected,onSelect}:{selected:ExploreTab;onSelect:(tab:ExploreTab)=>void}){
- return <div className="actions" role="tablist" aria-label="Investment categories">
+ return <div className="explore-tabs-v2" role="tablist" aria-label="Investment categories">
   {EXPLORE_TABS.map(tab=><button
    key={tab.key}
    role="tab"
    aria-selected={selected===tab.key}
-   className={'btn '+(selected===tab.key?'primary':'')}
+   className={selected===tab.key?'active':''}
    onClick={()=>onSelect(tab.key)}
   >
    {tab.label}
@@ -103,25 +115,38 @@ function ExploreTabs({selected,onSelect}:{selected:ExploreTab;onSelect:(tab:Expl
 }
 
 function InvestmentCard({item}:{item:Instrument}){
- const metrics=heroMetrics(item.asset_type).slice(0,3);
+ const metrics=heroMetrics(item.asset_type)
+  .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
+  .filter(metric=>metric.value!==null)
+  .slice(0,3);
  const canMatch=matchEligible(item.asset_type);
 
- return <article className="card">
-  <div className="actions compact">
-   <span className="pill">{assetLabel(item.asset_type)}</span>
-   {item.symbol&&<span className="pill">{item.symbol}</span>}
-   <span className="pill">{canMatch?'DNA Match available':'Research profile'}</span>
+ return <article className="investment-card-v2">
+  <div className="investment-card-top">
+   <div className="investment-card-tags">
+    <span className="asset-tag">{assetLabel(item.asset_type)}</span>
+    {item.symbol&&<span className="symbol-tag">{item.symbol}</span>}
+   </div>
+   <span className={canMatch?'match-dot match-dot-on':'match-dot'} title={canMatch?'DNA Match available':'Research profile only'}/>
   </div>
 
-  <h2>{item.name}</h2>
-  <p className="muted">{item.profile_summary||item.description||'Research profile available.'}</p>
+  <div className="investment-card-copy">
+   <h2>{item.name}</h2>
+   {item.issuer_name&&<p className="investment-card-issuer">{item.issuer_name}</p>}
+   <p>{item.profile_summary||item.description||'Research profile available.'}</p>
+  </div>
 
-  {metrics.map(metric=><p key={metric.key}>
-   <strong>{metric.label}:</strong>{' '}
-   {metricValue(item,metric.key,metric.suffix,metric.digits)}
-  </p>)}
+  {metrics.length>0&&<div className="investment-card-metrics">
+   {metrics.map(metric=><div key={metric.key}>
+    <span>{metric.label}</span>
+    <strong>{metric.value}</strong>
+   </div>)}
+  </div>}
 
-  <Link className="btn primary" href={'/investment/'+item.id}>Open research</Link>
+  <div className="investment-card-footer">
+   <span>{canMatch?'DNA Match available':'Structural research'}</span>
+   <Link href={'/investment/'+item.id}>Open research →</Link>
+  </div>
  </article>;
 }
 
@@ -133,7 +158,7 @@ function CatalogError({error,onRetry}:{error:string;onRetry:()=>void}){
 }
 
 function EmptyCategory({query}:{query:string}){
- return <div className="card">
+ return <div className="card explore-empty-v2">
   <h2>{query.trim()?'No investments match that search':'No research examples in this category yet'}</h2>
   <p className="muted">{query.trim()
    ? 'Try a symbol, issuer, asset type or a broader search.'
@@ -141,9 +166,9 @@ function EmptyCategory({query}:{query:string}){
  </div>;
 }
 
-function metricValue(item:Instrument,key:string,suffix='',digits=2){
+function metricValue(item:Instrument,key:string,suffix='',digits=2):string|null{
  const raw=(item as unknown as Record<string,unknown>)[key];
- if(raw===null||raw===undefined||raw==='')return 'Not available';
+ if(raw===null||raw===undefined||raw==='')return null;
  if(typeof raw==='number')return formatMetric(raw,suffix,digits);
  return pretty(raw);
 }
@@ -152,5 +177,5 @@ function pretty(value:unknown){
  if(typeof value==='string'){
   return value.replaceAll('_',' ').replace(/\b\w/g,char=>char.toUpperCase());
  }
- return String(value??'Not available');
+ return String(value);
 }

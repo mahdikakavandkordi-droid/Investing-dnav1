@@ -14,6 +14,7 @@ import {
 import type {Draft,Question,Submission} from "@/lib/dna";
 import {ASSESSMENT_COPY} from "@/lib/assessment-copy";
 import type {AssessmentCohort,AssessmentLocale} from "@/lib/assessment-copy";
+import {DnaJourneyVisual} from "@/components/DnaJourneyVisual";
 
 const COGNITIVE_ACCESS_KEY='investing-dna:cognitive-access:v1';
 const LANGUAGE_KEY='investing-dna:language';
@@ -215,7 +216,7 @@ export default function Assessment(){
 }
 
 function AssessmentShell({children}:{children:React.ReactNode}){
- return <main className="assessment-page">
+ return <main className="assessment-page assessment-page-v2">
   <div className="container assessment-container">{children}</div>
  </main>;
 }
@@ -234,7 +235,7 @@ function AssessmentIntro({
  const direction=locale==='fa'?'rtl':'ltr';
  const cognitive=cohort==='COGNITIVE_V1_10';
 
- return <div className="assessment-card assessment-intro" dir={direction} lang={locale}>
+ return <div className="assessment-card assessment-intro assessment-intro-v2" dir={direction} lang={locale}>
   <div className="assessment-intro-top">
    <div>
     <div className="eyebrow">{copy.eyebrow}</div>
@@ -267,7 +268,7 @@ function AssessmentIntro({
 
   <p className="muted fine assessment-account-note">No account is needed. If the result is useful, you can choose to save it after you see it.</p>
   <p className="muted fine assessment-consent">{copy.consent}</p>
-  {cognitive&&<p className="notice">Research session: your moderator may ask what you thought each question meant after you finish. Please answer naturally without trying to optimize the result.</p>}
+  {cognitive&&<p className="notice">Research session: answer naturally. Your moderator may ask what you thought a question meant after you finish.</p>}
   {error&&<p role="alert" className="notice">{error}</p>}
  </div>;
 }
@@ -291,7 +292,6 @@ function QuestionStep({
  const chosen=draft.answers[question.question_id];
  const options=optionsFor(question);
  const current=draft.index+1;
- const section=(question.section&&copy.sections[question.section as keyof typeof copy.sections])||'Investor DNA';
  const last=draft.index===questions.length-1;
  const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
  const multi=question.question_type==='multi_choice';
@@ -322,56 +322,58 @@ function QuestionStep({
   onPersist({...draft,answers});
  }
 
- return <div className="assessment-card question-shell" dir={direction} lang={locale}>
-  <div className="question-header">
-   <div>
-    <div className="eyebrow">{section}</div>
-    <div className="question-count">{copy.question} {current} / {questions.length}</div>
-    {researchCode&&<div className="fine muted">Research code: <strong>{researchCode}</strong></div>}
+ return <div className="assessment-question-layout" dir={direction} lang={locale}>
+  <div className="assessment-card question-shell question-shell-v2">
+   <div className="question-header question-header-v2">
+    <div>
+     <div className="question-count">{copy.question} {current} of {questions.length}</div>
+     {researchCode&&<div className="fine muted question-research-code">Research code: <strong>{researchCode}</strong></div>}
+    </div>
+    <div className="question-percent">{Math.round((current/questions.length)*100)}%</div>
    </div>
-   <div className="question-percent">{Math.round((current/questions.length)*100)}%</div>
+
+   <progress aria-label="Assessment progress" max={questions.length} value={current}/>
+   <h1 className="question-title">{question.prompt}</h1>
+   {multi&&<p className="question-hint question-hint-top">Select all that apply.</p>}
+
+   <div className="question-options" role="group" aria-label="Answer choices">
+    {options.map(option=>{
+     const selected=multi?chosenValues.includes(option.value):chosen===option.value;
+     return <button
+      aria-pressed={selected}
+      className={'option '+(selected?'active':'')}
+      key={option.value}
+      disabled={busy}
+      onClick={()=>choose(option.value)}
+     >
+      <span className="option-indicator" aria-hidden="true"/>
+      <span>{option.label}</span>
+     </button>;
+    })}
+   </div>
+
+   <div className="question-actions">
+    <button
+     className="btn"
+     disabled={busy||draft.index===0}
+     onClick={()=>onPersist({...draft,index:draft.index-1})}
+    >{copy.back}</button>
+
+    {last
+     ? <button className="btn primary" disabled={busy||!answered} onClick={onFinish}>
+        {busy?copy.calculating:copy.result}
+       </button>
+     : <button
+        className="btn primary"
+        disabled={busy||!answered}
+        onClick={()=>onPersist({...draft,index:draft.index+1})}
+       >{copy.next} <span aria-hidden="true">→</span></button>}
+   </div>
+
+   {warning&&<p className="muted fine">{warning}</p>}
+   {error&&<p role="alert" className="notice">{error}</p>}
   </div>
-
-  <progress aria-label="Assessment progress" max={questions.length} value={current}/>
-  <h1 className="question-title">{question.prompt}</h1>
-  {multi&&<p className="question-hint">Select all that apply.</p>}
-
-  <div className="question-options" role="group" aria-label="Answer choices">
-   {options.map(option=>{
-    const selected=multi?chosenValues.includes(option.value):chosen===option.value;
-    return <button
-     aria-pressed={selected}
-     className={'option '+(selected?'active':'')}
-     key={option.value}
-     disabled={busy}
-     onClick={()=>choose(option.value)}
-    >
-     <span>{option.label}</span>
-    </button>;
-   })}
-  </div>
-
-  <div className="question-actions">
-   <button
-    className="btn"
-    disabled={busy||draft.index===0}
-    onClick={()=>onPersist({...draft,index:draft.index-1})}
-   >{copy.back}</button>
-
-   {last
-    ? <button className="btn primary" disabled={busy||!answered} onClick={onFinish}>
-       {busy?copy.calculating:copy.result}
-      </button>
-    : <button
-       className="btn primary"
-       disabled={busy||!answered}
-       onClick={()=>onPersist({...draft,index:draft.index+1})}
-      >{copy.next}</button>}
-  </div>
-
-  {!multi&&<p className="question-hint">{copy.hint}</p>}
-  {warning&&<p className="muted fine">{warning}</p>}
-  {error&&<p role="alert" className="notice">{error}</p>}
+  <DnaJourneyVisual current={current} total={questions.length}/>
  </div>;
 }
 
@@ -394,7 +396,7 @@ function normalizeAnswers(answers:Draft['answers'],questions:Question[]):Draft['
 
 function RecoveryError({locale}:{locale:AssessmentLocale}){
  const copy=ASSESSMENT_COPY[locale];
- return <div className="assessment-card">
+ return <div className="assessment-card assessment-recovery">
   <div className="eyebrow">{copy.retryTitle}</div>
   <h1>{copy.retryBody}</h1>
   <div className="actions">

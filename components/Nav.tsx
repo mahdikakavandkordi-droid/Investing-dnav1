@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
+import {BrandMark} from '@/components/BrandMark';
 
 /** Global product navigation; account labels reflect browser auth state only. */
 export function Nav(){
@@ -9,7 +10,7 @@ export function Nav(){
 
  return <header className="nav">
   <div className="navin">
-   <Link className="brand" href="/">Investor <span>DNA</span></Link>
+   <BrandMark/>
 
    <nav className="links" aria-label="Main navigation">
     <Link href="/dna">My DNA</Link>
@@ -19,7 +20,7 @@ export function Nav(){
    </nav>
 
    <div className="account-links">
-    {!loading&&!user&&<Link className="profile-link" href="/profile">Create account</Link>}
+    {!loading&&!user&&<Link className="profile-link profile-link-muted" href="/profile?mode=signup">Create account</Link>}
     <Link className="profile-link" href={user?'/dashboard':'/profile'}>{user?'Dashboard':loading?'Account':'Sign in'}</Link>
    </div>
   </div>

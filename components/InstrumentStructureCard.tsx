@@ -14,35 +14,33 @@ const DIMENSIONS:[keyof Instrument,string,string][]=[
 
 /** Shared Investment DNA card for non-fund and cross-asset structural research. */
 export function InstrumentStructureCard({instrument}:{instrument:Instrument}){
- return <section className="investment-dna-card">
+ const available=DIMENSIONS.filter(([key])=>present(instrument[key]));
+ return <section className="investment-dna-card instrument-structure-v2">
   <div className="investment-dna-head">
    <div>
     <div className="eyebrow">Investment DNA</div>
     <h2>What this {assetLabel(instrument.asset_type).toLowerCase()} is structurally built to do</h2>
-    <p>These labels put different investment structures into one common research language. They are descriptive research labels, not regulatory ratings or a recommendation.</p>
+    <p>One common research language for comparing different investment structures.</p>
    </div>
   </div>
 
-  <div className="investment-dna-grid">
-   {DIMENSIONS.map(([key,title,help])=><div className="investment-dna-axis" key={String(key)}>
+  {available.length>0&&<div className="investment-dna-grid investment-dna-grid-v2">
+   {available.map(([key,title,help])=><div className="investment-dna-axis" key={String(key)}>
     <div className="investment-dna-axis-top">
      <span>{title}</span>
      <strong>{displayLabel(instrument[key])}</strong>
     </div>
     <p>{help}</p>
    </div>)}
+  </div>}
+
+  <div className="structure-extra-list">
+   {instrument.credit_exposure&&<p><span>Credit exposure</span><strong>{displayLabel(instrument.credit_exposure)}</strong></p>}
+   {instrument.time_structure&&<p><span>Time structure</span><strong>{displayLabel(instrument.time_structure)}</strong></p>}
+   {instrument.principal_protection_basis&&<p><span>Protection basis</span><strong>{instrument.principal_protection_basis}</strong></p>}
   </div>
 
-  {instrument.credit_exposure&&<p className="investment-dna-inputs">
-   <strong>Credit exposure:</strong> {displayLabel(instrument.credit_exposure)}
-  </p>}
-  {instrument.time_structure&&<p className="investment-dna-inputs">
-   <strong>Time structure:</strong> {displayLabel(instrument.time_structure)}
-  </p>}
-  {instrument.principal_protection_basis&&<p className="investment-dna-inputs">
-   <strong>Protection basis:</strong> {instrument.principal_protection_basis}
-  </p>}
-
+  {available.length<DIMENSIONS.length&&<p className="fine muted structure-coverage-note">Structural coverage: {available.length} of {DIMENSIONS.length} optional traits available. Missing traits are hidden rather than shown as repeated placeholders.</p>}
   <p className="fine muted">
    {researchMatchNote(instrument.asset_type)}
    {instrument.structure_as_of_date?` · Structure profile as of ${instrument.structure_as_of_date}.`:''}
@@ -50,7 +48,9 @@ export function InstrumentStructureCard({instrument}:{instrument:Instrument}){
  </section>;
 }
 
+function present(value:unknown){
+ return value!==null&&value!==undefined&&value!=='';
+}
 function displayLabel(value:unknown){
- if(value===null||value===undefined||value==='')return 'Not available';
  return String(value).replaceAll('_',' ').replace(/\b\w/g,char=>char.toUpperCase());
 }
