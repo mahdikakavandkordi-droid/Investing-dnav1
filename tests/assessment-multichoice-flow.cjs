@@ -121,14 +121,19 @@ const dna={
  assert.equal(await page.getByRole('button',{name:'Cash, savings, or GICs',exact:true}).getAttribute('aria-pressed'),'true');
  assert.equal(await page.getByRole('button',{name:'Mutual funds or unleveraged ETFs',exact:true}).getAttribute('aria-pressed'),'true');
 
- await page.getByRole('button',{name:'See my DNA'}).click();
+ await page.getByRole('button',{name:/Continue/}).click();
+ await page.getByRole('heading',{name:'Almost there.'}).waitFor();
+ await page.getByLabel('First name').fill('Mahdi');
+ await page.getByLabel('Age').fill('35');
+ await page.getByRole('button',{name:/See my Investor DNA/}).click();
  await page.waitForURL('**/dna/result');
  await page.getByRole('heading',{name:'MAVERICK'}).waitFor();
+ assert.match(await page.locator('body').innerText(),/Mahdi/);
 
  assert.equal(saveCalls,1);
  assert.equal(submitCalls,1);
  assert.deepEqual(runtimeErrors,[]);
- console.log('PASS multi-choice assessment submits arrays and opens the DNA report');
+ console.log('PASS multi-choice assessment submits arrays, captures personalization, and opens the DNA report');
 
  await browser.close();
 })().catch(error=>{
