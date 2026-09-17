@@ -8,6 +8,7 @@ import "./product-value.css";
 import "./redesign-brand.css";
 import "./redesign-research.css";
 import "./redesign-utility.css";
+import "./report-redesign.css";
 import {Nav} from "@/components/Nav";
 import {Footer} from "@/components/Footer";
 import {ProductAnalytics} from "@/components/ProductAnalytics";
