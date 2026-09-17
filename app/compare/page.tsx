@@ -65,6 +65,7 @@ export default function Compare(){
  },[user?.id]);
 
  const matches=useMemo(()=>new Map(currentMatchRows(state).map(match=>[match.symbol,match])),[state]);
+ const matchStatus=state?.matches?.status;
 
  async function runComparison(override?:string[]){
   const ids=(override||selected).filter(validId);
@@ -91,7 +92,7 @@ export default function Compare(){
 
    {rows.length>=2&&<>
     <div className="compare-grid">
-     {rows.map(item=><ComparisonCard key={item.id} item={item} dnaPresent={!!state?.dna} match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}/>) }
+     {rows.map(item=><ComparisonCard key={item.id} item={item} dnaPresent={!!state?.dna} matchStatus={matchStatus} match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}/>) }
     </div>
     <p className="fine muted">Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.</p>
    </>}
@@ -111,35 +112,37 @@ function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instru
  </>;
 }
 
-function ComparisonCard({item,dnaPresent,match}:{item:Instrument;dnaPresent:boolean;match?:MatchItem;}){
+function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dnaPresent:boolean;matchStatus?:string;match?:MatchItem;}){
  const canMatch=matchEligible(item.asset_type);
  const metrics=heroMetrics(item.asset_type);
+ const showExplanation=matchStatus!=='review_required';
+ const contextOnly=matchStatus==='context_required';
 
  return <article className="compare-card">
   <div className="actions compact"><span className="pill">{assetLabel(item.asset_type)}</span>{item.symbol&&<span className="pill">{item.symbol}</span>}</div>
   <h2>{item.name}</h2>
-  <FitSummary canMatch={canMatch} match={match} dnaPresent={dnaPresent}/>
+  <FitSummary canMatch={canMatch} match={match} matchStatus={matchStatus} dnaPresent={dnaPresent}/>
   <h3>Shared Investment DNA</h3>
   {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}><span>{label}</span><strong>{pretty(item[key])}</strong></div>)}
   <h3>{assetLabel(item.asset_type)} facts</h3>
   {metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
   {item.credit_exposure&&<div className="compare-metric"><span>Credit exposure</span><strong>{pretty(item.credit_exposure)}</strong></div>}
   {item.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(item.time_structure)}</strong></div>}
-  {match?.explanation?.strengths?.length?<><strong>Why this ETF may fit</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
-  {match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
+  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':'Why this ETF may fit'}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
+  {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   <Link className="btn" href={`/investment/${item.id}`}>Open research</Link>
  </article>;
 }
 
-function FitSummary({canMatch,match,dnaPresent}:{canMatch:boolean;match?:MatchItem;dnaPresent:boolean}){
+function FitSummary({canMatch,match,matchStatus,dnaPresent}:{canMatch:boolean;match?:MatchItem;matchStatus?:string;dnaPresent:boolean}){
  if(!canMatch)return <div className="notice"><span>Research profile · personalized Match not enabled for this asset type yet</span></div>;
- if(!match)return <div className="notice"><span>{dnaPresent?'No ranked ETF fit is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span></div>;
- const score=matchScorePresentation(match);
- return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match)}</strong><p className="fine muted">Personal ETF compatibility layer</p></div>;
+ if(!match)return <div className="notice"><span>{dnaPresent?'No ETF compatibility row is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span></div>;
+ const score=matchScorePresentation(match,matchStatus);
+ return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match,matchStatus)}</strong><p className="fine muted">{matchStatus==='context_required'?'DNA-only ETF compatibility layer':'Personal ETF compatibility layer'}</p></div>;
 }
 
 function currentMatchRows(state:AppState|null):MatchItem[]{
- const payload=state?.matches;if(!payload)return [];if(Array.isArray(payload.results))return payload.results;
+ const payload=state?.matches;if(!payload)return [];if(Array.isArray(payload.results)&&payload.results.length)return payload.results;
  return [...(payload.top_matches||[]),...(payload.alternatives||[]),...(payload.consider||[]),...(payload.mismatch||[])];
 }
 function readRequestedIds(){return new URLSearchParams(location.search).get('ids')?.split(',').filter(validId).slice(0,3)||[];}
