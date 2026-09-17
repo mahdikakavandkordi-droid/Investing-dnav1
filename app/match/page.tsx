@@ -82,11 +82,16 @@ export default function Matches(){
  const match=state?.matches;
  const constraints=constraintShape(match);
 
- const eligibleRows=useMemo(
-  ()=>unique([...(match?.top_matches||[]),...(match?.alternatives||[]),...(match?.consider||[])]),
-  [match]
- );
- const fallbackRows=useMemo(()=>unique(match?.mismatch||[]),[match]);
+ const eligibleRows=useMemo(()=>{
+  const buckets=unique([...(match?.top_matches||[]),...(match?.alternatives||[]),...(match?.consider||[])]);
+  if(buckets.length)return buckets;
+  return match?.status==='no_suitable_options'?[]:unique(match?.results||[]);
+ },[match]);
+ const fallbackRows=useMemo(()=>{
+  const mismatch=unique(match?.mismatch||[]);
+  if(mismatch.length)return mismatch;
+  return match?.status==='no_suitable_options'?unique(match?.results||[]):[];
+ },[match]);
  const rows=eligibleRows.length
   ? eligibleRows
   : match?.status==='no_suitable_options'
@@ -96,7 +101,7 @@ export default function Matches(){
  const idBySymbol=useMemo(()=>new Map(funds.map(fund=>[fund.symbol,fund.id])),[funds]);
  const featured=rows.slice(0,3);
  const more=rows.slice(3,9);
- const context=state?.report?.investment_context||null;
+ const context=state?.report?.investment_context||state?.dna?.investment_context||null;
  const compareIds=featured
   .map(item=>idBySymbol.get(item.symbol))
   .filter((id):id is string=>!!id);
@@ -128,7 +133,7 @@ function MatchHero(){
  return <div className="match-dna-hero">
   <div className="eyebrow">DNA Match · ETFs</div>
   <h1>See how your DNA lines up with ETFs</h1>
-  <p>We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon and access needs for this money.</p>
+  <p>We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</p>
   <p className="fine muted">A higher score means closer research compatibility with the inputs shown on this page — not a better investment, a return forecast, or a recommendation to buy.</p>
  </div>;
 }
@@ -177,7 +182,9 @@ function MatchContent({
  idBySymbol:Map<string,string>;
  compareIds:string[];
 }){
- const goalLens=featured.map(goalLensFor).find((value):value is string=>!!value);
+ const goalLens=match?.status==='available'
+  ? featured.map(goalLensFor).find((value):value is string=>!!value)
+  : undefined;
 
  return <>
   <MatchStatus match={match} constraints={constraints} featuredCount={featured.length}/>
@@ -196,7 +203,7 @@ function MatchContent({
    ? <FeaturedMatches featured={featured} match={match} idBySymbol={idBySymbol}/>
    : match?.status!=='review_required'
      ? <div className="card">
-        <h2>No ranked comparisons are available</h2>
+        <h2>{match?.status==='context_required'?'No DNA-only comparisons are available':'No ranked comparisons are available'}</h2>
         <p>Explore the ETF research universe without treating the list as a personal match.</p>
         <Link className="btn" href="/explore">Explore investments</Link>
        </div>
@@ -272,7 +279,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
  }
 
  if(match?.status==='available'){
-  const count=match.eligible_count||featuredCount;
+  const count=match.eligible_count??featuredCount;
   return <div className="match-status-card ok">
    <div className="eyebrow">Context-aware match</div>
    <h2>{count} current option{count===1?'':'s'} passed the research fit limits</h2>
@@ -307,7 +314,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
  const watch=watchouts(item);
  const contextOnly=match?.status==='context_required';
  const scores=contextOnly?[]:breakdown(item);
- const score=matchScorePresentation(item);
+ const score=matchScorePresentation(item,match?.status);
  const summary=contextOnly||match?.status==='no_suitable_options'?item.explanation?.summary:null;
 
  return <article className="match-dna-card">
@@ -324,7 +331,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
 
   <h3>{item.name||item.symbol}</h3>
   <div className="match-meta">
-   <span className="match-fit">{matchFitLabel(item)}</span>
+   <span className="match-fit">{matchFitLabel(item,match?.status)}</span>
    {item.risk_band&&<span className="pill">Official risk: {item.risk_band}</span>}
   </div>
   {summary&&<p className="match-summary">{summary}</p>}
@@ -364,12 +371,12 @@ function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPaylo
   <div className="match-more-grid">
    {rows.map(item=>{
     const id=idBySymbol.get(item.symbol);
-    const score=matchScorePresentation(item);
+    const score=matchScorePresentation(item,match?.status);
     return <article className="match-mini-card" key={item.symbol}>
      <div>
       <span className="pill">{item.symbol}</span>
       <h3>{item.name||item.symbol}</h3>
-      <p>{matchFitLabel(item)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
+      <p>{matchFitLabel(item,match?.status)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
      </div>
      <div className="match-mini-score">{score.text}</div>
      {id&&<Link href={'/investment/'+id}>Open research →</Link>}
