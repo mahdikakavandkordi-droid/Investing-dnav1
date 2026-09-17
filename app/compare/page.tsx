@@ -8,9 +8,9 @@ import {assetLabel,matchEligible,heroMetrics} from '@/lib/instrument-model';
 import {formatMetric,validId} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
-import {readDraft} from '@/lib/dna';
+import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import type {AppState,MatchItem} from '@/lib/dna';
-import {matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
+import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
 
 const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
  ['capital_protection','Capital protection'],
@@ -64,8 +64,11 @@ export default function Compare(){
   return ()=>{active=false};
  },[user?.id]);
 
- const matches=useMemo(()=>new Map(currentMatchRows(state).map(match=>[match.symbol,match])),[state]);
- const matchStatus=state?.matches?.status;
+ const rawMatchStatus=state?.matches?.status;
+ const context=state?.report?.investment_context||state?.dna?.investment_context||null;
+ const matchStatus=effectiveMatchStatus(rawMatchStatus,hasCompleteInvestmentContext(context))||undefined;
+ const rowsTrusted=!(matchStatus==='context_required'&&rawMatchStatus!=='context_required');
+ const matches=useMemo(()=>new Map((rowsTrusted?currentMatchRows(state):[]).map(match=>[match.symbol,match])),[state,rowsTrusted]);
 
  async function runComparison(override?:string[]){
   const ids=[...new Set((override||selected).filter(validId))];
@@ -116,8 +119,9 @@ function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instru
 function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dnaPresent:boolean;matchStatus?:string;match?:MatchItem;}){
  const canMatch=matchEligible(item.asset_type);
  const metrics=heroMetrics(item.asset_type);
- const showExplanation=matchStatus!=='review_required';
  const contextOnly=matchStatus==='context_required';
+ const rowContextOnly=match?.eligibility==='context_required'||match?.recommendation_tier==='consider';
+ const showExplanation=matchStatus!=='review_required'&&(!contextOnly||rowContextOnly);
 
  return <article className="compare-card">
   <div className="actions compact"><span className="pill">{assetLabel(item.asset_type)}</span>{item.symbol&&<span className="pill">{item.symbol}</span>}</div>
