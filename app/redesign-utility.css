@@ -19,7 +19,10 @@
  .detail-key-facts-v2{grid-template-columns:repeat(2,1fr)}.official-cost-grid-v2{grid-template-columns:repeat(2,1fr)!important}
 }
 @media(max-width:760px){
- .navin{padding:0 16px;gap:12px}.brand-lockup img{width:150px}.links{display:none}.profile-link-muted{display:none}
+ .navin{padding:0 16px;gap:12px}.brand-lockup img{width:150px}.profile-link-muted{display:none}
+ .links{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:rgba(255,255,255,.97);border-top:1px solid #dfe7e7;padding:4px 7px max(4px,env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(7,26,52,.06);backdrop-filter:blur(16px)}
+ .links a{padding:10px 4px;font-size:11px;text-align:center;color:#42586a}.links a:after{display:none}.links a:hover{color:#0a7e75}
+ body{padding-bottom:58px}
  .home-hero-grid{padding:42px 20px 50px}.home-hero-copy h1{font-size:43px}.home-hero-lede{font-size:17px}.home-preview{min-height:380px}.home-preview-landscape{inset:0 0 95px}.home-preview-card{padding:20px}.home-preview-stats{grid-template-columns:1fr 1fr}.home-preview-stats div:last-child{grid-column:1/-1}.home-pillars{padding:40px 0}.home-pillar-grid{grid-template-columns:1fr}.home-pillar:last-child{grid-column:auto}.home-pillar{min-height:225px}
  .assessment-page-v2{padding-top:22px}.assessment-question-layout{display:block}.question-shell-v2{padding:24px 20px}.question-shell-v2 .question-title{font-size:30px;margin-top:27px}.dna-journey{min-height:0;height:170px;margin-top:18px;overflow:hidden}.dna-journey-inner{max-width:190px;transform:translateY(-155px)}.dna-journey p{display:none}.question-shell-v2 .question-actions{grid-template-columns:1fr 1fr}.question-shell-v2 .question-actions .btn.primary{min-width:0;width:100%}
  .explore-hero-v2{padding:38px 0 26px}.explore-hero-row{display:block}.explore-hero-row h1{font-size:37px}.explore-hero-row>.btn{margin-top:18px}.explore-search-v2{height:54px}.explore-grid-v2,.explore-loading-grid{grid-template-columns:1fr}.investment-card-v2{min-height:310px}.explore-catalog-head{display:grid}
