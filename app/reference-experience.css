@@ -834,3 +834,282 @@ footer.section .actions{margin:0}
  .approved-logo-wordmark{width:118px;height:19px}
  .approved-logo-wordmark img{width:179px!important;height:179px!important;left:-29.3px!important;top:-116.8px!important}
 }
+
+
+/* ==========================================================================
+   Mobile home refinement — deliberate mobile composition, not shrunken desktop
+   ========================================================================== */
+
+/* Exact approved logo artwork cropped from /logo.png. No redrawing. */
+.approved-brand-lockup{
+ display:inline-flex!important;
+ align-items:center!important;
+ gap:8px!important;
+ width:auto!important;
+ min-width:0!important;
+ height:46px!important;
+ overflow:visible!important;
+ line-height:0!important;
+}
+.approved-brand-lockup>img{display:none!important}
+.approved-logo-symbol,
+.approved-logo-wordmark{
+ display:block;
+ flex:0 0 auto;
+ background-image:url('/logo.png');
+ background-repeat:no-repeat;
+}
+.approved-logo-symbol{
+ width:29px;
+ height:44px;
+ background-size:136px 136px;
+ background-position:-54px -37px;
+}
+.approved-logo-wordmark{
+ width:148px;
+ height:24px;
+ background-size:219px 219px;
+ background-position:-36px -143px;
+}
+
+/* Mobile-specific hierarchy */
+@media(max-width:760px){
+ body{overflow-x:hidden}
+ .platform-nav{min-height:64px!important}
+ .platform-nav .navin{
+  min-height:64px!important;
+  padding:8px 14px!important;
+  display:flex!important;
+  grid-template-columns:none!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+ }
+ .approved-brand-lockup{height:44px!important;gap:6px!important}
+ .approved-logo-symbol{
+  width:24px;height:37px;
+  background-size:114px 114px;
+  background-position:-46px -31px;
+ }
+ .approved-logo-wordmark{
+  width:126px;height:21px;
+  background-size:187px 187px;
+  background-position:-31px -122px;
+ }
+ .platform-account-links{margin-left:auto!important}
+ .platform-nav-cta{
+  min-height:38px!important;
+  padding:9px 12px!important;
+  border-radius:9px!important;
+  font-size:11px!important;
+  white-space:nowrap;
+ }
+ .platform-nav-links,.platform-account-links .profile-link{display:none!important}
+
+ .platform-hero{
+  background:
+   radial-gradient(circle at 86% 7%,rgba(117,220,207,.22),transparent 20%),
+   linear-gradient(180deg,#f7fcfb 0%,#eff8f6 78%,#fff 100%);
+ }
+ .platform-hero:after{height:86px;opacity:.65}
+ .platform-hero-grid{
+  display:block!important;
+  min-height:0!important;
+  padding:28px 16px 24px!important;
+ }
+ .platform-hero-copy{max-width:none!important}
+ .platform-hero-copy .eyebrow{font-size:10px!important;letter-spacing:.13em!important}
+ .platform-hero-copy h1{
+  margin:10px 0 14px!important;
+  font-size:36px!important;
+  line-height:1.01!important;
+  letter-spacing:-.052em!important;
+  max-width:350px;
+ }
+ .platform-hero-copy>p{
+  font-size:14px!important;
+  line-height:1.55!important;
+  max-width:352px!important;
+ }
+ .platform-hero-actions{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:9px!important;
+  margin-top:22px!important;
+ }
+ .platform-hero-actions .btn{
+  min-height:48px!important;
+  width:100%!important;
+  justify-content:center!important;
+  font-size:13px!important;
+ }
+ .platform-hero-trust{
+  display:flex!important;
+  gap:7px!important;
+  margin:17px -2px 0!important;
+  overflow-x:auto!important;
+  padding:0 2px 4px!important;
+  flex-wrap:nowrap!important;
+  scrollbar-width:none;
+ }
+ .platform-hero-trust::-webkit-scrollbar{display:none}
+ .platform-hero-trust span{
+  flex:0 0 auto;
+  padding:7px 9px;
+  border:1px solid #dce9e7;
+  border-radius:999px;
+  background:rgba(255,255,255,.76);
+  font-size:9.5px!important;
+  white-space:nowrap;
+ }
+
+ /* Preview becomes swipeable cards instead of a 4-card vertical wall. */
+ .platform-product-preview{
+  margin-top:24px;
+  min-height:0!important;
+  padding:14px!important;
+  border-radius:19px!important;
+  overflow:visible!important;
+  box-shadow:0 14px 40px rgba(29,77,82,.08)!important;
+ }
+ .platform-preview-label{margin:1px 2px 10px!important;font-size:9px!important}
+ .platform-preview-grid{
+  display:flex!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  scroll-snap-type:x mandatory;
+  padding:1px 1px 8px!important;
+  scrollbar-width:none;
+ }
+ .platform-preview-grid::-webkit-scrollbar{display:none}
+ .preview-card{
+  flex:0 0 min(300px,82vw);
+  min-height:190px;
+  scroll-snap-align:start;
+  padding:16px!important;
+  border-radius:14px!important;
+ }
+ .preview-card-head{font-size:10px!important;margin-bottom:10px!important}
+ .preview-card>strong{font-size:17px!important}
+ .preview-card p{font-size:10.5px!important;line-height:1.45!important}
+ .preview-context,.preview-match{order:initial!important}
+ .preview-context dl div{padding:8px 0!important}
+ .preview-match-row>b{width:48px;height:48px;border-width:5px}
+ .platform-dna-watermark{display:none!important}
+
+ /* Sections get clearer breathing room and stronger mobile typography. */
+ .platform-how,.platform-capabilities,.platform-assets,.platform-intelligence{
+  padding:36px 0!important;
+ }
+ .platform-section-heading,
+ .platform-section-heading.compact{
+  display:block!important;
+  margin-bottom:20px!important;
+ }
+ .platform-section-heading h2{
+  margin-top:6px!important;
+  font-size:29px!important;
+  line-height:1.05!important;
+ }
+ .platform-section-heading>p,
+ .platform-heading-action>p{
+  margin-top:9px!important;
+  font-size:12.5px!important;
+  line-height:1.5!important;
+ }
+ .platform-heading-action{display:block!important}
+ .platform-heading-action a{display:inline-block;margin-top:8px;font-size:11px!important}
+
+ .platform-steps{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:9px!important;
+ }
+ .platform-steps article{
+  min-height:0!important;
+  display:grid!important;
+  grid-template-columns:30px 36px minmax(0,1fr)!important;
+  gap:10px!important;
+  padding:16px!important;
+  border-radius:14px!important;
+ }
+ .platform-steps h3{font-size:15px!important;margin-top:0!important}
+ .platform-steps p{font-size:11px!important;line-height:1.45!important}
+ .step-arrow{
+  margin:-2px 0!important;
+  transform:rotate(90deg)!important;
+  justify-self:center!important;
+  font-size:19px!important;
+ }
+
+ .platform-capabilities-grid{display:block!important}
+ .platform-capabilities-grid .platform-section-heading h2{font-size:29px!important}
+ .platform-capability-cards{
+  display:flex!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  scroll-snap-type:x mandatory;
+  padding:1px 1px 10px!important;
+  scrollbar-width:none;
+ }
+ .platform-capability-cards::-webkit-scrollbar{display:none}
+ .platform-capability-cards article{
+  flex:0 0 min(286px,78vw)!important;
+  min-width:0!important;
+  min-height:160px!important;
+  scroll-snap-align:start;
+  padding:17px!important;
+ }
+ .platform-capability-cards h3{font-size:15px!important;margin-top:16px!important}
+ .platform-capability-cards p{font-size:11px!important}
+
+ /* Asset rail intentionally peeks the next card to teach swipe affordance. */
+ .home-asset-rail{
+  margin-right:-16px!important;
+  padding-right:16px!important;
+  grid-auto-columns:minmax(292px,84vw)!important;
+  gap:11px!important;
+  scroll-snap-type:x mandatory!important;
+ }
+ .home-asset-card{
+  min-height:500px!important;
+  padding:17px!important;
+  border-radius:16px!important;
+ }
+ .home-asset-copy h3{font-size:18px!important}
+ .home-asset-copy p{font-size:11px!important}
+ .home-asset-metrics>div{padding:10px!important}
+ .home-asset-footer a{font-size:11px!important}
+
+ .platform-intelligence-grid{display:grid!important;grid-template-columns:1fr!important;gap:11px!important}
+ .platform-intro-copy{padding:0 0 8px!important}
+ .platform-intro-copy h2{
+  font-size:29px!important;
+  line-height:1.05!important;
+ }
+ .platform-intro-copy p{font-size:12.5px!important;line-height:1.52!important}
+ .platform-inline-actions{display:grid!important;gap:7px!important;margin-top:14px!important}
+ .platform-match-panel,.platform-risk-panel{
+  padding:17px!important;
+  border-radius:15px!important;
+ }
+ .platform-match-top,.platform-risk-title{align-items:flex-start!important}
+ .platform-match-top strong,.platform-risk-title strong{font-size:14px!important}
+ .platform-risk-dimensions{grid-template-columns:1fr 1fr!important}
+
+ .platform-trust{padding:27px 0 30px!important}
+ .platform-trust-grid{gap:14px!important}
+ .platform-trust article{grid-template-columns:34px minmax(0,1fr)!important}
+ .platform-trust strong{font-size:12px!important}
+ .platform-trust p{font-size:10.5px!important}
+}
+
+/* Extra-narrow phones */
+@media(max-width:390px){
+ .approved-logo-wordmark{width:116px;height:20px;background-size:172px 172px;background-position:-28px -112px}
+ .approved-logo-symbol{width:22px;height:34px;background-size:105px 105px;background-position:-42px -28px}
+ .platform-nav-cta{padding:8px 10px!important;font-size:10.5px!important}
+ .platform-hero-copy h1{font-size:34px!important}
+ .preview-card{flex-basis:84vw}
+ .platform-capability-cards article{flex-basis:80vw!important}
+ .home-asset-rail{grid-auto-columns:minmax(280px,86vw)!important}
+}
