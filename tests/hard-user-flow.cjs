@@ -197,7 +197,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  await waitForResult('MAVERICK');
  await page.getByText('91').first().waitFor();
  text=await page.locator('body').innerText();
- assert.match(text,/Mahdi, see what your DNA means for this money\./);
+ assert.match(text,/Mahdi, a clearer path for this goal\./);
  assert.match(text,/91\s*\/100|91\/100/);
  assert.match(text,/same DNA/i);
 
