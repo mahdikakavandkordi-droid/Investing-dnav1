@@ -103,15 +103,15 @@ async function runViewport(browser,label,viewport){
  await shot(page,label+'-07-personal-report');
 
  await page.goto(ORIGIN+'/dna/context?returnTo=/dna/result',{waitUntil:'domcontentloaded'});
- await page.getByLabel('Primary goal').waitFor();
+ await page.getByLabel('Investment goal').waitFor();
  await shot(page,label+'-08-goal-context');
- await page.getByLabel('Primary goal').selectOption('retirement');
+ await page.getByLabel('Investment goal').selectOption('retirement');
  await page.getByLabel('When might you first need this money?').selectOption('gt_10y');
  const amount=page.getByLabel(/amount/i);
  if(await amount.count())await amount.fill('25000');
  await page.getByLabel('How important is quick access?').selectOption('low');
  await page.getByLabel(/must the full amount be protected/i).selectOption('no');
- await page.getByRole('button',{name:/Use this context/}).click();
+ await page.getByRole('button',{name:/See my personalized insights|Update this goal/}).click();
  await page.waitForURL(url=>url.pathname==='/dna/result');
  await shot(page,label+'-09-applied-report');
 
