@@ -292,7 +292,10 @@ const testAccess=[
  const resultText=await page.locator('body').innerText();
  assert.match(resultText,/Risk tolerance/);
  assert.match(resultText,/Financial capacity/);
- assert.match(resultText,/Your decision fingerprint/);
+ assert.match(resultText,/Your profile, without the noise/);
+ assert.match(resultText,/Explore how your DNA was built/);
+ await page.locator('summary').filter({hasText:'Explore how your DNA was built'}).click();
+ assert.match(await page.locator('body').innerText(),/Your decision fingerprint/);
  assert.match(resultText,/research candidate/i);
  assert.equal(await page.evaluate(key=>localStorage.getItem(key),DRAFT_KEY),null);
  assert.ok(await page.evaluate(key=>localStorage.getItem(key),CLAIM_KEY));
