@@ -6,7 +6,7 @@ import Link from 'next/link';
  * itself is never redrawn or restyled.
  */
 export function BrandMark(){
- return <Link className="brand-lockup approved-brand-lockup" href="/" aria-label="Investing DNA home">
+ return <Link className="brand-lockup approved-brand-lockup approved-master-logo" href="/" aria-label="Investing DNA home">
   <span className="approved-logo-symbol" aria-hidden="true"/>
   <span className="approved-logo-wordmark" aria-hidden="true"/>
  </Link>;
