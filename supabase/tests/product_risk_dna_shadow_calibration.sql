@@ -89,6 +89,33 @@ begin
  if investor_private.product_risk_rank(short_overall)>=investor_private.product_risk_rank(long_overall) then
   raise exception 'long GoC bond overall must exceed 2Y GoC overall'; end if;
 
+ select investor_private.product_risk_eval_t_bill(id) into p
+ from public.investments where symbol='GOC-TBILL-3M' limit 1;
+ if p#>>'{overall_risk,band}'<>'Low'
+    or p#>>'{overall_risk,confidence}'<>'Medium'
+    or p#>>'{dimensions,1,confidence}'<>'High'
+    or p#>>'{dimensions,2,confidence}'<>'Medium' then
+  raise exception 'T-Bill term/liquidity confidence regression: %',p; end if;
+
+ select count(*) into bad
+ from investor_private.v_product_risk_review_queue
+ where review_state='evidence_ready_for_review'
+   and not (
+     confidence='High'
+     and dimension_count=4
+     and high_conf_dimension_count=4
+     and weak_conf_dimension_count=0
+     and unknown_dimension_count=0
+     and as_of_date>=current_date-90
+   );
+ if bad<>0 then raise exception '% review-ready rows violate evidence gate',bad; end if;
+
+ select count(*) into bad
+ from investor_private.v_product_risk_review_queue
+ where asset_type in ('BOND','T_BILL')
+   and review_state='evidence_ready_for_review';
+ if bad<>0 then raise exception 'Bond/T-Bill rows must remain needs_evidence until direct evidence gaps close'; end if;
+
  select count(*) into bad
  from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
  where p.model_version='product-risk-dna-v1-research' and p.publication_status='draft'

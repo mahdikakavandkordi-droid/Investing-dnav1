@@ -30,3 +30,14 @@ ETF Product Risk must read the verified `investment_official_risk_ratings` table
 ETF diversification is an asset sensor, not a hard-coded “diversified” label: underlying holdings are preferred over wrapper holdings, holding-count bands are applied, and single-sector products are capped. Access to Money prefers verified bid-ask spread and falls back to structural liquidity with lower confidence.
 
 Overall Risk uses a hidden, versioned asset-module aggregation of the four consumer dimensions. No numeric composite is exposed to users. The database remains shadow-only until a profile is explicitly reviewed and published.
+
+
+## Internal review readiness
+
+`investor_private.v_product_risk_review_queue` is a private service-only calibration view. It separates drafts into:
+
+- `evidence_ready_for_review` — complete recent evidence with High confidence across all four consumer dimensions;
+- `needs_evidence` — a usable draft whose evidence quality is not yet strong enough for review-ready status;
+- `insufficient_evidence` — critical inputs are missing or Unknown.
+
+This is not an automatic publication mechanism. Public Product Risk remains gated by explicit `publication_status='published'`.

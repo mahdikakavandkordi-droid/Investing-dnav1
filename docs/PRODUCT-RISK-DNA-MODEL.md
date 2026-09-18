@@ -995,3 +995,20 @@ Code/data boundaries:
 - `product_risk_sensor_evidence` — internal/source evidence, not browser-readable.
 
 The foundation publishes no invented risk scores. Asset modules start in `research` readiness and calibrated profiles must be explicitly published before the public RPC returns them.
+
+
+## 14. Evidence review queue
+
+Shadow calibration now has a private, service-only review queue. It does **not** publish anything and it deliberately uses the label `evidence_ready_for_review`, not “ready to publish”.
+
+A draft reaches `evidence_ready_for_review` only when:
+
+- all four consumer dimensions exist;
+- no consumer dimension is Unknown/N/A;
+- Overall confidence is High;
+- all four dimension confidences are High;
+- the draft has a reported as-of date within the current 90-day internal review window.
+
+Other drafts are classified as `needs_evidence` or `insufficient_evidence`. This queue is an operational calibration aid, not a consumer rating and not an automatic publication gate.
+
+T-Bills illustrate the distinction between a stable band and evidence confidence: current Government of Canada T-Bill drafts remain Low Overall Risk, but Overall confidence is Medium because remaining term directly supports Price Movement while current research does not yet contain a direct bid-ask or market-depth measurement for Access to Money.
