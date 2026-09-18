@@ -420,3 +420,90 @@ footer.section .actions{margin:0}
  .applied-context-grid{grid-template-columns:1fr!important}
  .applied-context-card+.applied-context-card{border-left:0!important;border-top:1px solid #e4eeee!important}
 }
+
+
+/* Live vector lockup: avoids raster whitespace/cropping in Chrome and stays sharp. */
+.brand-lockup-live{
+ display:inline-flex!important;
+ align-items:center!important;
+ gap:9px;
+ min-width:auto!important;
+ width:auto!important;
+ height:52px!important;
+ overflow:visible!important;
+ line-height:1!important;
+}
+.brand-dna-mark{width:28px;height:34px;display:block;overflow:visible}
+.brand-dna-mark path{fill:none;stroke:#102f46;stroke-width:3.1;stroke-linecap:round;stroke-linejoin:round}
+.brand-dna-mark path:nth-child(2){stroke:#0d9488}
+.brand-dna-mark path:nth-child(3){stroke:#173e55;stroke-width:2}
+.brand-wordmark{display:flex;align-items:baseline;gap:4px;white-space:nowrap;letter-spacing:-.045em}
+.brand-wordmark strong{font-size:20px;color:#102f46;font-weight:830}
+.brand-wordmark em{font-size:20px;color:#0d9488;font-weight:830;font-style:normal}
+.brand-lockup-live>img{display:none!important}
+
+/* Mini helix appears only on compact screens; desktop keeps the full vertical DNA. */
+.dna-mini-helix{display:none}
+@media(max-width:760px){
+ .brand-lockup-live{height:44px!important;gap:7px}
+ .brand-dna-mark{width:23px;height:29px}
+ .brand-wordmark strong,.brand-wordmark em{font-size:16px}
+ .dna-journey-inner{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+ .dna-journey-inner>svg{display:none!important}
+ .dna-mini-helix{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  width:100%;
+  min-height:54px;
+  padding:5px 2px 0;
+ }
+ .dna-mini-rung{
+  position:relative;
+  flex:1 1 0;
+  max-width:18px;
+  min-width:8px;
+  height:36px;
+  opacity:.34;
+  transition:.2s ease;
+ }
+ .dna-mini-rung:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:8px;
+  bottom:8px;
+  width:2px;
+  transform:translateX(-50%) rotate(22deg);
+  transform-origin:center;
+  background:#9fc9c4;
+  border-radius:99px;
+ }
+ .dna-mini-rung.odd:after{transform:translateX(-50%) rotate(-22deg)}
+ .dna-mini-rung i,.dna-mini-rung b{
+  position:absolute;
+  left:50%;
+  width:6px;height:6px;
+  margin-left:-3px;
+  border-radius:50%;
+  background:#9fc9c4;
+ }
+ .dna-mini-rung i{top:3px}.dna-mini-rung b{bottom:3px}
+ .dna-mini-rung.complete{opacity:.82}
+ .dna-mini-rung.complete:after,.dna-mini-rung.complete i,.dna-mini-rung.complete b{background:#65b9b0}
+ .dna-mini-rung.active{opacity:1;transform:scale(1.08)}
+ .dna-mini-rung.active:after{width:3px;background:#087f78}
+ .dna-mini-rung.active i,.dna-mini-rung.active b{width:9px;height:9px;margin-left:-4.5px;background:#087f78;box-shadow:0 0 0 4px rgba(13,148,136,.12)}
+ .dna-mini-rung.active i{top:1px}.dna-mini-rung.active b{bottom:1px}
+ .dna-journey-caption{text-align:center!important}
+ .dashboard-hero{grid-template-columns:1fr!important;align-items:start!important}
+ .dashboard-account{width:100%!important;max-width:none!important}
+}
+@media(max-width:520px){
+ .brand-lockup-live{height:40px!important}
+ .brand-dna-mark{width:21px;height:27px}
+ .brand-wordmark strong,.brand-wordmark em{font-size:15px}
+ .dashboard-hero h1{font-size:34px!important;line-height:1.03!important}
+ .dashboard-hero p{max-width:100%!important}
+}
