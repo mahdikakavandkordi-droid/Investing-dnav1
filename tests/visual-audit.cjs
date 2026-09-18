@@ -107,7 +107,7 @@ async function runViewport(browser,label,viewport){
  await shot(page,label+'-08-goal-context');
  await page.getByLabel('Investment goal').selectOption('retirement');
  await page.getByLabel('When might you first need this money?').selectOption('gt_10y');
- const amount=page.getByLabel(/amount/i);
+ const amount=page.getByLabel('Amount you are considering (CAD) · optional');
  if(await amount.count())await amount.fill('25000');
  await page.getByLabel('How important is quick access?').selectOption('low');
  await page.getByLabel(/must the full amount be protected/i).selectOption('no');
