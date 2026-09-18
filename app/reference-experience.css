@@ -1315,3 +1315,37 @@ footer.section .actions{margin:0}
  .platform-hero-scenery{display:none!important}
  .platform-hero-copy:before{display:none!important}
 }
+
+
+/* FINAL LOGO LOCK — exact approved asset, no crop, no redraw, no geometry changes. */
+.approved-brand-lockup{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ gap:0!important;
+ width:auto!important;
+ min-width:0!important;
+ height:48px!important;
+ overflow:visible!important;
+ line-height:0!important;
+}
+.approved-brand-lockup>img{
+ display:block!important;
+ width:auto!important;
+ height:36px!important;
+ max-width:none!important;
+ max-height:36px!important;
+ object-fit:contain!important;
+ object-position:left center!important;
+ clip-path:none!important;
+ transform:none!important;
+ position:static!important;
+}
+.approved-logo-symbol,.approved-logo-wordmark{display:none!important}
+@media(max-width:760px){
+ .approved-brand-lockup{height:42px!important}
+ .approved-brand-lockup>img{height:30px!important;max-height:30px!important}
+}
+@media(max-width:390px){
+ .approved-brand-lockup>img{height:28px!important;max-height:28px!important}
+}
