@@ -20,7 +20,34 @@ const questions=[
  {question_id:'BD02',section:'behavioral_dna',prompt:'When new information challenges your first view, what do you tend to do?',question_type:'single_choice',options:[{value:'A',label:'Stick with my first instinct'},{value:'B',label:'Pause and re-check'},{value:'C',label:'Actively look for opposing evidence'},{value:'D',label:'Change direction quickly'}]}
 ];
 
-const dna={archetype:'ANCHOR',risk_tolerance:50,risk_capacity:58,model_version:'dna-v1.10-research',calibration_status:'pre_validation',behavioral_profile:{decision_independence:70,long_term_orientation:80,reference_flexibility:60,evidence_discipline:65,emotional_decision_control:75},experience_profile:{role:'context_only',overall_score:62,dimensions:{decision_experience:2,product_exposure:2,downturn_experience:2}},quality_profile:{supported:true,consistency_score:86,consistency_label:'high',clarification_recommended:false,conflict_count:0,mixed_count:0},methodology_note:'Pre-validation research output.'};
+const dna={
+ archetype:'ANCHOR',
+ risk_tolerance:34,
+ risk_capacity:58,
+ model_version:'dna-v1.10-research',
+ calibration_status:'pre_validation',
+ capacity_profile:{raw_index:58,guarded_capacity:58,review_required:false,reason:null},
+ behavioral_profile:{decision_independence:70,long_term_orientation:80,reference_flexibility:60,evidence_discipline:65,emotional_decision_control:75},
+ experience_profile:{role:'context_only',overall_score:66.67,dimensions:{decision_experience:2,downturn_experience:2},owned_products:['cash','funds','stocks'],score_basis:'decision_and_downturn_experience_only'},
+ assessment_dimensions:{
+  question_count:28,
+  questionnaire_version:'v1.10-cognitive-candidate',
+  risk_tolerance:{answer_count:10,overall_score:34,dimensions:{growth_risk_tradeoff:33,loss_tolerance:33,uncertainty_volatility:33,risk_emotion:33,crash_resilience:38}},
+  behavioral_dna:{answer_count:10,dimensions:{decision_independence:70,long_term_orientation:80,reference_flexibility:60,evidence_discipline:65,emotional_decision_control:75}},
+  risk_capacity:{answer_count:5,overall_score:58,raw_score:58,dimensions:{financial_buffer:67,income_stability:67,emergency_reserve:33,financial_responsibility:67,loss_impact:56},guard:{raw_index:58,guarded_capacity:58,review_required:false,reason:null}},
+  investment_experience:{answer_count:3,overall_score:66.67,dimensions:{decision_experience:2,downturn_experience:2},decision_experience:'2–5 years',downturn_experience:'Yes, once',owned_products:['Cash, savings, or GICs','Mutual funds or unleveraged ETFs','Individual stocks'],role:'context_only'}
+ },
+ quality_profile:{supported:true,heuristic_version:'response-review-v1',pair_count:2,conflict_count:0,consistency_label:'not_validated',clarification_recommended:false,note:'Related answers are discussion prompts, not contradictions.'},
+ narrative:{
+  character:'The Steady Builder',
+  summary:'You currently show a lower willingness to take investment risk with a moderate financial ability to absorb losses.',
+  how_you_think:'You tend to use your own criteria and evidence before making an investment decision.',
+  pressure_style:'Sharp market moves are less likely to pull you away from a decision process you set while calm.',
+  strength:'You tend to keep recent performance in perspective and stay focused on the longer-term case.',
+  blind_spot:'Your natural caution can sometimes lead you to use less of your financial capacity than you could comfortably support.'
+ },
+ methodology_note:'Pre-validation research output.'
+};
 let contextReady=false;
 function report(){return{...dna,investment_context:contextReady?{goal:'retirement',time_horizon:'gt_10y',amount_to_invest:25000,liquidity_need:'low',principal_required:'no',first_name:'Mahdi',age:35}:undefined}}
 const matchItem={investment_id:'48580aac-8147-4054-b99f-5d696ce3ceca',symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',match_score:84,eligibility:'eligible',recommendation_tier:'top_match',risk_band:'Low to Medium',explanation:{fit_label:'Closer fit',strengths:['Balanced structure supports the goal.'],watchouts:['Market values can decline.'],scores:{official_risk_fit:90,market_exposure_fit:88,goal_role_fit:84,exposure_breadth:86},goal_fit:{model_version:'goal-fit-v1',score:84,components:{growth:.5,stability:.35,liquidity:.15},summary:'Long-horizon retirement context supports a balanced growth and stability role.'}}};
