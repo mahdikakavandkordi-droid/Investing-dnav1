@@ -1117,6 +1117,7 @@ footer.section .actions{margin:0}
 
 /* Desktop polish pass — clearer hierarchy, rail affordance and calmer depth. */
 @media(min-width:761px){
+ .platform-hero:after{display:none!important}
  .platform-hero-grid{gap:54px!important;min-height:610px!important}
  .platform-hero-copy h1{max-width:610px}
  .platform-product-preview{
@@ -1216,41 +1217,44 @@ footer.section .actions{margin:0}
 }
 .platform-hero-scenery>*{position:absolute;display:block}
 .hero-mountain{
- left:-4%;
- width:108%;
  transform-origin:bottom center;
- clip-path:polygon(
-  0 100%,0 78%,
-  8% 66%,14% 74%,22% 52%,29% 68%,37% 43%,45% 64%,
-  55% 34%,63% 60%,72% 41%,80% 63%,89% 46%,100% 69%,100% 100%
- );
+ clip-path:polygon(0 100%,11% 78%,24% 64%,42% 24%,55% 50%,65% 39%,79% 62%,100% 100%);
 }
 .hero-mountain-far{
- bottom:122px;
- height:295px;
- background:linear-gradient(180deg,rgba(187,216,220,.18),rgba(148,191,198,.22));
+ right:-5%;
+ left:auto;
+ bottom:54px;
+ width:61%;
+ height:355px;
+ background:linear-gradient(180deg,rgba(158,196,204,.18),rgba(94,154,166,.15));
  opacity:.72;
- filter:blur(.1px);
+ filter:blur(.35px);
 }
 .hero-mountain-mid{
- bottom:83px;
- height:250px;
- background:linear-gradient(180deg,rgba(134,184,193,.13),rgba(95,154,166,.16));
- opacity:.58;
- transform:translateX(5%);
+ right:24%;
+ left:auto;
+ bottom:27px;
+ width:53%;
+ height:260px;
+ background:linear-gradient(180deg,rgba(146,190,198,.13),rgba(84,145,158,.10));
+ opacity:.62;
+ clip-path:polygon(0 100%,18% 74%,35% 46%,48% 66%,63% 31%,78% 63%,100% 100%);
 }
 .hero-mountain-near{
- bottom:44px;
+ left:5%;
+ right:auto;
+ bottom:12px;
+ width:47%;
  height:190px;
- background:linear-gradient(180deg,rgba(78,137,150,.07),rgba(44,112,128,.10));
- opacity:.52;
- transform:translateX(-2%);
+ background:linear-gradient(180deg,rgba(106,165,175,.08),rgba(56,122,136,.07));
+ opacity:.55;
+ clip-path:polygon(0 100%,22% 68%,43% 38%,57% 58%,72% 42%,100% 100%);
 }
 .hero-lake{
  left:0;right:0;bottom:0;
- height:190px;
+ height:165px;
  background:
-  linear-gradient(180deg,rgba(239,249,248,.12),rgba(216,239,237,.32) 38%,rgba(255,255,255,.74) 100%);
+  linear-gradient(180deg,rgba(237,249,247,.07),rgba(219,240,237,.22) 36%,rgba(255,255,255,.84) 100%);
 }
 .hero-mist{
  left:-8%;
