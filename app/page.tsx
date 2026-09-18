@@ -41,7 +41,7 @@ export default function Home(){
     </div>
 
     <div className="platform-product-preview" aria-label="Your Investor DNA (preview)">
-     <div className="platform-preview-label">Illustrative product preview</div>
+     <div className="platform-preview-label">Your Investor DNA (preview)</div>
      <div className="platform-preview-grid">
       <article className="preview-card preview-dna">
        <div className="preview-card-head"><span className="preview-icon">◉</span><span>Investor profile</span></div>
