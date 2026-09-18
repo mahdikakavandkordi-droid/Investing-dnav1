@@ -1,0 +1,324 @@
+/* Assessment intro measurement preview + Investor DNA methodology */
+
+.assessment-dimensions-preview{
+ margin:0 0 18px;
+ padding:15px;
+ border:1px solid #dfeae8;
+ border-radius:17px;
+ background:linear-gradient(145deg,#fbfdfc,#f5faf8);
+}
+.assessment-dimensions-head{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:16px;
+ margin-bottom:12px;
+}
+.assessment-dimensions-head>div:first-child{display:grid;gap:3px}
+.assessment-dimensions-head>div:first-child>span{
+ font-size:11px;
+ font-weight:850;
+ letter-spacing:.08em;
+ text-transform:uppercase;
+ color:#0b8178;
+}
+.assessment-dimensions-head p{
+ margin:0;
+ font-size:11px;
+ color:#71838d;
+ line-height:1.4;
+}
+.assessment-dna-core{
+ flex:0 0 48px;
+ width:48px;height:48px;
+ border-radius:50%;
+ display:grid;
+ place-items:center;
+ align-content:center;
+ background:#102a43;
+ color:#fff;
+ box-shadow:0 8px 20px rgba(16,42,67,.12);
+}
+.assessment-dna-core b{font-size:11px;line-height:1;letter-spacing:.08em}
+.assessment-dna-core small{margin-top:2px;font-size:8px;color:#a9d9d3}
+.assessment-dimension-map{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:8px;
+ position:relative;
+}
+.assessment-dimension-node{
+ min-width:0;
+ display:grid;
+ grid-template-columns:28px 1fr;
+ gap:8px;
+ align-items:center;
+ padding:10px;
+ border:1px solid #e2eaea;
+ border-radius:12px;
+ background:#fff;
+}
+.dimension-mark{
+ width:27px;height:27px;
+ display:grid;place-items:center;
+ border-radius:9px;
+ background:#e8f6f3;
+ color:#0b8178;
+ font-size:12px;
+ font-weight:900;
+}
+.assessment-dimension-node>div{display:grid;gap:2px;min-width:0}
+.assessment-dimension-node strong{
+ font-size:10px;
+ line-height:1.18;
+ color:#25465a;
+}
+.assessment-dimension-node small{
+ font-size:8.5px;
+ color:#80909a;
+}
+.dimension-behavioral_dna .dimension-mark{background:#eef0fb;color:#6674a8}
+.dimension-risk_capacity .dimension-mark{background:#fff4d2;color:#8a6b12}
+.dimension-investment_experience .dimension-mark{background:#f1f3f4;color:#5f737e}
+.assessment-intro-actions{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ flex-wrap:wrap;
+}
+.assessment-methodology-link{
+ background:#fff!important;
+ color:#315467!important;
+ border-color:#ccdedd!important;
+}
+.assessment-methodology-link:hover{
+ border-color:#8fbab4!important;
+ background:#f6faf9!important;
+}
+
+.dna-methodology-page{
+ padding:42px 0 72px;
+ background:
+  radial-gradient(circle at 85% 4%,rgba(13,148,136,.06),transparent 24%),
+  #f7faf9;
+}
+.dna-methodology-container{max-width:1120px}
+.dna-methodology-hero{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) auto;
+ gap:34px;
+ align-items:center;
+ padding:34px;
+ border:1px solid #dbe7e5;
+ border-radius:24px;
+ background:#fff;
+ box-shadow:0 12px 34px rgba(16,42,67,.045);
+}
+.dna-methodology-hero h1{
+ max-width:780px;
+ margin:8px 0 12px;
+ font-size:46px;
+ line-height:1.02;
+ letter-spacing:-.048em;
+ color:#102a43;
+}
+.dna-methodology-hero p{
+ max-width:800px;
+ margin:0;
+ color:#607581;
+ font-size:15px;
+ line-height:1.62;
+}
+.methodology-count{
+ width:132px;height:132px;
+ border-radius:50%;
+ display:grid;
+ place-items:center;
+ align-content:center;
+ text-align:center;
+ background:linear-gradient(145deg,#e7f6f3,#f8fcfb);
+ border:1px solid #cce6e1;
+}
+.methodology-count strong{font-size:42px;line-height:.95;color:#0b8178;letter-spacing:-.04em}
+.methodology-count span{font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.1em;color:#315869;margin-top:4px}
+.methodology-count small{font-size:8.5px;color:#7e9098;margin-top:3px}
+
+.methodology-four-layers{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:12px;
+ margin-top:15px;
+}
+.methodology-four-layers article{
+ display:grid;
+ grid-template-columns:34px 1fr;
+ gap:10px;
+ padding:17px;
+ border:1px solid #dfe9e8;
+ border-radius:15px;
+ background:#fff;
+}
+.methodology-four-layers b{
+ width:32px;height:32px;
+ display:grid;place-items:center;
+ border-radius:10px;
+ background:#e8f6f3;
+ color:#0b8178;
+ font-size:12px;
+}
+.methodology-four-layers article:nth-child(2) b{background:#eef0fb;color:#6674a8}
+.methodology-four-layers article:nth-child(3) b{background:#fff4d2;color:#8a6b12}
+.methodology-four-layers article:nth-child(4) b{background:#f0f3f4;color:#60747e}
+.methodology-four-layers span{font-size:12px;font-weight:820;color:#23485b}
+.methodology-four-layers p{margin:4px 0 0;font-size:10px;line-height:1.45;color:#71838d}
+
+.methodology-grid-two{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:14px;
+ margin-top:14px;
+}
+.methodology-card{
+ padding:26px;
+ border:1px solid #dce8e6;
+ border-radius:20px;
+ background:#fff;
+ box-shadow:0 7px 24px rgba(16,42,67,.025);
+}
+.methodology-card h2{
+ margin:7px 0 10px;
+ font-size:26px;
+ letter-spacing:-.035em;
+ color:#15384c;
+}
+.methodology-card>p{
+ margin:0 0 12px;
+ color:#627783;
+ line-height:1.62;
+ font-size:12px;
+}
+.methodology-matrix-wrap{
+ position:relative;
+ margin:24px 0 20px;
+ padding-left:28px;
+ padding-bottom:25px;
+}
+.methodology-matrix{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:7px;
+ padding:9px;
+ border:1px solid #dfebe9;
+ border-radius:14px;
+ background:#f5faf9;
+}
+.methodology-matrix>div{
+ min-height:64px;
+ display:grid;
+ place-items:center;
+ border:1px solid #e3eceb;
+ border-radius:10px;
+ background:#fff;
+}
+.methodology-matrix strong{
+ font-size:10px;
+ letter-spacing:.04em;
+ color:#1c4a5f;
+}
+.methodology-axis{
+ position:absolute;
+ font-size:8.5px;
+ font-weight:800;
+ text-transform:uppercase;
+ letter-spacing:.08em;
+ color:#7a8d96;
+}
+.methodology-axis-y{
+ left:-42px;
+ top:50%;
+ transform:rotate(-90deg) translateY(-50%);
+ transform-origin:center;
+}
+.methodology-axis-x{left:45%;bottom:0}
+.methodology-note{
+ padding:11px 12px;
+ border-radius:10px;
+ background:#f6faf9;
+ border:1px solid #e1ebe9;
+ font-size:10px!important;
+ color:#71838d!important;
+}
+.methodology-behavior-list{
+ display:grid;
+ gap:8px;
+ margin-top:17px;
+}
+.methodology-behavior-list>div{
+ padding:11px 12px;
+ border:1px solid #e5eceb;
+ border-radius:11px;
+ background:#fafcfc;
+}
+.methodology-behavior-list span{
+ font-size:11px;
+ font-weight:820;
+ color:#294b5d;
+}
+.methodology-behavior-list p{
+ margin:3px 0 0;
+ font-size:9.5px;
+ line-height:1.45;
+ color:#778991;
+}
+.methodology-research-stage{margin-top:14px}
+.methodology-research-stage .actions{margin-top:18px}
+
+@media(max-width:900px){
+ .methodology-four-layers{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .methodology-grid-two{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+ .assessment-dimension-map{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .assessment-intro-actions{display:grid}
+ .assessment-intro-actions .btn{width:100%;justify-content:center}
+
+ .dna-methodology-page{padding:22px 0 50px}
+ .dna-methodology-container{padding-left:14px;padding-right:14px}
+ .dna-methodology-hero{
+  grid-template-columns:1fr;
+  gap:18px;
+  padding:22px;
+  border-radius:19px;
+ }
+ .dna-methodology-hero h1{font-size:34px}
+ .dna-methodology-hero p{font-size:13px}
+ .methodology-count{
+  width:auto;height:auto;
+  justify-self:start;
+  display:flex;
+  gap:6px;
+  padding:9px 12px;
+  border-radius:999px;
+ }
+ .methodology-count strong{font-size:18px}
+ .methodology-count span{margin:0}
+ .methodology-count small{display:none}
+ .methodology-four-layers{grid-template-columns:1fr 1fr;gap:8px}
+ .methodology-four-layers article{padding:13px}
+ .methodology-card{padding:19px}
+ .methodology-card h2{font-size:23px}
+}
+@media(max-width:460px){
+ .assessment-dimensions-preview{padding:13px}
+ .assessment-dimensions-head{align-items:flex-start}
+ .assessment-dna-core{width:42px;height:42px;flex-basis:42px}
+ .assessment-dimension-map{grid-template-columns:1fr 1fr;gap:6px}
+ .assessment-dimension-node{grid-template-columns:24px 1fr;padding:9px;gap:7px}
+ .dimension-mark{width:24px;height:24px}
+ .assessment-dimension-node strong{font-size:9.5px}
+ .assessment-dimension-node small{font-size:8px}
+
+ .methodology-four-layers{grid-template-columns:1fr}
+ .methodology-matrix>div{min-height:54px}
+ .methodology-matrix strong{font-size:8.5px}
+}
