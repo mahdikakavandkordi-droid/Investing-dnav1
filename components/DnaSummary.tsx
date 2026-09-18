@@ -30,7 +30,7 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
   <DecisionProfileSection behavioral={behavioral} strength={narrative.strength} blindSpot={narrative.blind_spot} decision={decision} pressure={pressure}/>
   <BiasSignalsSection behavioral={behavioral}/>
   <PlainEnglishSection summary={summary} decisionText={decision.text} pressureText={pressure.text}/>
-  {hasCompleteInvestmentContext(context)&&<AppliedDnaSection context={context!} firstName={firstName} displayName={displayName}/>} 
+  {hasCompleteInvestmentContext(context)&&<AppliedDnaSection context={context!} firstName={firstName} displayName={displayName} tolerance={tolerance} capacity={capacity}/>} 
   <p className="muted fine result-disclaimer">Educational self-assessment only. Investor DNA describes research-oriented tendencies and is not investment advice or a recommendation to buy or sell any investment.</p>
  </div>;
 }
@@ -77,8 +77,55 @@ function signalStatus(value:unknown){if(typeof value!=='number'||!Number.isFinit
 
 function PlainEnglishSection({summary,decisionText,pressureText}:{summary:string;decisionText:string;pressureText:string}){return <section className="report-section report-story report-story-v2"><div className="eyebrow">Your profile in plain English</div><h2>The longer read</h2><p>{summary}</p><p>{decisionText}</p><p>{pressureText}</p></section>}
 
-function AppliedDnaSection({context,firstName,displayName}:{context:NonNullable<DNA['investment_context']>;firstName?:string;displayName:string}){
+function AppliedDnaSection({context,firstName,displayName,tolerance,capacity}:{context:NonNullable<DNA['investment_context']>;firstName?:string;displayName:string;tolerance:unknown;capacity:unknown}){
  const amount=context.amount_to_invest==null?'Not specified':new Intl.NumberFormat('en-CA',{style:'currency',currency:context.amount_currency||'CAD',maximumFractionDigits:0}).format(context.amount_to_invest);
- const values=[['Goal',formatInvestmentContext('goal',context.goal)],['Time horizon',formatInvestmentContext('time_horizon',context.time_horizon)],['Amount',amount],['Liquidity need',formatInvestmentContext('liquidity_need',context.liquidity_need)],['Principal protection',formatInvestmentContext('principal_required',context.principal_required)]];
- return <section className="report-section applied-dna-section"><div className="applied-dna-heading"><div><div className="eyebrow">Part 2 · Your DNA in action</div><h2>{firstName?`${firstName}, see what your DNA means for this money.`:'See what your DNA means for this money.'}</h2><p>Your personal Investor DNA remains the foundation. These goal details are a separate layer used to evaluate this specific investment decision.</p></div><span className="identity-chip">{displayName} · same DNA</span></div><div className="applied-context-grid">{values.map(([label,value])=><div className="applied-context-card" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div><div className="applied-principle"><b>↗</b><p><strong>Your DNA does not change when your goal changes.</strong> A shorter horizon, different liquidity need or different amount can change what fits this money — not who you are as an investor.</p></div></section>;
+ const goal=formatInvestmentContext('goal',context.goal);
+ const horizon=formatInvestmentContext('time_horizon',context.time_horizon);
+ const liquidity=formatInvestmentContext('liquidity_need',context.liquidity_need);
+ const principal=formatInvestmentContext('principal_required',context.principal_required);
+ const values=[['Goal',goal],['Time horizon',horizon],['Amount',amount],['Liquidity need',liquidity]];
+ const alignment=[
+  {label:'Risk comfort',value:riskBand(tolerance),kind:'Personal DNA',body:'Your willingness to live with market movement stays part of your personal profile.'},
+  {label:'Financial capacity',value:riskBand(capacity),kind:'Personal DNA',body:'Your ability to absorb investment loss stays separate from the purpose of this money.'},
+  {label:'Time horizon',value:horizon,kind:'Goal context',body:appliedHorizonNote(context.time_horizon)},
+  {label:'Liquidity need',value:liquidity,kind:'Goal context',body:appliedLiquidityNote(context.liquidity_need)}
+ ];
+ const considerations=[
+  appliedPrincipalNote(context.principal_required),
+  appliedHorizonNote(context.time_horizon),
+  appliedLiquidityNote(context.liquidity_need),
+  `Keep “${goal}” as the purpose of this money when you compare investment structures and compatibility signals.`
+ ];
+ return <section className="report-section applied-dna-section">
+  <div className="applied-dna-hero">
+   <div className="applied-dna-heading"><div><div className="eyebrow">Part 2 · Applied DNA</div><h2>{firstName?`${firstName}, a clearer path for this goal.`:'A clearer path for this goal.'}</h2><p>Same investor. New context. Your personal Investor DNA stays the foundation while this goal adds horizon, access and protection constraints.</p></div><span className="identity-chip">{displayName} · same DNA</span></div>
+   <div className="applied-dna-scenery" aria-hidden="true"><span className="applied-sun"/><span className="applied-ridge back"/><span className="applied-ridge front"/><span className="applied-path"/></div>
+  </div>
+  <div className="applied-context-grid">{values.map(([label,value])=><div className="applied-context-card" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
+  <div className="applied-insight-grid">
+   <div className="applied-alignment-panel"><div className="eyebrow">Your DNA vs this goal</div><h3>What stays personal, and what comes from the goal</h3><div className="applied-alignment-list">{alignment.map(item=><div className="applied-alignment-row" key={item.label}><span className="applied-alignment-icon">✓</span><div><small>{item.kind}</small><strong>{item.label} · {item.value}</strong><p>{item.body}</p></div></div>)}</div></div>
+   <aside className="applied-considerations"><div className="eyebrow">Key considerations</div><h3>Keep these constraints visible</h3><ul>{considerations.map(item=><li key={item}>{item}</li>)}</ul><div className="applied-protection"><span>Principal protection</span><strong>{principal}</strong></div></aside>
+  </div>
+  <div className="applied-principle"><b>↗</b><p><strong>Your DNA does not change when your goal changes.</strong> What can change is which investment structures are compatible with this specific money. Compatibility is research context, not a recommendation.</p></div>
+ </section>;
+}
+
+function appliedHorizonNote(value:string|null|undefined){
+ if(value==='lt_1y')return 'A very short horizon makes near-term loss and access more important in the research process.';
+ if(value==='1_3y')return 'A shorter horizon leaves less time for a market decline to recover before the money may be needed.';
+ if(value==='3_5y')return 'A medium horizon still makes timing and drawdown risk relevant when comparing structures.';
+ if(value==='5_10y')return 'A longer horizon gives market cycles more time to play out, while the goal still sets the boundary.';
+ if(value==='gt_10y')return 'A long horizon gives more time for market cycles, but it does not remove the possibility of loss.';
+ return 'The time horizon is one of the main constraints applied after your personal DNA.';
+}
+function appliedLiquidityNote(value:string|null|undefined){
+ if(value==='high')return 'High access needs make liquidity an important constraint when comparing investment structures.';
+ if(value==='medium')return 'Some access may be needed, so flexibility remains part of the comparison.';
+ if(value==='low')return 'Low near-term access needs give this money more flexibility to stay invested.';
+ return 'Liquidity describes how quickly this specific money may need to become available.';
+}
+function appliedPrincipalNote(value:string|null|undefined){
+ if(value==='yes')return 'You said the full amount must be protected when needed, so capital-loss risk is a primary compatibility constraint.';
+ if(value==='no')return 'You said full principal protection is not required, but market loss is still possible and should stay visible.';
+ return 'Your principal-protection preference needs to stay explicit when comparing investment structures.';
 }
