@@ -1,0 +1,9 @@
+insert into public.narrative_rules(version, archetype_key, trait_key, rule_key, priority, min_score, narrative_section, narrative_text) values
+('v1.1',null,'adaptability','strength_adaptability',10,70,'strength','{"text":"One of your strongest advantages is adaptability: you can revise an investment thesis when the evidence changes."}'::jsonb),
+('v1.1',null,'financial_self_efficacy','strength_self_efficacy',20,70,'strength','{"text":"You have strong financial self-efficacy, which can help you engage with complex investment information rather than avoid it."}'::jsonb),
+('v1.1',null,'self_confidence','strength_self_confidence',30,70,'strength','{"text":"You have strong confidence in your own decision-making, which can help you act when others hesitate."}'::jsonb),
+('v1.1',null,'overconfidence','blind_overconfidence',10,70,'blind_spot','{"text":"Your biggest watchout may be overconfidence: a strong thesis can become too persuasive if you stop actively testing what could prove you wrong."}'::jsonb),
+('v1.1',null,'emotional_reactivity','blind_emotion',20,70,'blind_spot','{"text":"Your key watchout is emotional reactivity: large market moves may make it harder to follow the strategy you chose when you were calm."}'::jsonb),
+('v1.1',null,'confirmation_bias','blind_confirmation',30,70,'blind_spot','{"text":"Your key watchout is confirmation bias: once you favor an investment, actively search for evidence that could invalidate your thesis."}'::jsonb),
+('v1.1',null,'regret_sensitivity','blind_regret',40,70,'blind_spot','{"text":"Regret can become a hidden driver of your next decision, particularly after an opportunity moves without you."}'::jsonb)
+on conflict(version,rule_key) do update set narrative_text=excluded.narrative_text, priority=excluded.priority, min_score=excluded.min_score;
