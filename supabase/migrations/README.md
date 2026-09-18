@@ -40,6 +40,8 @@ Later on 2026-09-17, Product Risk DNA research migrations were applied and the r
 - `20260917232555_product_risk_modular_input_adapters.sql`
 - `20260917233349_product_risk_shadow_evaluators.sql`
 - `20260917233435_product_risk_shadow_drafts_and_consumer_contract.sql`
+- `20260917235755_product_risk_etf_source_of_truth_calibration.sql`
+- `20260917235954_product_risk_cross_asset_overall_calibration.sql`
 
 The Product Risk runtime is deliberately shadow-only at this stage: draft profiles may be refreshed service-side, while public reads return only explicitly published profiles.
 

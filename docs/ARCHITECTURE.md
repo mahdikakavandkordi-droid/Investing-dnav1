@@ -121,9 +121,9 @@ verified research facts
   -> app_get_product_risk
 ```
 
-The current calibration engine covers ETF, GIC, T-Bill and Bond directly; Commercial Paper and ABCP remain Unknown/Insufficient reference profiles until issue-level evidence is adequate. Draft refreshes are service-only. No draft is visible through the public RPC.
+The current calibration engine covers ETF, GIC, T-Bill and Bond directly; Commercial Paper and ABCP remain Unknown/Insufficient reference profiles until issue-level evidence is adequate. ETF Price Movement reads the verified `investment_official_risk_ratings` source directly rather than the generic risk-metric field; ETF diversification uses underlying/direct holdings breadth plus a sector-focus cap, and verified bid-ask spread can upgrade the Access-to-Money evidence quality. Draft refreshes are service-only. No draft is visible through the public RPC.
 
-The consumer dimensions have explicit polarity: higher Loss Potential/Price Movement is worse, while higher Access to Money/Diversification is better. UI must not treat all four as a single “higher risk” scale.
+The consumer dimensions have explicit polarity: higher Loss Potential/Price Movement is worse, while higher Access to Money/Diversification is better. UI must not treat all four as a single “higher risk” scale. Overall Risk is produced server-side from versioned asset-module calibration weights; the internal numeric pressure score is never a consumer output.
 
 ### DNA Match
 

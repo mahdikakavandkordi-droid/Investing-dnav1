@@ -118,7 +118,7 @@ The tables below define the first research design. Weight suggestions are priors
 #### ETF/fund-specific sensors
 
 **MKT**
-- official issuer/CSA risk category (displayed separately but can inform research context);
+- official issuer/CSA risk category from `investment_official_risk_ratings` — the canonical ETF volatility/Price Movement input, never the generic historical `risk_level` field;
 - realized volatility;
 - maximum drawdown;
 - beta / market sensitivity where appropriate;
@@ -904,26 +904,60 @@ This design is informed by, but does not clone, existing regulatory/research fra
 
 ## 12. Current shadow-calibration status
 
-Implemented on 2026-09-17:
+Implemented and live in shadow mode as of 2026-09-17:
 
 - modular database foundation and service-only evidence boundary;
 - asset-specific input adapters for all six current asset types;
-- deterministic shadow evaluators for ETF, GIC, T-Bill and Bond;
-- conservative Unknown/Insufficient handling for identity-only Commercial Paper and ABCP references;
-- four consumer dimensions with explicit scale direction;
+- deterministic evaluators for ETF, GIC, T-Bill and Bond;
+- conservative `Unknown / Insufficient` handling for identity-only Commercial Paper and ABCP references;
+- four consumer dimensions with explicit direction;
+- source-backed BMO ETF Facts observations for holdings count, average daily volume and bid-ask spread where used in calibration;
 - service-only batch refresh of draft profiles;
-- invariant checks for cashable vs non-redeemable GIC access, short vs long Government of Canada bond price movement, ETF official-risk preservation and no accidental publication.
+- **55 draft profiles and 0 published Product Risk DNA profiles**.
 
-The live research database currently holds **55 draft profiles and 0 published Product Risk DNA profiles**. These drafts are calibration evidence, not a public product claim.
+### ETF calibration candidate
 
-Next validation before publication:
+ETF measurement now separates four questions instead of copying a single risk label everywhere:
 
-1. review the draft ordering and plain-language summaries across representative products;
-2. improve missing ETF official-risk and market-liquidity evidence;
-3. add verified bond rating/duration evidence where available instead of relying only on structural labels;
+- **Price Movement** — uses the verified issuer/CSA risk rating from `investment_official_risk_ratings`. This is deliberate because the Canadian official category is fundamentally a volatility classification. Generic `investment_risk_metrics.risk_level` is not an ETF Product Risk source of truth.
+- **Loss Potential** — derives from equity/fixed-income mix, sector concentration, principal structure and available credit-quality evidence. A broad 100% equity ETF can therefore have higher loss potential than its volatility band without changing the official disclosure.
+- **Access to Money** — uses verified bid-ask spread when available. Current research bands are: <=0.10% High, <=0.25% Medium to High, <=0.50% Medium, <=1.00% Low to Medium, otherwise Low. When spread evidence is missing, the structure profile is only a lower-confidence fallback.
+- **Diversification** — uses underlying-holdings count first, then direct holdings. Current research bands are: >=100 High, 50–99 Medium to High, 20–49 Medium, 10–19 Low to Medium, <10 Low. A single-sector ETF is capped at Medium. Missing counts fall back to the source-backed structure label with lower confidence.
+
+The holdings rule measures breadth **inside the product**, not the diversification of an investor's whole portfolio.
+
+### Hidden Overall Risk aggregation
+
+The user never sees a numeric risk score. For calibration only, bands map internally to 0–4 and Access/Diversification are inverted into risk pressure. A versioned asset module combines the four consumer dimensions into the displayed Overall Risk band.
+
+Current research weights:
+
+| Asset module | Loss Potential | Price Movement | Access pressure | Concentration / low-diversification pressure |
+|---|---:|---:|---:|---:|
+| ETF / default | 40% | 45% | 10% | 5% |
+| GIC | 80% | 10% | 10% | 0% |
+| T-Bill | 65% | 20% | 10% | 5% |
+| Bond | 35% | 55% | 5% | 5% |
+
+These are **research calibration weights, not a regulatory standard**. They remain shadow-only until review. Asset-specific weighting is intentional: the same four consumer concepts are retained while the materiality of each risk differs by product structure.
+
+Current ordering invariants include:
+
+- cashable GIC access > otherwise comparable non-redeemable GIC access;
+- Government of Canada 2Y overall risk < long-term Government of Canada bond overall risk;
+- broad ETFs such as XEQT remain more diversified than concentrated sector ETFs such as XIT/ZEB;
+- every ETF Price Movement band equals its current verified official issuer risk category when that category exists;
+- CP/ABCP research references remain Unknown/Insufficient rather than being inferred as safe from low visible price volatility;
+- public `app_get_product_risk` remains closed while publication count is zero.
+
+### Remaining work before any publication
+
+1. review all 55 draft summaries and ordering for consumer clarity;
+2. extend source-backed ETF spread/holdings coverage beyond the current verified subset;
+3. strengthen direct-bond credit-rating/duration evidence instead of relying primarily on structural labels;
 4. build issue-level CP/ABCP evidence before allowing non-Unknown outputs;
-5. expert-review hard floors, wording and the separation between Overall Risk and the four dimensions;
-6. only after acceptance, publish a controlled pilot subset and add the UI layer.
+5. review the hidden weights/hard floors against external expert feedback;
+6. only then publish a controlled pilot subset and build the Product Risk UI / popups / methodology surface.
 
 ## 13. Modular implementation contract
 

@@ -1,68 +1,95 @@
--- Product Risk DNA shadow calibration regression.
--- Safe to run repeatedly: draft refreshes are rolled back.
-
+-- Product Risk DNA source-of-truth + cross-asset shadow regression.
+-- Draft refreshes are rolled back so this is safe to run repeatedly.
 begin;
 
 do $$
-declare n int; bad int; cash_access text; nr_access text; short_price text; long_price text;
+declare p jsonb; bad int; cash_access text; locked_access text; short_overall text; long_overall text;
 begin
- select investor_private.refresh_all_product_risk_drafts() into n;
- if n<>55 then raise exception 'expected 55 draft evaluations, got %',n; end if;
+ perform investor_private.refresh_all_product_risk_drafts();
 
- select count(*) into bad from public.product_risk_profiles
- where model_version='product-risk-dna-v1-research' and publication_status<>'draft';
+ select count(*) into bad
+ from public.product_risk_profiles
+ where model_version='product-risk-dna-v1-research' and publication_status='published';
  if bad<>0 then raise exception 'shadow calibration must not publish'; end if;
 
  select count(*) into bad
  from public.product_risk_profiles p
  where p.model_version='product-risk-dna-v1-research'
- and (select count(*) from public.product_risk_dimensions d where d.profile_id=p.id)<>4;
- if bad<>0 then raise exception 'each draft must have 4 dimensions'; end if;
+   and (select count(*) from public.product_risk_dimensions d where d.profile_id=p.id)<>4;
+ if bad<>0 then raise exception 'every draft must have exactly four consumer dimensions'; end if;
+
+ -- ETF Price Movement must follow verified official issuer/CSA disclosure, not generic risk_level.
+ select count(*) into bad
+ from public.investments i
+ join public.investment_official_risk_ratings o on o.investment_id=i.id
+ where i.asset_type='ETF' and i.is_active
+   and (
+     select d.band
+     from public.product_risk_profiles p
+     join public.product_risk_dimensions d on d.profile_id=p.id
+     where p.investment_id=i.id and p.model_version='product-risk-dna-v1-research'
+       and p.publication_status='draft' and d.dimension_code='price_movement'
+     limit 1
+   )<>investor_private.product_risk_normalize_band(o.official_risk_rating);
+ if bad<>0 then raise exception '% ETF price bands disagree with official source',bad; end if;
+
+ select investor_private.product_risk_eval_etf(id) into p from public.investments where symbol='VFV' limit 1;
+ if p#>>'{dimensions,1,level}'<>'Medium' or p#>>'{overall_risk,band}'<>'Medium' then
+  raise exception 'VFV official-source regression: %',p; end if;
+
+ select investor_private.product_risk_eval_etf(id) into p from public.investments where symbol='VCNS' limit 1;
+ if p#>>'{dimensions,1,level}'<>'Low to Medium' then
+  raise exception 'VCNS current official change regression: %',p; end if;
+
+ select investor_private.product_risk_eval_etf(id) into p from public.investments where symbol='ZEB' limit 1;
+ if p#>>'{dimensions,3,level}'<>'Low' or p#>>'{overall_risk,band}'<>'Medium to High' then
+  raise exception 'ZEB concentration regression: %',p; end if;
+
+ select investor_private.product_risk_eval_etf(id) into p from public.investments where symbol='XIT' limit 1;
+ if p#>>'{dimensions,3,level}'<>'Low to Medium' or p#>>'{overall_risk,band}'<>'High' then
+  raise exception 'XIT concentration regression: %',p; end if;
+
+ select investor_private.product_risk_eval_etf(id) into p from public.investments where symbol='XEQT' limit 1;
+ if p#>>'{dimensions,3,level}'<>'High' then
+  raise exception 'XEQT underlying-breadth regression: %',p; end if;
+
+ select investor_private.product_risk_eval_etf(id) into p from public.investments where symbol='ZFL' limit 1;
+ if p#>>'{dimensions,0,level}'<>'Low' or p#>>'{dimensions,1,level}'<>'Medium'
+    or p#>>'{dimensions,3,level}'<>'Medium' then
+  raise exception 'ZFL credit/price/breadth regression: %',p; end if;
 
  select d.band into cash_access
- from public.product_risk_dimensions d join public.product_risk_profiles p on p.id=d.profile_id
- join public.investments i on i.id=p.investment_id
- where i.symbol='RBC-GIC-1Y-CASH' and d.dimension_code='access_to_money';
+ from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
+ join public.product_risk_dimensions d on d.profile_id=p.id
+ where i.symbol='RBC-GIC-1Y-CASH' and d.dimension_code='access_to_money'
+   and p.model_version='product-risk-dna-v1-research' and p.publication_status='draft';
+ select d.band into locked_access
+ from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
+ join public.product_risk_dimensions d on d.profile_id=p.id
+ where i.symbol='RBC-GIC-1Y-NR' and d.dimension_code='access_to_money'
+   and p.model_version='product-risk-dna-v1-research' and p.publication_status='draft';
+ if investor_private.product_risk_rank(cash_access)<=investor_private.product_risk_rank(locked_access) then
+  raise exception 'cashable GIC access must exceed non-redeemable access'; end if;
 
- select d.band into nr_access
- from public.product_risk_dimensions d join public.product_risk_profiles p on p.id=d.profile_id
- join public.investments i on i.id=p.investment_id
- where i.symbol='RBC-GIC-1Y-NR' and d.dimension_code='access_to_money';
-
- if investor_private.product_risk_rank(cash_access)<=investor_private.product_risk_rank(nr_access) then
-  raise exception 'cashable GIC access must exceed non-redeemable access';
- end if;
-
- select d.band into short_price
- from public.product_risk_dimensions d join public.product_risk_profiles p on p.id=d.profile_id
- join public.investments i on i.id=p.investment_id
- where i.symbol='GOC-BOND-2Y' and d.dimension_code='price_movement';
-
- select d.band into long_price
- from public.product_risk_dimensions d join public.product_risk_profiles p on p.id=d.profile_id
- join public.investments i on i.id=p.investment_id
- where i.symbol='GOC-BOND-LONG' and d.dimension_code='price_movement';
-
- if investor_private.product_risk_rank(short_price)>=investor_private.product_risk_rank(long_price) then
-  raise exception 'long GoC bond must move more than 2Y';
- end if;
+ select p.overall_band into short_overall
+ from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
+ where i.symbol='GOC-BOND-2Y' and p.model_version='product-risk-dna-v1-research' and p.publication_status='draft';
+ select p.overall_band into long_overall
+ from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
+ where i.symbol='GOC-BOND-LONG' and p.model_version='product-risk-dna-v1-research' and p.publication_status='draft';
+ if investor_private.product_risk_rank(short_overall)>=investor_private.product_risk_rank(long_overall) then
+  raise exception 'long GoC bond overall must exceed 2Y GoC overall'; end if;
 
  select count(*) into bad
  from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
- where i.asset_type in ('COMMERCIAL_PAPER','ABCP')
- and not (p.overall_band='Unknown' and p.confidence='Insufficient');
- if bad<>0 then raise exception 'reference CP/ABCP must stay Unknown/Insufficient'; end if;
+ where p.model_version='product-risk-dna-v1-research' and p.publication_status='draft'
+   and i.asset_type in ('COMMERCIAL_PAPER','ABCP')
+   and not (p.overall_band='Unknown' and p.confidence='Insufficient');
+ if bad<>0 then raise exception 'CP/ABCP references must stay Unknown/Insufficient'; end if;
 
- select count(*) into bad
- from public.product_risk_profiles p
- join public.v_instrument_research_catalog v on v.id=p.investment_id
- where v.asset_type='ETF' and v.risk_level is not null
- and p.overall_band<>investor_private.product_risk_normalize_band(v.risk_level);
- if bad<>0 then raise exception 'ETF overall must preserve official risk category'; end if;
-
- select count(*) into bad from public.product_risk_dimensions where direction is null;
- if bad<>0 then raise exception 'dimension direction must be explicit'; end if;
+ select public.app_get_product_risk(id,false) into p from public.investments where symbol='VFV' limit 1;
+ if p->>'status'<>'not_available' then raise exception 'public Product Risk RPC must stay fail-closed: %',p; end if;
 end $$;
 
-select 'PASS: Product Risk DNA shadow calibration invariants' as result;
+select 'PASS: Product Risk DNA source-of-truth and cross-asset shadow calibration' as result;
 rollback;

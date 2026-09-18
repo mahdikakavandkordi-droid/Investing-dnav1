@@ -21,3 +21,12 @@ The four consumer dimensions do not all point in the same direction.
 Direction is explicit in the contract so the UI never paints every higher level as “worse”.
 
 The live database currently contains shadow-calibration drafts only. Public RPCs continue to return `not_available` until a profile is deliberately reviewed and published.
+
+
+## Source-of-truth and calibration rules
+
+ETF Product Risk must read the verified `investment_official_risk_ratings` table directly for issuer/CSA volatility classification. The generic research-catalog `risk_level` field is not the Product Risk source of truth.
+
+ETF diversification is an asset sensor, not a hard-coded “diversified” label: underlying holdings are preferred over wrapper holdings, holding-count bands are applied, and single-sector products are capped. Access to Money prefers verified bid-ask spread and falls back to structural liquidity with lower confidence.
+
+Overall Risk uses a hidden, versioned asset-module aggregation of the four consumer dimensions. No numeric composite is exposed to users. The database remains shadow-only until a profile is explicitly reviewed and published.
