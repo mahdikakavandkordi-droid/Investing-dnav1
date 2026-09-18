@@ -335,3 +335,22 @@
   .platform-nav .approved-brand-lockup{min-width:143px!important}
   .platform-nav .approved-brand-lockup>img{width:143px!important;max-width:143px!important}
 }
+
+
+/* Protected official lockup layer. */
+.platform-nav .approved-lockup-art{
+  display:block!important;
+  flex:0 0 auto;
+  width:188px!important;
+  height:40px!important;
+  background-image:url('/investing-dna-lockup.png')!important;
+  background-repeat:no-repeat!important;
+  background-position:left center!important;
+  background-size:contain!important;
+}
+@media(max-width:760px){
+  .platform-nav .approved-lockup-art{width:154px!important;height:34px!important}
+}
+@media(max-width:420px){
+  .platform-nav .approved-lockup-art{width:143px!important;height:32px!important}
+}
