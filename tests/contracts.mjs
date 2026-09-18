@@ -85,6 +85,14 @@ assert.match(accountGrantHardening,/public\.watchlists/);
 assert.match(accountGrantHardening,/public\.watchlist_items/);
 assert.match(accountGrantHardening,/public\.investor_saved_comparisons/);
 assert.match(accountGrantHardening,/grant select on table[\s\S]*public\.investor_activity_events[\s\S]*public\.report_snapshots[\s\S]*to authenticated/);
+const marketDataIngestion=readFileSync(new URL('../supabase/migrations/20260918112252_operational_market_data_ingestion_contract.sql',import.meta.url),'utf8');
+assert.match(marketDataIngestion,/create unique index if not exists market_data_refresh_one_running_per_source_idx/);
+assert.match(marketDataIngestion,/create or replace function public\.ingest_price_history_batch/);
+assert.match(marketDataIngestion,/jsonb_array_length\(p_rows\)>5000/);
+assert.match(marketDataIngestion,/v_source_priority<=v_existing\.existing_priority/);
+assert.match(marketDataIngestion,/Automatically closed after exceeding the 2-hour running window/);
+assert.match(marketDataIngestion,/revoke execute on function public\.ingest_price_history_batch\(text,jsonb,text\) from public,anon,authenticated/);
+assert.match(marketDataIngestion,/grant execute on function public\.ingest_price_history_batch\(text,jsonb,text\) to service_role/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
