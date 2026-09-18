@@ -49,6 +49,26 @@ async function profileIdFor(admin: any, authUser: any) {
   const { data } = await admin.from('profiles').select('id').eq('user_id', authUser.id).maybeSingle();
   return data?.id ?? null;
 }
+async function ensureProfile(admin: any, authUser: any) {
+  if (!authUser?.id) return null;
+  const { data: existing, error: lookupError } = await admin.from('profiles').select('id').eq('user_id', authUser.id).maybeSingle();
+  if (lookupError) throw lookupError;
+  if (existing?.id) return existing;
+  const firstName = typeof authUser.user_metadata?.first_name === 'string'
+    ? authUser.user_metadata.first_name.trim().slice(0, 120) || null
+    : null;
+  const { data: created, error: createError } = await admin.from('profiles')
+    .insert({ user_id: authUser.id, first_name: firstName })
+    .select('id')
+    .single();
+  if (!createError && created?.id) return created;
+  if (createError?.code === '23505') {
+    const { data: raced, error: raceError } = await admin.from('profiles').select('id').eq('user_id', authUser.id).single();
+    if (raceError) throw raceError;
+    return raced;
+  }
+  throw createError ?? new Error('Unable to establish investor profile');
+}
 async function recordEvent(admin: any, authUser: any, body: any, eventName: string, extras: any = {}) {
   try {
     if (!EVENT_NAMES.has(eventName)) return false;
@@ -156,8 +176,8 @@ Deno.serve(async (req) => {
 
       let profileId: string | null = null;
       if (authUser) {
-        const { data: profile, error } = await userClient!.rpc('get_or_create_current_profile');
-        if (error || !profile?.id) return json({ error: 'Unable to establish investor profile' }, 500);
+        const profile = await ensureProfile(admin, authUser);
+        if (!profile?.id) return json({ error: 'Unable to establish investor profile' }, 500);
         profileId = profile.id;
       }
 
@@ -217,8 +237,8 @@ Deno.serve(async (req) => {
     }
     if (action === 'claim_assessment') {
       if (!authUser) return json({ error: 'Authentication required to save your DNA' }, 401);
-      const { data: profile, error } = await userClient!.rpc('get_or_create_current_profile');
-      if (error || !profile?.id) return json({ error: 'Unable to establish investor profile' }, 500);
+      const profile = await ensureProfile(admin, authUser);
+      if (!profile?.id) return json({ error: 'Unable to establish investor profile' }, 500);
       const { data, error: claimError } = await admin.rpc('service_claim_assessment', { p_assessment_id: assessmentId, p_profile_id: profile.id });
       if (claimError) return json({ error: claimError.message }, 400);
       await recordEvent(admin, authUser, body, 'dna_claimed', { assessment_id: assessmentId, profile_id: profile.id });
