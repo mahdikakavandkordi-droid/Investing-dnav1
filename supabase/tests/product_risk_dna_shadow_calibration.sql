@@ -58,6 +58,15 @@ begin
     or p#>>'{dimensions,3,level}'<>'Medium' then
   raise exception 'ZFL credit/price/breadth regression: %',p; end if;
 
+ select investor_private.product_risk_eval_bond(id) into p from public.investments where symbol='GOC-BOND-2Y' limit 1;
+ if p#>>'{overall_risk,confidence}'<>'Medium' then
+  raise exception 'direct bond confidence must stay Medium without direct duration/liquidity evidence: %',p; end if;
+
+ select investor_private.product_risk_eval_bond(id) into p from public.investments where symbol='BELL-M69-2036' limit 1;
+ if p#>>'{overall_risk,confidence}'<>'Medium'
+    or not (p->'key_flags' @> '[{"code":"credit_rating_unavailable"}]'::jsonb) then
+  raise exception 'corporate bond must disclose missing verified issue rating evidence: %',p; end if;
+
  select d.band into cash_access
  from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
  join public.product_risk_dimensions d on d.profile_id=p.id

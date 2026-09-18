@@ -943,7 +943,7 @@ Current research weights:
 
 These are **research calibration weights, not a regulatory standard**. They remain shadow-only until review. Asset-specific weighting is intentional: the same four consumer concepts are retained while the materiality of each risk differs by product structure.
 
-Overall confidence is evidence-sensitive rather than cosmetic. For ETFs, a High overall confidence requires High-confidence evidence across all four consumer dimensions. Medium fallback evidence for Access or Diversification caps overall confidence at Medium; insufficient core Loss/Price evidence yields Insufficient.
+Overall confidence is evidence-sensitive rather than cosmetic. For ETFs, a High overall confidence requires High-confidence evidence across all four consumer dimensions. Medium fallback evidence for Access or Diversification caps overall confidence at Medium; insufficient core Loss/Price evidence yields Insufficient. Direct-bond profiles follow the same principle: current structural issuer/rate/liquidity labels support Medium confidence, while High confidence requires direct issue-level evidence such as verified credit rating and duration/liquidity measurements.
 
 Current ordering invariants include:
 
@@ -958,7 +958,7 @@ Current ordering invariants include:
 
 1. review all 55 draft summaries and ordering for consumer clarity;
 2. extend source-backed ETF spread/holdings coverage beyond the current verified subset;
-3. strengthen direct-bond credit-rating/duration evidence instead of relying primarily on structural labels;
+3. strengthen direct-bond credit-rating/duration evidence so the current Medium-confidence profiles can graduate only when direct issue-level evidence is present;
 4. build issue-level CP/ABCP evidence before allowing non-Unknown outputs;
 5. review the hidden weights/hard floors against external expert feedback;
 6. only then publish a controlled pilot subset; the already-wired Product Risk card will remain hidden until the public RPC can read that reviewed subset.

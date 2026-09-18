@@ -10,6 +10,7 @@ const drafts=read('supabase/migrations/20260917233435_product_risk_shadow_drafts
 const etfCalibration=read('supabase/migrations/20260917235755_product_risk_etf_source_of_truth_calibration.sql');
 const crossAsset=read('supabase/migrations/20260917235954_product_risk_cross_asset_overall_calibration.sql');
 const confidence=read('supabase/migrations/20260918002215_product_risk_confidence_calibration.sql');
+const bondConfidence=read('supabase/migrations/20260918003711_product_risk_bond_confidence_calibration.sql');
 const riskCard=read('components/ProductRiskCard.tsx');
 const detailPage=read('app/investment/[id]/page.tsx');
 const methodology=read('app/research/product-risk/page.tsx');
@@ -50,6 +51,9 @@ assert.match(crossAsset,/product_risk_overall_v1\('BOND'/);
 assert.match(confidence,/product_risk_overall_confidence_v1/);
 assert.match(confidence,/ae->>'confidence'/);
 assert.match(confidence,/de->>'confidence'/);
+assert.match(bondConfidence,/credit_rating_unavailable/);
+assert.match(bondConfidence,/duration_years is not null/);
+assert.match(bondConfidence,/product_risk_overall_confidence_v1/);
 assert.match(riskCard,/getProductRisk\(investmentId\)/);
 assert.match(riskCard,/status==='available'/);
 assert.match(riskCard,/Product Risk describes the investment/);
