@@ -195,7 +195,7 @@ function AssessmentDimensionsVisual({copy}:{copy:(typeof ASSESSMENT_COPY)[Assess
   <div className="assessment-dimension-map">
    {dimensions.map(item=><div className={'assessment-dimension-node dimension-'+item.key} key={item.key}>
     <span className="dimension-mark" aria-hidden="true">{item.mark}</span>
-    <div><strong>{copy.sections[item.key]}</strong><small>{item.count} {item.count===1?'question':'questions'}</small></div>
+    <div><strong>{copy.sections[item.key]}</strong><small>{item.count} questions</small></div>
    </div>)}
   </div>
  </section>;
