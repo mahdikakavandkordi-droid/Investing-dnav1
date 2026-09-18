@@ -79,6 +79,12 @@ const browserPrivilegeHardening=readFileSync(new URL('../supabase/migrations/202
 assert.match(browserPrivilegeHardening,/revoke truncate, references, trigger/);
 assert.match(browserPrivilegeHardening,/on all tables in schema public/);
 assert.match(browserPrivilegeHardening,/from anon, authenticated/);
+const accountGrantHardening=readFileSync(new URL('../supabase/migrations/20260918111335_tighten_account_table_browser_grants.sql',import.meta.url),'utf8');
+assert.match(accountGrantHardening,/grant select, insert, update, delete on table/);
+assert.match(accountGrantHardening,/public\.watchlists/);
+assert.match(accountGrantHardening,/public\.watchlist_items/);
+assert.match(accountGrantHardening,/public\.investor_saved_comparisons/);
+assert.match(accountGrantHardening,/grant select on table[\s\S]*public\.investor_activity_events[\s\S]*public\.report_snapshots[\s\S]*to authenticated/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
