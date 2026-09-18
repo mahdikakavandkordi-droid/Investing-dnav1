@@ -13,7 +13,6 @@ import "./report-redesign.css";
 import "./personalized-flow.css";
 import "./reference-experience.css";
 import "./home-approved.css";
-import "./report-polish-v3.css";
 import {Nav} from "@/components/Nav";
 import {Footer} from "@/components/Footer";
 import {ProductAnalytics} from "@/components/ProductAnalytics";
