@@ -1,90 +1,136 @@
-import Image from "next/image";
 import Link from "next/link";
+import {HomeAssetRail} from "@/components/HomeAssetRail";
 
-const ARCHETYPES=[
- {key:"vault",name:"VAULT",number:"01",tagline:"Protect today. Compound tomorrow.",image:"/characters/vault.png"},
- {key:"anchor",name:"ANCHOR",number:"02",tagline:"Stay steady. Build with balance.",image:"/characters/anchor.png"},
- {key:"coolhand",name:"COOLHAND",number:"03",tagline:"Calm mind. Steady progress.",image:"/characters/coolhand.png"},
- {key:"scout",name:"SCOUT",number:"04",tagline:"Look ahead. Find opportunities.",image:"/characters/scout.png"},
- {key:"maverick",name:"MAVERICK",number:"05",tagline:"Your path. Your perspective.",image:"/characters/maverick.png"},
- {key:"charger",name:"CHARGER",number:"06",tagline:"Embrace the ride. Go further.",image:"/characters/hotshot.png"},
- {key:"striker",name:"STRIKER",number:"07",tagline:"Turn insight into action.",image:"/characters/striker.png"},
- {key:"pathfinder",name:"PATHFINDER",number:"08",tagline:"Explore more. Navigate with purpose.",image:"/characters/highroller.png"},
- {key:"vanguard",name:"VANGUARD",number:"09",tagline:"Challenge more. Shape what’s next.",image:"/characters/jackpot.png"}
+const CAPABILITIES=[
+ {icon:"◉",title:"Behavioral profile",body:"Understand the decision patterns that shape how you invest."},
+ {icon:"▥",title:"Risk capacity",body:"Separate how much risk you can take from how much risk you want."},
+ {icon:"◎",title:"Explainable match",body:"See why an investment is more or less compatible with your DNA and goal."},
+ {icon:"⇄",title:"Explore & compare",body:"Research Canadian investments side by side with asset-specific data."},
+ {icon:"♡",title:"Save your watchlist",body:"Keep the investments you want to revisit without interrupting your research."}
 ];
 
-/** Public Investor DNA landing page. */
 export default function Home(){
- return <div className="reference-home">
-  <section className="reference-home-hero">
-   <div className="container reference-home-hero-grid">
-    <div className="reference-home-copy">
-     <div className="eyebrow">Investing DNA</div>
-     <h1>Discover Your<br/>Investor DNA</h1>
-     <p className="reference-home-kicker">Different paths. A brighter tomorrow.</p>
-     <p className="reference-home-lede">We all invest differently. Answer a focused set of questions to uncover your Investor DNA — a clearer view of how you approach risk, decisions, and the purpose behind your money.</p>
-     <div className="actions reference-home-actions">
-      <Link className="btn primary" href="/dna/assessment">Start the assessment <span aria-hidden>→</span></Link>
-      <Link className="btn reference-secondary" href="/explore">Explore investments</Link>
+ return <div className="platform-home">
+  <section className="platform-hero">
+   <div className="container platform-hero-grid">
+    <div className="platform-hero-copy">
+     <div className="eyebrow">Invest with clarity</div>
+     <h1><span>Know your investor DNA.</span><br/>Find investments that fit — and understand why.</h1>
+     <p>Discover your risk profile, add the context for this money, then explore and compare Canadian investments with clearer explanations.</p>
+     <div className="platform-hero-actions">
+      <Link className="btn primary" href="/dna/assessment">Start your DNA <span aria-hidden>→</span></Link>
+      <Link className="btn platform-btn-secondary" href="/explore">Explore investments</Link>
      </div>
-     <p className="fine muted reference-home-note">About 5 minutes · No account required · Save later if you choose</p>
+     <div className="platform-hero-trust">
+      <span>◒ Built for Canadian investors</span>
+      <span>◆ Clear, explainable research</span>
+      <span>▮ Educational, not advice</span>
+     </div>
     </div>
 
-    <div className="reference-hero-art" aria-hidden="true">
-     <span className="reference-sun"/>
-     <span className="reference-mountain reference-mountain-one"/>
-     <span className="reference-mountain reference-mountain-two"/>
-     <span className="reference-mountain reference-mountain-three"/>
-     <span className="reference-lake"/>
-     <span className="reference-tree tree-one"/>
-     <span className="reference-tree tree-two"/>
-     <span className="reference-tree tree-three"/>
-     <span className="reference-tree tree-four"/>
-     <div className="reference-hero-mantra">KNOW YOURSELF<br/>INVEST SMARTER<br/>GO FURTHER</div>
+    <div className="platform-product-preview" aria-label="Illustrative product preview">
+     <div className="platform-preview-label">Illustrative product preview</div>
+     <div className="platform-preview-grid">
+      <article className="preview-card preview-dna">
+       <div className="preview-card-head"><span className="preview-icon">◉</span><span>Your Investor DNA</span></div>
+       <strong>The Balanced Builder</strong>
+       <p>Seeks steady growth, values stability, and prefers a measured approach.</p>
+       <div className="preview-chips"><span>Long-term minded</span><span>Moderate risk</span><span>Diversified growth</span></div>
+      </article>
+
+      <article className="preview-card preview-risk">
+       <div className="preview-card-head"><span className="preview-icon">▥</span><span>Risk profile</span></div>
+       <strong>Moderate</strong>
+       <div className="preview-risk-bar"><i/><b/></div>
+       <div className="preview-risk-scale"><span>Lower risk</span><span>Higher risk</span></div>
+      </article>
+
+      <article className="preview-card preview-context">
+       <div className="preview-card-head"><span className="preview-icon">◎</span><span>Investment context</span></div>
+       <dl><div><dt>Goal</dt><dd>Retirement</dd></div><div><dt>Horizon</dt><dd>10+ years</dd></div><div><dt>Liquidity</dt><dd>Low</dd></div></dl>
+      </article>
+
+      <article className="preview-card preview-match">
+       <div className="preview-card-head"><span className="preview-icon">↗</span><span>Sample compatibility</span></div>
+       <div className="preview-match-row"><div><strong>VBAL</strong><span>Balanced ETF</span></div><b>84%</b></div>
+       <ul><li>Balanced structure</li><li>Long-term context</li><li>Broad diversification</li></ul>
+       <small>Illustrative example — not a recommendation.</small>
+      </article>
+     </div>
+     <div className="platform-dna-watermark" aria-hidden="true"><span/><span/><span/><span/></div>
     </div>
    </div>
   </section>
 
-  <section className="reference-archetypes">
+  <section className="platform-how" id="how-it-works">
    <div className="container">
-    <div className="reference-section-head">
-     <div>
-      <div className="eyebrow">The 9 Investor DNA archetypes</div>
-      <h2>Same destination. Different journeys.</h2>
-     </div>
-     <p>Your archetype is a simple way to summarize the relationship between risk tolerance and financial capacity. It is a starting point, not a label you have to live inside.</p>
+    <div className="platform-section-heading compact">
+     <div><div className="eyebrow">A simple path to smarter research</div><h2>How it works</h2></div>
+     <p>From self-knowledge to better investment research in three clear steps.</p>
     </div>
-
-    <div className="reference-archetype-grid">
-     {ARCHETYPES.map(item=><article className="reference-archetype-card" key={item.key}>
-      <div className="reference-archetype-art">
-       <span className="reference-card-sun"/>
-       <span className="reference-card-ridge ridge-back"/>
-       <span className="reference-card-ridge ridge-front"/>
-       <Image src={item.image} alt="" width={260} height={180}/>
-      </div>
-      <div className="reference-archetype-copy">
-       <span className="reference-archetype-number">{item.number}</span>
-       <div><h3>{item.name}</h3><p>{item.tagline}</p></div>
-      </div>
-     </article>)}
-    </div>
-
-    <div className="reference-start-band">
-     <div>
-      <span className="reference-start-icon" aria-hidden>↗</span>
-      <div><strong>Ready to find your Investor DNA?</strong><p>Start as a guest. Create an account only if you want to save your report.</p></div>
-     </div>
-     <Link className="btn primary" href="/dna/assessment">Start the assessment <span aria-hidden>→</span></Link>
+    <div className="platform-steps">
+     <article><span className="step-number">1</span><span className="step-icon">◉</span><div><h3>Discover your DNA</h3><p>Answer the assessment to understand risk tolerance, capacity and decision style.</p></div></article>
+     <span className="step-arrow" aria-hidden>→</span>
+     <article><span className="step-number">2</span><span className="step-icon">▤</span><div><h3>Add investment context</h3><p>Tell us what this money is for, when you may need it and how much flexibility you have.</p></div></article>
+     <span className="step-arrow" aria-hidden>→</span>
+     <article><span className="step-number">3</span><span className="step-icon">▥</span><div><h3>Explore matches & compare</h3><p>Research compatible investments and compare the details that matter for each asset type.</p></div></article>
     </div>
    </div>
   </section>
 
-  <section className="reference-how">
-   <div className="container reference-how-grid">
-    <article><span>01</span><h3>Discover your DNA</h3><p>Understand risk tolerance, financial capacity, and how you tend to make decisions.</p></article>
-    <article><span>02</span><h3>Add the goal</h3><p>Tell us what this money is for, when you may need it, and how much flexibility you have.</p></article>
-    <article><span>03</span><h3>Explore with context</h3><p>Use Match, Explore and Compare to understand compatibility — without turning the experience into a recommendation.</p></article>
+  <section className="platform-capabilities">
+   <div className="container platform-capabilities-grid">
+    <div className="platform-section-heading vertical">
+     <div className="eyebrow">More than a screening tool</div>
+     <h2>Built for a smarter investing experience</h2>
+     <p>Investor DNA is one layer of the platform. Research, comparison, Product Risk and watchlists continue the journey.</p>
+    </div>
+    <div className="platform-capability-cards">
+     {CAPABILITIES.map(item=><article key={item.title}><span>{item.icon}</span><h3>{item.title}</h3><p>{item.body}</p></article>)}
+    </div>
+   </div>
+  </section>
+
+  <section className="platform-assets">
+   <div className="container">
+    <div className="platform-section-heading">
+     <div><div className="eyebrow">Explore opportunities</div><h2>Different assets. Different information.</h2></div>
+     <div className="platform-heading-action"><p>Each card uses the metrics that actually matter for that investment type.</p><Link href="/explore">Explore all investments →</Link></div>
+    </div>
+    <HomeAssetRail/>
+   </div>
+  </section>
+
+  <section className="platform-intelligence">
+   <div className="container platform-intelligence-grid">
+    <article className="platform-intro-copy">
+     <div className="eyebrow">Your DNA in action</div>
+     <h2>A compatibility layer, not a guess.</h2>
+     <p>DNA Match combines your personal profile with the goal for this money. Product Risk separately describes how an investment behaves under risk.</p>
+     <div className="platform-inline-actions"><Link href="/match">Open DNA Match →</Link><Link href="/research/product-risk">How Product Risk works →</Link></div>
+    </article>
+
+    <article className="platform-match-panel">
+     <div className="platform-panel-kicker">Illustrative DNA Match</div>
+     <div className="platform-match-top"><div><strong>Vanguard Growth ETF Portfolio</strong><span>VGRO · Asset allocation ETF</span></div><b>Sample fit</b></div>
+     <div className="platform-match-points"><span>✓ Broad diversification</span><span>✓ Long-horizon structure</span><span>✓ High liquidity</span></div>
+     <small>Actual compatibility is calculated from your completed DNA and investment context.</small>
+    </article>
+
+    <article className="platform-risk-panel">
+     <div className="platform-panel-kicker">Published Product Risk DNA</div>
+     <div className="platform-risk-title"><div><strong>BMO Long Federal Bond Index ETF</strong><span>ZFL</span></div><b>Low to Medium</b></div>
+     <div className="platform-risk-dimensions"><div><span>Loss potential</span><strong>Low</strong></div><div><span>Price movement</span><strong>Medium</strong></div><div><span>Access to money</span><strong>High</strong></div><div><span>Diversification</span><strong>Medium</strong></div></div>
+     <Link href="/investment/b35b6625-4a59-4d5f-8a3e-eda0ea82a2a2">View published risk profile →</Link>
+    </article>
+   </div>
+  </section>
+
+  <section className="platform-trust">
+   <div className="container platform-trust-grid">
+    <article><span>▰</span><div><strong>Educational, not investment advice</strong><p>Research tools and explanations to help you make more informed decisions.</p></div></article>
+    <article><span>◆</span><div><strong>Transparent methodology</strong><p>Compatibility and Product Risk are separate, explainable layers.</p></div></article>
+    <article><span>✦</span><div><strong>Built for Canadian investors</strong><p>Canadian assets, Canadian context and source-backed research.</p></div></article>
    </div>
   </section>
  </div>;
