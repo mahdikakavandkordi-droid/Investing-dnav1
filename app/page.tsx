@@ -12,6 +12,18 @@ const CAPABILITIES=[
 export default function Home(){
  return <div className="platform-home">
   <section className="platform-hero">
+   <div className="platform-hero-scenery" aria-hidden="true">
+    <span className="hero-mountain hero-mountain-far"/>
+    <span className="hero-mountain hero-mountain-mid"/>
+    <span className="hero-mountain hero-mountain-near"/>
+    <span className="hero-mist hero-mist-one"/>
+    <span className="hero-mist hero-mist-two"/>
+    <span className="hero-lake"/>
+    <span className="hero-pine hero-pine-left-one"/>
+    <span className="hero-pine hero-pine-left-two"/>
+    <span className="hero-pine hero-pine-right-one"/>
+    <span className="hero-pine hero-pine-right-two"/>
+   </div>
    <div className="container platform-hero-grid">
     <div className="platform-hero-copy">
      <div className="eyebrow">Invest with clarity</div>
