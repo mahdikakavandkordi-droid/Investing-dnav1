@@ -160,6 +160,7 @@ assert.match(homeAssetRailSource,/BOND/);
 assert.match(homeAssetRailSource,/T_BILL/);
 assert.match(homeAssetRailSource,/COMMERCIAL_PAPER/);
 const brandMarkSource=readFileSync(new URL('../components/BrandMark.tsx',import.meta.url),'utf8');
-assert.match(brandMarkSource,/investing-dna-lockup\.png/);
+assert.match(brandMarkSource,/logo\.png/);
+assert.match(brandMarkSource,/approved-master-logo/);
 
 console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, cognitive research-code continuity, dashboard Match fallback, clean DNA matrix highlighting, payload-level Match redaction wiring, and approved scenic front-end journey contracts');
