@@ -24,14 +24,14 @@ jobs:
       - name: Wait for branch preview and run deployed flow
         env:
           CHROME_BIN: /usr/bin/google-chrome
-          VERCEL_PREVIEW_SHARE_TOKEN: ${{ secrets.VERCEL_PREVIEW_SHARE_TOKEN }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           PLATFORM_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-pla-e975cf-mahdikakavandkordi-9201.vercel.app
           VISUAL_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-vis-a45e9f-mahdikakavandkordi-9201.vercel.app
           INTEGRATION_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-int-648dcb-mahdikakavandkordi-9201.vercel.app
         run: |
           set -e
-          if [ -z "${VERCEL_PREVIEW_SHARE_TOKEN}" ]; then
-            echo "Missing VERCEL_PREVIEW_SHARE_TOKEN GitHub Actions secret"
+          if [ -z "${VERCEL_AUTOMATION_BYPASS_SECRET}" ]; then
+            echo "Missing VERCEL_AUTOMATION_BYPASS_SECRET GitHub Actions secret"
             exit 2
           fi
 
@@ -53,30 +53,16 @@ jobs:
           export TEST_ORIGIN
 
           echo "Waiting for protected preview endpoint: ${TEST_ORIGIN}"
-          cookie_jar=/tmp/vercel-preview-cookies.txt
           for i in $(seq 1 30); do
-            rm -f "${cookie_jar}"
-
-            # Bootstrap Vercel's protected-preview share session without exposing
-            # the token in repository code. The cookie jar is then reused for
-            # the actual readiness request.
-            curl -L -sS \
-              -c "${cookie_jar}" \
-              -b "${cookie_jar}" \
-              --get \
-              --data-urlencode "_vercel_share=${VERCEL_PREVIEW_SHARE_TOKEN}" \
-              -o /tmp/share-bootstrap.html \
-              "${TEST_ORIGIN}/" >/dev/null || true
-
-            code=$(curl -L -sS \
-              -c "${cookie_jar}" \
-              -b "${cookie_jar}" \
+            code=$(curl -sS \
+              -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
+              -H "x-vercel-set-bypass-cookie: true" \
               -o /tmp/preview.html \
               -w '%{http_code}' \
               "${TEST_ORIGIN}/dna/assessment" || true)
 
             if [ "$code" = "200" ]; then
-              echo "Protected preview endpoint is responding"
+              echo "Protected preview endpoint is responding via Automation Bypass"
               break
             fi
 
