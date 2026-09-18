@@ -93,7 +93,8 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
  const isFund=usesFundResearch(item.asset_type);
  const freshness=item.fixed_income_as_of_date||item.deposit_as_of_date||item.metrics_as_of_date||item.structure_as_of_date;
 
- return <>
+ const typeClass='asset-detail-'+String(item.asset_type||'unknown').toLowerCase();
+ return <div className={'investment-detail-identity '+typeClass}>
   <section className="detail-hero-v2">
    <div className="detail-hero-copy-v2">
     <div className="detail-tags-v2">
@@ -125,7 +126,7 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
    <InstrumentConnection id={item.id} assetType={item.asset_type}/>
    {isFund&&facts&&<OfficialFundDocumentCard facts={facts}/>} 
   </div>
- </>;
+ </div>;
 }
 
 function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|null}){
