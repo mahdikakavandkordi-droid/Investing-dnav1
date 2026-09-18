@@ -10,9 +10,9 @@ if (!token) {
 
 const sourcePath = path.join(__dirname, 'deployed-preview-flow.cjs');
 const source = fs.readFileSync(sourcePath, 'utf8');
-const marker = "  const response = await page.goto(ORIGIN + '/dna/assessment', { waitUntil: 'domcontentloaded' });";
-const screenerMarker = "  await page.goto(ORIGIN + '/screener');";
-const compareMarker = "  await page.getByRole('heading', { name: 'Compare Investment DNA side by side' }).waitFor();";
+const marker = "const response=await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});";
+const screenerMarker = "await page.goto(ORIGIN+'/screener');";
+const compareMarker = "await page.getByRole('heading',{name:'Compare Investment DNA side by side'}).waitFor();";
 
 if (!source.includes(marker)) {
   console.error('Deployed-preview canary bootstrap marker not found.');
