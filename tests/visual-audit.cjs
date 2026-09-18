@@ -76,6 +76,10 @@ async function runViewport(browser,label,viewport){
  await page.goto(ORIGIN+'/',{waitUntil:'networkidle'});
  await shot(page,label+'-01-home');
 
+ await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:/Research different structures without the jargon\./}).waitFor();
+ await shot(page,label+'-01b-explore');
+
  await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});
  await page.getByRole('button',{name:'Start as guest'}).waitFor();
  await shot(page,label+'-02-assessment-intro');
