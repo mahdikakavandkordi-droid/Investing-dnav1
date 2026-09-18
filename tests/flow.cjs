@@ -368,7 +368,7 @@ const testAccess=[
  await page.goto(callback);
  await page.getByRole('alert').filter({hasText:'Temporary claim error'}).waitFor();
  assert.ok(await page.evaluate(key=>localStorage.getItem(key),CLAIM_KEY));
- await page.getByRole('button',{name:'Save this DNA to my account'}).click();
+ await page.getByRole('button',{name:'Save my DNA',exact:true}).click();
  await page.getByRole('heading',{name:'MAVERICK'}).waitFor();
  assert.equal(claims,2);
  assert.equal(await page.evaluate(key=>localStorage.getItem(key),CLAIM_KEY),null);
