@@ -1,0 +1,1 @@
+alter table public.investment_portfolio_characteristics add column if not exists number_of_underlying_holdings integer;
