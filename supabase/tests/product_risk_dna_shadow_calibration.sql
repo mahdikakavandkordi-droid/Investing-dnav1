@@ -80,6 +80,21 @@ begin
  if investor_private.product_risk_rank(cash_access)<=investor_private.product_risk_rank(locked_access) then
   raise exception 'cashable GIC access must exceed non-redeemable access'; end if;
 
+ select investor_private.product_risk_eval_gic(id) into p
+ from public.investments where symbol='RBC-GIC-1Y-NR' limit 1;
+ if p#>>'{overall_risk,band}'<>'Low'
+    or p#>>'{overall_risk,confidence}'<>'High'
+    or p#>>'{dimensions,2,level}'<>'Low'
+    or p#>>'{dimensions,2,confidence}'<>'High'
+    or nullif(p#>>'{source_basis,deposit_source_url}','') is null then
+  raise exception 'source-backed non-redeemable GIC calibration regression: %',p; end if;
+
+ select investor_private.product_risk_eval_gic(id) into p
+ from public.investments where symbol='RBC-GIC-1Y-CASH' limit 1;
+ if p#>>'{dimensions,2,level}'<>'Medium'
+    or p#>>'{dimensions,2,confidence}'<>'High' then
+  raise exception 'source-backed cashable GIC access regression: %',p; end if;
+
  select p.overall_band into short_overall
  from public.product_risk_profiles p join public.investments i on i.id=p.investment_id
  where i.symbol='GOC-BOND-2Y' and p.model_version='product-risk-dna-v1-research' and p.publication_status='draft';

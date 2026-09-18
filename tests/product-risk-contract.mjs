@@ -13,6 +13,7 @@ const confidence=read('supabase/migrations/20260918002215_product_risk_confidenc
 const bondConfidence=read('supabase/migrations/20260918003711_product_risk_bond_confidence_calibration.sql');
 const tbillConfidence=read('supabase/migrations/20260918004145_product_risk_tbill_confidence_calibration.sql');
 const reviewQueue=read('supabase/migrations/20260918004312_product_risk_private_review_queue.sql');
+const gicConfidence=read('supabase/migrations/20260918011635_product_risk_gic_source_confidence_calibration.sql');
 const riskCard=read('components/ProductRiskCard.tsx');
 const detailPage=read('app/investment/[id]/page.tsx');
 const methodology=read('app/research/product-risk/page.tsx');
@@ -62,6 +63,10 @@ assert.match(tbillConfidence,/product_risk_overall_confidence_v1/);
 assert.match(reviewQueue,/v_product_risk_review_queue/);
 assert.match(reviewQueue,/evidence_ready_for_review/);
 assert.match(reviewQueue,/revoke all on investor_private\.v_product_risk_review_queue from public,anon,authenticated/);
+assert.match(gicConfidence,/deposit_source_url is not null/);
+assert.match(gicConfidence,/deposit_insurance_scheme/);
+assert.match(gicConfidence,/redeemability is not null/);
+assert.match(gicConfidence,/product_risk_overall_confidence_v1/);
 assert.match(riskCard,/getProductRisk\(investmentId\)/);
 assert.match(riskCard,/status==='available'/);
 assert.match(riskCard,/Product Risk describes the investment/);

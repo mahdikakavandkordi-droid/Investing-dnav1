@@ -1012,3 +1012,5 @@ A draft reaches `evidence_ready_for_review` only when:
 Other drafts are classified as `needs_evidence` or `insufficient_evidence`. This queue is an operational calibration aid, not a consumer rating and not an automatic publication gate.
 
 T-Bills illustrate the distinction between a stable band and evidence confidence: current Government of Canada T-Bill drafts remain Low Overall Risk, but Overall confidence is Medium because remaining term directly supports Price Movement while current research does not yet contain a direct bid-ask or market-depth measurement for Access to Money.
+
+GICs can retain High confidence only when the current research record includes an explicit deposit source URL/as-of date together with term, redeemability and deposit-insurance structure. Deposit-insurance language is deliberately qualified as eligibility subject to applicable coverage limits and categories; Product Risk does not assume a particular investor's deposit amount or insurance category.

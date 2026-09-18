@@ -46,6 +46,7 @@ Later on 2026-09-17, Product Risk DNA research migrations were applied and the r
 - `20260918003711_product_risk_bond_confidence_calibration.sql`
 - `20260918004145_product_risk_tbill_confidence_calibration.sql`
 - `20260918004312_product_risk_private_review_queue.sql`
+- `20260918011635_product_risk_gic_source_confidence_calibration.sql`
 
 The Product Risk runtime is deliberately shadow-only at this stage: draft profiles may be refreshed service-side, while public reads return only explicitly published profiles.
 
