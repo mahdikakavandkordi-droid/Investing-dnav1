@@ -5,6 +5,18 @@ import {
  ARCHETYPES,BEHAVIOR,RISK_MATRIX,behaviorBand,displayArchetype,formatInvestmentContext,pressureInsight,riskBand,riskRelationship,standoutDecision
 } from "@/lib/dna-presentation";
 
+const ARCHETYPE_CHARACTER_FILES:Record<string,string>={
+ VAULT:'vault',
+ ANCHOR:'anchor',
+ COOLHAND:'coolhand',
+ SCOUT:'scout',
+ MAVERICK:'maverick',
+ STRIKER:'striker',
+ HOTSHOT:'charger',
+ HIGHROLLER:'pathfinder',
+ JACKPOT:'vanguard'
+};
+
 export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;personal?:PersonalizationProfile|null}){
  const behavioral=report?.behavioral_profile||dna.behavioral_profile||{};
  const quality=report?.quality_profile||dna.quality_profile;
@@ -36,7 +48,7 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
 }
 
 function ReportHero({canonicalArchetype,displayName,character,tagline,firstName,clarificationRecommended}:{canonicalArchetype:string;displayName:string;character:string;tagline:string;firstName?:string;clarificationRecommended:boolean;}){
- return <section className={'dna-hero dna-hero-v2 dna-'+canonicalArchetype.toLowerCase()}><div className="dna-hero-scenery" aria-hidden="true"><span className="dna-hero-sun"/><span className="dna-hero-mountain mountain-a"/><span className="dna-hero-mountain mountain-b"/><span className="dna-hero-path"/></div><div className="dna-hero-copy"><div className="eyebrow">Your Investor DNA</div><p className="dna-greeting">{firstName?`${firstName}, this is your current profile.`:'This is your current profile.'}</p><h1>{displayName}</h1><h2>{character}</h2><p className="dna-tagline">{tagline}</p>{clarificationRecommended&&<span className="consistency-pill">A few answers point in different directions</span>}</div><div className="dna-character" aria-hidden="true"><Image src={`/characters/${canonicalArchetype.toLowerCase()}.png`} alt="" width={320} height={320} priority/></div></section>;
+ return <section className={'dna-hero dna-hero-v2 dna-'+canonicalArchetype.toLowerCase()}><div className="dna-hero-scenery" aria-hidden="true"><span className="dna-hero-sun"/><span className="dna-hero-mountain mountain-a"/><span className="dna-hero-mountain mountain-b"/><span className="dna-hero-path"/></div><div className="dna-hero-copy"><div className="eyebrow">Your Investor DNA</div><p className="dna-greeting">{firstName?`${firstName}, this is your current profile.`:'This is your current profile.'}</p><h1>{displayName}</h1><h2>{character}</h2><p className="dna-tagline">{tagline}</p>{clarificationRecommended&&<span className="consistency-pill">A few answers point in different directions</span>}</div><div className="dna-character" aria-hidden="true"><Image src={`/archetype-characters/${ARCHETYPE_CHARACTER_FILES[canonicalArchetype]||'maverick'}.webp`} alt="" width={356} height={210} priority/></div></section>;
 }
 
 function ProfileSnapshot({context,personal,tolerance,capacity}:{context?:DNA['investment_context'];personal:PersonalizationProfile;tolerance:unknown;capacity:unknown;}){
