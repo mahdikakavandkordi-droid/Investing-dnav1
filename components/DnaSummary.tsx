@@ -23,6 +23,7 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
  const summary=narrative.summary||meta.tagline;
  const meaning=[relationship,decision.text,pressure.text,narrative.strength||''].filter((text,index,all)=>!!text&&all.indexOf(text)===index).slice(0,4);
  return <div className="dna-report dna-report-v2">
+  <header className="report-part-header"><div><span>Part 1 · Your Investor DNA</span><strong>Personal Profile</strong></div><p>Understand who you are as an investor before applying that DNA to a specific goal.</p></header>
   <ReportHero canonicalArchetype={archetype} displayName={displayName} character={narrative.character||meta.title} tagline={summary} firstName={firstName} clarificationRecommended={!!quality?.clarification_recommended}/>
   <ProfileSnapshot context={context} personal={{first_name:firstName||'',age:age||0}} tolerance={tolerance} capacity={capacity}/>
   <ReportOverview archetype={archetype} tolerance={tolerance} capacity={capacity} meaning={meaning}/>
