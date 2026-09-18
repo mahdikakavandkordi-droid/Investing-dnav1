@@ -29,10 +29,13 @@ if (!source.includes(compareMarker)) {
 
 const bootstrap = [
   "const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;",
+  "const bypassMode = process.env.VERCEL_BYPASS_MODE || 'header';",
   "assert.ok(bypassSecret, 'VERCEL_AUTOMATION_BYPASS_SECRET is required');",
-  "await page.setExtraHTTPHeaders({'x-vercel-protection-bypass': bypassSecret, 'x-vercel-set-bypass-cookie': 'true'});",
-  marker,
-  "assert.equal(new URL(page.url()).host, expectedHost, 'Automation bypass redirected away from app to ' + page.url());"
+  "if (bypassMode === 'header') await page.setExtraHTTPHeaders({'x-vercel-protection-bypass': bypassSecret, 'x-vercel-set-bypass-cookie': 'true'});",
+  "const bypassUrl = bypassMode === 'query' ? ORIGIN + '/dna/assessment?x-vercel-protection-bypass=' + encodeURIComponent(bypassSecret) : ORIGIN + '/dna/assessment';",
+  "const response=await page.goto(bypassUrl,{waitUntil:'domcontentloaded'});",
+  "assert.ok(response);assert.ok(response.status()<400);assert.equal(new URL(page.url()).host,expectedHost);assert.doesNotMatch(await page.locator('body').innerText(),/Authentication Required|Log in to Vercel|Vercel Authentication/i);",
+  "if (bypassMode === 'query') await page.setExtraHTTPHeaders({'x-vercel-protection-bypass': bypassSecret, 'x-vercel-set-bypass-cookie': 'true'});"
 ].join('\n');
 
 // Keep the guest journey inside the same Next.js application session. A full
