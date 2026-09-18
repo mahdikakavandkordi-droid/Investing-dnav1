@@ -1,0 +1,60 @@
+name: Visual UI Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/integration-product-risk-platform-v1
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'public/**'
+      - 'tests/visual-audit.cjs'
+      - '.github/workflows/visual-audit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  visual-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - name: Build app
+        run: npm run build
+      - name: Start local production app
+        run: |
+          npm run start -- -H 127.0.0.1 -p 3000 >/tmp/investing-dna-next.log 2>&1 &
+          echo $! >/tmp/investing-dna-next.pid
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              echo "Local app is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/investing-dna-next.log
+          exit 1
+      - name: Confirm Chrome
+        run: test -x /usr/bin/google-chrome
+      - name: Capture desktop and mobile journey
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          VISUAL_AUDIT_ORIGIN: http://127.0.0.1:3000
+          VISUAL_AUDIT_DIR: visual-audit
+        run: node tests/visual-audit.cjs
+      - name: Upload visual audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: investing-dna-visual-audit
+          path: visual-audit/
+          if-no-files-found: error
+          retention-days: 7
