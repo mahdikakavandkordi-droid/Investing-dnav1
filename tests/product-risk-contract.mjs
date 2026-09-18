@@ -14,6 +14,7 @@ const bondConfidence=read('supabase/migrations/20260918003711_product_risk_bond_
 const tbillConfidence=read('supabase/migrations/20260918004145_product_risk_tbill_confidence_calibration.sql');
 const reviewQueue=read('supabase/migrations/20260918004312_product_risk_private_review_queue.sql');
 const gicConfidence=read('supabase/migrations/20260918011635_product_risk_gic_source_confidence_calibration.sql');
+const iSharesSpreadEvidence=read('supabase/migrations/20260918112808_product_risk_ishares_spread_evidence.sql');
 const riskCard=read('components/ProductRiskCard.tsx');
 const detailPage=read('app/investment/[id]/page.tsx');
 const methodology=read('app/research/product-risk/page.tsx');
@@ -67,6 +68,10 @@ assert.match(gicConfidence,/deposit_source_url is not null/);
 assert.match(gicConfidence,/deposit_insurance_scheme/);
 assert.match(gicConfidence,/redeemability is not null/);
 assert.match(gicConfidence,/product_risk_overall_confidence_v1/);
+assert.match(iSharesSpreadEvidence,/bid_ask_spread_pct/);
+assert.match(iSharesSpreadEvidence,/2026-04-30/);
+assert.match(iSharesSpreadEvidence,/Expected 17 source-backed iShares spread indicators/);
+assert.match(iSharesSpreadEvidence,/refresh_product_risk_draft/);
 assert.match(riskCard,/getProductRisk\(investmentId\)/);
 assert.match(riskCard,/status==='available'/);
 assert.match(riskCard,/Product Risk describes the investment/);
