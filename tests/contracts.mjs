@@ -55,6 +55,9 @@ assert.match(edgeSource,/async function ensureProfile\(admin: any, authUser: any
 assert.doesNotMatch(edgeSource,/userClient!\.rpc\('get_or_create_current_profile'\)/);
 const profileBootstrapHardening=readFileSync(new URL('../supabase/migrations/20260918111500_harden_profile_bootstrap_rpc.sql',import.meta.url),'utf8');
 assert.match(profileBootstrapHardening,/revoke execute on function public\.get_or_create_current_profile\(\) from public, anon, authenticated/);
+const profileOwnershipHardening=readFileSync(new URL('../supabase/migrations/20260918112000_make_profile_ownership_check_invoker.sql',import.meta.url),'utf8');
+assert.match(profileOwnershipHardening,/alter function public\.is_current_profile\(uuid\) security invoker/);
+assert.match(profileOwnershipHardening,/grant select\(id,user_id\) on public\.profiles to authenticated/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
