@@ -139,7 +139,7 @@ const homeSource=readFileSync(new URL('../app/page.tsx',import.meta.url),'utf8')
 const journeySource=readFileSync(new URL('../components/DnaJourneyVisual.tsx',import.meta.url),'utf8');
 const layoutSource=readFileSync(new URL('../app/layout.tsx',import.meta.url),'utf8');
 const contextSource=readFileSync(new URL('../app/dna/context/page.tsx',import.meta.url),'utf8');
-const profileSource=readFileSync(new URL('../app/profile/page.tsx',import.meta.url),'utf8');
+const profileUiSource=readFileSync(new URL('../app/profile/page.tsx',import.meta.url),'utf8');
 assert.match(homeSource,/The 9 Investor DNA archetypes/);
 assert.match(homeSource,/PATHFINDER/);
 assert.match(homeSource,/VANGUARD/);
@@ -148,7 +148,7 @@ assert.match(journeySource,/Math\.floor\(\(clamped-1\)\/2\)/);
 assert.match(journeySource,/Questions \{active\*2\+1\}–/);
 assert.match(layoutSource,/reference-experience\.css/);
 assert.match(contextSource,/context-experience-art/);
-assert.match(profileSource,/dashboard-reference-shell/);
+assert.match(profileUiSource,/dashboard-reference-shell/);
 assert.match(dnaSummarySource,/Part 1 · Your Investor DNA/);
 
 console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, cognitive research-code continuity, dashboard Match fallback, clean DNA matrix highlighting, payload-level Match redaction wiring, and approved scenic front-end journey contracts');
