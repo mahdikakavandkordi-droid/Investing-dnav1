@@ -51,6 +51,60 @@ const dna={
 let contextReady=false;
 function report(){return{...dna,investment_context:contextReady?{goal:'retirement',time_horizon:'gt_10y',amount_to_invest:25000,liquidity_need:'low',principal_required:'no',first_name:'Mahdi',age:35}:undefined}}
 const matchItem={investment_id:'48580aac-8147-4054-b99f-5d696ce3ceca',symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',match_score:84,eligibility:'eligible',recommendation_tier:'top_match',risk_band:'Low to Medium',explanation:{fit_label:'Closer fit',strengths:['Balanced structure supports the goal.'],watchouts:['Market values can decline.'],scores:{official_risk_fit:90,market_exposure_fit:88,goal_role_fit:84,exposure_breadth:86},goal_fit:{model_version:'goal-fit-v1',score:84,components:{growth:.5,stability:.35,liquidity:.15},summary:'Long-horizon retirement context supports a balanced growth and stability role.'}}};
+const vbalInstrument={
+ id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',legal_name:'Vanguard Balanced ETF Portfolio',
+ asset_type:'ETF',category:'Asset Allocation',subcategory:'All-in-one',issuer_name:'Vanguard Canada',currency:'CAD',exchange:'TSX',
+ price:39.35,mer_pct:.22,yield_pct:2.21,return_1y_pct:13.89,return_3y_annualized_pct:13.73,return_5y_annualized_pct:7.77,
+ equity_pct:60,fixed_income_pct:40,risk_level:'Medium',liquidity_level:'high',price_volatility:'low',diversification_level:'diversified',
+ data_status:'verified_partial',metrics_as_of_date:'2026-09-14',structure_as_of_date:'2026-07-31',
+ profile_summary:'A one-ticket balanced portfolio combining global equities and bonds, designed as a long-term core holding.',
+ description:'Approximately 60% equity and 40% fixed income; designed for long-term capital growth with moderate income.',
+ profile_objective:'Long-term capital growth with moderate income.',
+ profile_benchmark:'FTSE Canada All Cap Index / FTSE Global All Cap ex Canada Index / Bloomberg Global Aggregate Float Adjusted Bond Index (CAD-hedged).',
+ profile_key_risks:['Equity market risk','Interest-rate risk','Currency risk','Credit risk'],
+ profile_management_style:'Passive index-based allocation with automatic rebalancing.',
+ profile_distribution_policy:'Typically quarterly distributions.'
+};
+const vbalDna={
+ investment_id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',asset_type:'ETF',category:'Asset Allocation',subcategory:'All-in-one',
+ risk_band:'Low to Medium',official_risk_rating:'Low to Medium',official_risk_issuer:'Vanguard Investments Canada Inc.',
+ official_risk_source_type:'ETF Facts',official_risk_source_date:'2026-07-16',
+ official_risk_source_url:'https://fund-docs.vanguard.com/VBAL_Balanced_ETF_Portfolio_ETF_9578_EN_FACTS.pdf',
+ growth_score:60,income_score:52,stability_score:52,diversification_score:93,liquidity_score:95,complexity_score:0,
+ equity_pct:60,fixed_income_pct:40,mer_pct:.22,geographic_scope:'Global',as_of_date:'2026-07-31',
+ explanation:{signal_inputs:{meaningful_geographic_regions:3}}
+};
+const vbalFacts={
+ investment_id:matchItem.investment_id,symbol:'VBAL',source_name:'Vanguard Canada',
+ etf_facts_url:'https://fund-docs.vanguard.com/VBAL_Balanced_ETF_Portfolio_ETF_9578_EN_FACTS.pdf',etf_facts_date:'2026-07-16',
+ management_fee_pct:.17,mer_pct:.22,summary:'A one-ticket balanced portfolio combining global equities and bonds, designed as a long-term core holding.',
+ objective:'Long-term capital growth with moderate income.',asset_mix:{equity:60,fixed_income:40},
+ management_style:'Passive index-based allocation with automatic rebalancing.',distribution_policy:'Typically quarterly distributions.',
+ fee_source_note:'Management fee is current; MER is the issuer-reported figure and can lag a recent fee cut.'
+};
+const vbalResearch={
+ investment_id:matchItem.investment_id,
+ coverage:{data_status:'verified_partial',has_official_facts:true,has_official_risk:true,has_return_1y:true,has_return_3y:true,has_return_5y:true,
+  has_sourced_income:true,has_portfolio_characteristics:true,has_complete_exposure_set:false,has_full_holdings_detail:true,holdings_weight_coverage_pct:99.97,
+  return_1y_date:'2026-09-10',return_3y_date:'2026-07-31',return_5y_date:'2026-07-31',holdings_date:'2026-08-31',characteristics_date:'2026-07-31'},
+ performance:{return_1y_pct:13.89,return_3y_annualized_pct:13.73,return_5y_annualized_pct:7.77,return_1y_as_of_date:'2026-09-10',return_3y_as_of_date:'2026-07-31',return_5y_as_of_date:'2026-07-31',
+  return_1y_verification_status:'issuer_linked',return_3y_verification_status:'issuer_linked',return_5y_verification_status:'issuer_linked'},
+ characteristics:{number_of_holdings:30948,number_of_stocks:13725,number_of_bonds:17230,yield_to_maturity_pct:4,average_duration_years:6.5,average_credit_quality:'AA-',pe_ratio:20.3,pb_ratio:3.1,roe_pct:14.9,earnings_growth_pct:16.5},
+ holdings:{mode:'fund_of_funds_structure',as_of_date:'2026-08-31',weight_coverage_pct:99.97,known_underlying_weight_pct:84.54,items:[
+  {holding_symbol:'VUN',holding_name:'Vanguard Morningstar U.S. Total Market Index ETF',weight_pct:27.37,asset_type:'ETF',as_of_date:'2026-08-31',known_investment_id:'5ea92c7f-c804-4410-8674-e7d88b3589b1',known_investment_name:'Vanguard U.S. Total Market Index ETF'},
+  {holding_symbol:'VAB',holding_name:'Vanguard Canadian Aggregate Bond Index ETF',weight_pct:22.93,asset_type:'ETF',as_of_date:'2026-08-31',known_investment_id:'fcaa4c7a-f39c-468e-a961-3a638bdcf3ca',known_investment_name:'Vanguard Canadian Aggregate Bond Index ETF'},
+  {holding_symbol:'VCN',holding_name:'Vanguard FTSE Canada All Cap Index ETF',weight_pct:18.54,asset_type:'ETF',as_of_date:'2026-08-31',known_investment_id:'b6553e19-67db-44a1-8d7f-59ee7c3a5863',known_investment_name:'Vanguard FTSE Canada All Cap Index ETF'},
+  {holding_symbol:'VIU',holding_name:'Vanguard FTSE Developed All Cap ex North America Index ETF',weight_pct:11.05,asset_type:'ETF',as_of_date:'2026-08-31',known_investment_id:'48d70abc-b2be-44da-a118-98a0168c39bc',known_investment_name:'Vanguard FTSE Developed All Cap ex North America Index ETF'}
+ ]}
+};
+const vbalRisk={status:'available',summary:'An asset-allocation ETF with high access to money and high diversification. Loss potential is medium while price movement is low to medium.',as_of_date:'2026-09-14',
+ overall_risk:{band:'Low to Medium',confidence:'High'},dominant_risks:[],key_flags:[],dimensions:[
+  {code:'loss_potential',level:'Medium',direction:'higher_is_worse',confidence:'High'},
+  {code:'price_movement',level:'Low to Medium',direction:'higher_is_worse',confidence:'High'},
+  {code:'access_to_money',level:'High',direction:'higher_is_better',confidence:'High'},
+  {code:'diversification',level:'High',direction:'higher_is_better',confidence:'High'}
+ ]};
+
 function matchPayload(){return contextReady?{status:'available',model_version:'investment-dna-match-v7',goal_model_version:'goal-fit-v1',results:[matchItem],top_matches:[matchItem],alternatives:[],consider:[],mismatch:[],eligible_count:1,universe_count:40,data_as_of:'2026-09-18'}:{status:'context_required',model_version:'investment-dna-match-v7',goal_model_version:'goal-fit-v1',results:[],top_matches:[],alternatives:[],consider:[],mismatch:[],eligible_count:0,universe_count:40,data_as_of:'2026-09-18',context_only_score_policy:'hidden_until_context_complete'}}
 
 async function installMocks(ctx){
@@ -81,7 +135,11 @@ async function installMocks(ctx){
   ]);
   if(url.includes('/rest/v1/rpc/get_current_investor_app_state'))return send({has_profile:true,assessment_id:assessmentId,dna,report:report(),matches:matchPayload()});
   if(url.includes('/rest/v1/rpc/app_watchlist'))return send({items:[{investment_id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio'}]});
-  if(url.includes('/rest/v1/rpc/app_get_instrument'))return send({id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',asset_type:'ETF',currency:'CAD'});
+  if(url.includes('/rest/v1/rpc/app_get_instrument_dna'))return send(vbalDna);
+  if(url.includes('/rest/v1/rpc/app_get_official_fund_facts'))return send(vbalFacts);
+  if(url.includes('/rest/v1/rpc/app_get_investment_research_context'))return send(vbalResearch);
+  if(url.includes('/rest/v1/rpc/app_get_product_risk'))return send(vbalRisk);
+  if(url.includes('/rest/v1/rpc/app_get_instrument'))return send(vbalInstrument);
   if(url.includes('/rest/v1/rpc/'))return send(null);
   return route.abort();
  });
@@ -106,6 +164,10 @@ async function runViewport(browser,label,viewport){
  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:/Research different structures without the jargon\./}).waitFor();
  await shot(page,label+'-01b-explore');
+
+ await page.goto(ORIGIN+'/investment/'+matchItem.investment_id,{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:'Vanguard Balanced ETF Portfolio',exact:true}).waitFor();
+ await shot(page,label+'-01c-investment-detail');
 
  await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});
  await page.getByRole('button',{name:'Start as guest'}).waitFor();
