@@ -2,9 +2,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const token = process.env.VERCEL_PREVIEW_SHARE_TOKEN || '';
-if (!token) {
-  console.error('Missing VERCEL_PREVIEW_SHARE_TOKEN GitHub Actions secret.');
+const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '';
+if (!bypassSecret) {
+  console.error('Missing VERCEL_AUTOMATION_BYPASS_SECRET GitHub Actions secret.');
   process.exit(2);
 }
 
@@ -28,12 +28,11 @@ if (!source.includes(compareMarker)) {
 }
 
 const bootstrap = [
-  "const shareToken = process.env.VERCEL_PREVIEW_SHARE_TOKEN;",
-  "assert.ok(shareToken, 'VERCEL_PREVIEW_SHARE_TOKEN is required');",
-  "await page.goto(ORIGIN + '/?_vercel_share=' + encodeURIComponent(shareToken), { waitUntil: 'domcontentloaded' });",
-  "assert.equal(new URL(page.url()).host, expectedHost, 'Share bootstrap redirected away from app to ' + page.url());",
-  '',
-  marker
+  "const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;",
+  "assert.ok(bypassSecret, 'VERCEL_AUTOMATION_BYPASS_SECRET is required');",
+  "await page.setExtraHTTPHeaders({'x-vercel-protection-bypass': bypassSecret, 'x-vercel-set-bypass-cookie': 'true'});",
+  marker,
+  "assert.equal(new URL(page.url()).host, expectedHost, 'Automation bypass redirected away from app to ' + page.url());"
 ].join('\n');
 
 // Keep the guest journey inside the same Next.js application session. A full
