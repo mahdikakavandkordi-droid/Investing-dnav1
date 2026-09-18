@@ -105,3 +105,40 @@
  .official-cost-grid-v2{grid-template-columns:repeat(2,1fr)!important}
  .structure-extra-list,.terms-grid-v2{grid-template-columns:repeat(2,1fr)}
 }
+
+
+/* Desktop Explore polish */
+.research-state{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ min-height:25px;
+ padding:5px 8px;
+ border-radius:999px;
+ background:#f0f4f5;
+ color:#6b7d88;
+ font-size:9px;
+ font-weight:850;
+ letter-spacing:.03em;
+ white-space:nowrap;
+}
+.research-state-match{background:#e4f7f2;color:#087b72}
+@media(min-width:761px){
+ .explore-hero-v2{padding-top:64px}
+ .explore-hero-row{align-items:center}
+ .explore-hero-row>.btn{min-width:190px;justify-content:center}
+ .explore-search-v2{box-shadow:0 6px 18px rgba(7,26,52,.025)}
+ .explore-catalog-v2{padding-top:36px}
+ .investment-card-v2{
+  min-height:360px;
+  border-radius:18px;
+  padding:21px;
+ }
+ .investment-card-copy h2{font-size:21px;line-height:1.2}
+ .investment-card-metrics div{min-height:58px}
+ .investment-card-footer a{transition:transform .16s ease,color .16s ease}
+ .investment-card-footer a:hover{transform:translateX(2px);color:#066b65}
+}
+@media(max-width:760px){
+ .research-state{font-size:8.5px;min-height:23px;padding:4px 7px}
+}
