@@ -135,6 +135,27 @@ export type MatchPayload = {
   mismatch?: MatchItem[];
 };
 
+export type AssessmentDimensionSection = {
+  answer_count?: number;
+  overall_score?: number|null;
+  raw_score?: number|null;
+  dimensions?: Record<string,number>;
+  guard?: Record<string,unknown>;
+  decision_experience?: string|null;
+  downturn_experience?: string|null;
+  owned_products?: string[];
+  role?: string;
+};
+
+export type AssessmentDimensions = {
+  question_count?: number;
+  questionnaire_version?: string;
+  risk_tolerance?: AssessmentDimensionSection;
+  behavioral_dna?: AssessmentDimensionSection;
+  risk_capacity?: AssessmentDimensionSection;
+  investment_experience?: AssessmentDimensionSection;
+};
+
 export type DNA = {
   archetype?: string;
   risk_tolerance?: number;
@@ -145,6 +166,7 @@ export type DNA = {
   calibration_status?: string;
   behavioral_profile?: Record<string,number>;
   experience_profile?: ExperienceProfile;
+  assessment_dimensions?: AssessmentDimensions;
   quality_profile?: QualityProfile;
   decision_style?: string;
   pressure_style?: string;
