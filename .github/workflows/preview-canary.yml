@@ -5,6 +5,7 @@ on:
     branches:
       - codex/platform-v4-account-continuity
       - codex/visual-redesign-v1
+      - codex/integration-product-risk-platform-v1
   workflow_dispatch:
 
 jobs:
@@ -26,6 +27,7 @@ jobs:
           VERCEL_PREVIEW_SHARE_TOKEN: ${{ secrets.VERCEL_PREVIEW_SHARE_TOKEN }}
           PLATFORM_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-pla-e975cf-mahdikakavandkordi-9201.vercel.app
           VISUAL_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-vis-a45e9f-mahdikakavandkordi-9201.vercel.app
+          INTEGRATION_PREVIEW_ORIGIN: https://invasting-dna-agq7-git-codex-int-648dcb-mahdikakavandkordi-9201.vercel.app
         run: |
           set -e
           if [ -z "${VERCEL_PREVIEW_SHARE_TOKEN}" ]; then
@@ -39,6 +41,9 @@ jobs:
               ;;
             codex/platform-v4-account-continuity)
               TEST_ORIGIN="${PLATFORM_PREVIEW_ORIGIN}"
+              ;;
+            codex/integration-product-risk-platform-v1)
+              TEST_ORIGIN="${INTEGRATION_PREVIEW_ORIGIN}"
               ;;
             *)
               echo "No protected preview origin configured for ${GITHUB_REF_NAME}"
