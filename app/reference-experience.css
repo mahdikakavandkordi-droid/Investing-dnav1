@@ -120,6 +120,8 @@ body{background:#f7faf9;color:var(--ref-navy)}
 .personalization-scenery{border-radius:0 24px 24px 0!important;border-left:0!important}
 
 /* REPORT */
+.report-part-header{display:flex;align-items:end;justify-content:space-between;gap:24px;padding:8px 4px 2px}
+.report-part-header>div{display:grid;gap:3px}.report-part-header span{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#0c8d82;font-weight:850}.report-part-header strong{font-size:22px;color:#17364b;letter-spacing:-.025em}.report-part-header p{max-width:490px;margin:0;color:#6d7f89;font-size:13px;line-height:1.55;text-align:right}
 .result-page{background:linear-gradient(180deg,#f6faf9,#f0f5f5 340px,#f8faf9)!important;padding-top:24px!important}
 .result-container{max-width:1120px!important}
 .dna-report-v2{gap:16px!important}
