@@ -25,6 +25,9 @@ export function DnaJourneyVisual({current,total}:{current:number;total:number}){
    <strong>{String(stage).padStart(2,'0')} / {String(rungCount).padStart(2,'0')}</strong>
   </div>
   <div className="dna-journey-inner">
+   <div className="dna-mini-helix" aria-hidden="true">
+    {rungs.map(rung=><span key={`mini-${rung.index}`} className={'dna-mini-rung '+(rung.index%2?'odd':'even')+' '+(rung.index<active?'complete':rung.index===active?'active':'')}><i/><b/></span>)}
+   </div>
    <svg viewBox="0 0 240 570" role="presentation">
     <defs>
      <linearGradient id="dnaFadeA" x1="0" y1="0" x2="0" y2="1">
