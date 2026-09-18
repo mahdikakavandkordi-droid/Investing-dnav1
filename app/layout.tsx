@@ -2,6 +2,7 @@
 import type {ReactNode} from 'react';
 import "./globals.css";
 import "./assessment-onboarding.css";
+import "./assessment-methodology.css";
 import "./result-report.css";
 import "./investment-dna.css";
 import "./match-dna.css";
