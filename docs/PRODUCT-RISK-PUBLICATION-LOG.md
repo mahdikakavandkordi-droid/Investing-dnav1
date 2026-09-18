@@ -90,3 +90,37 @@ After publication:
 
 Publication migration:
 - `20260918115536_publish_second_reviewed_product_risk_ishares_set.sql`
+
+
+## 2026-09-18 — Third reviewed publication set: Vanguard cohort
+
+Fifteen Vanguard Canada ETFs were promoted only after the official ETF Facts evidence gaps were closed.
+
+Evidence added before publication:
+- source-backed average bid-ask spreads from official Vanguard ETF Facts for the 12 months ending May 31, 2026
+- source-backed total investment counts from those ETF Facts for diversification
+- VCN official-risk evidence refreshed to its July 16, 2026 ETF Facts
+- all drafts re-evaluated after evidence ingestion
+
+Published symbols:
+`VAB, VBAL, VCB, VCN, VCNS, VDY, VEE, VEQT, VFV, VGRO, VIU, VRE, VSB, VUN, VXC`
+
+Publication gate:
+- all 15 were `evidence_ready_for_review`
+- all 15 had High profile confidence
+- all 15 had four High-confidence consumer dimensions
+- zero Unknown/N/A dimensions
+- source-backed spread evidence and holdings-count evidence were both present
+- official Vanguard risk and ETF Facts records were present
+
+### Runtime verification
+
+After publication:
+- published Product Risk profiles: **40**
+- remaining shadow drafts: **15**
+- `public.app_get_product_risk(...)` returned `status=available` for all 15 Vanguard profiles
+- all 15 returned four consumer dimensions
+- no RPC verification failures were observed
+
+Publication migration:
+- `20260918120330_publish_third_reviewed_product_risk_vanguard_set.sql`
