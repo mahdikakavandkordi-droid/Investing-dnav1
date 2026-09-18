@@ -30,6 +30,7 @@ function state(hasDna){
   if(url.includes('/rpc/app_search_investments'))return send([fund,fund2]);
   if(url.includes('/rpc/app_get_investment_research_context'))return send(body.p_investment_id===id?research:body.p_investment_id===id2?research2:null);
   if(url.includes('/rpc/app_get_investment_dna'))return send(null);if(url.includes('/rpc/app_get_official_fund_facts'))return send(null);
+  if(url.includes('/rpc/app_get_product_risk'))return send({status:'not_available',reason:'No calibrated Product Risk DNA profile has been published for this investment.'});
   if(url.includes('/rpc/app_get_instrument')){const found=body.p_investment_id===id?fund:body.p_investment_id===id2?fund2:null;if(body.p_investment_id===id&&failDetail)return send({message:'Temporary detail error'},503);return send(found);}
   if(url.includes('/rpc/app_compare_instruments')){const ids=body.p_investment_ids||[];return send(ids.map(x=>x===id?fund:x===id2?fund2:null).filter(Boolean));}
   if(url.includes('/rpc/app_watchlist')){assert.ok(req.headers().authorization);if(body.p_action==='list')return send({items:saved?[{investment_id:id,symbol:fund.symbol,name:fund.name}]:[]});if(body.p_action==='add'){if(failSave){failSave=false;return send({message:'Temporary watchlist error'},503);}saved=true;return send({item:{investment_id:id}});}if(body.p_action==='remove'){saved=false;return send({removed:true});}}
