@@ -1,0 +1,10 @@
+alter table public.investment_context drop constraint if exists investment_context_goal_check;
+alter table public.investment_context add constraint investment_context_goal_check check (goal = any (array['growth','retirement','house_purchase','education','income','wealth_preservation','preservation','major_purchase','other']));
+alter table public.investment_context drop constraint if exists investment_context_time_horizon_check;
+alter table public.investment_context add constraint investment_context_time_horizon_check check (time_horizon = any (array['under_2','2_5','5_10','10_plus','lt_1y','1_3y','3_5y','5_10y','gt_10y']));
+alter table public.investment_context drop constraint if exists investment_context_liquidity_need_check;
+alter table public.investment_context add constraint investment_context_liquidity_need_check check (liquidity_need = any (array['high','medium','low','very_high']));
+alter table public.investment_context drop constraint if exists investment_context_required_return_check;
+alter table public.investment_context add constraint investment_context_required_return_check check (required_return = any (array['preserve','moderate','growth','aggressive','capital_preservation','moderate_growth','strong_growth','maximum_growth']));
+alter table public.investment_context drop constraint if exists investment_context_loss_consequence_check;
+alter table public.investment_context add constraint investment_context_loss_consequence_check check (loss_consequence = any (array['severe','meaningful','manageable','low_impact','minimal']));

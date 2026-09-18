@@ -1,0 +1,11 @@
+create or replace function public.create_report_snapshot(p_assessment_id uuid) returns jsonb language plpgsql set search_path to 'public' as $$
+declare r public.results%rowtype; f public.fingerprint_profiles%rowtype; n public.narratives%rowtype; c public.investment_context%rowtype; p jsonb; rid uuid;
+begin
+ select * into r from public.results where assessment_id=p_assessment_id order by created_at desc limit 1; if not found then raise exception 'Result not found for assessment %',p_assessment_id; end if;
+ select * into f from public.fingerprint_profiles where assessment_id=p_assessment_id order by created_at desc limit 1; if not found then raise exception 'Fingerprint not found for assessment %',p_assessment_id; end if;
+ select * into n from public.narratives where assessment_id=p_assessment_id order by created_at desc limit 1; if not found then raise exception 'Narrative not found for assessment %',p_assessment_id; end if;
+ select * into c from public.investment_context where assessment_id=p_assessment_id limit 1;
+ p := jsonb_build_object('assessment_id',p_assessment_id,'report_version','report-v1.1','model_version',r.model_version,'generated_at',now(),'archetype',r.archetype,'risk_tolerance',r.risk_tolerance,'risk_capacity',r.risk_capacity,'behavioral_profile',r.behavioral_profile,'fingerprint_code',f.fingerprint_code,'decision_style',f.decision_style,'pressure_style',f.pressure_style,'strengths',f.strengths,'watchouts',f.watchouts,'narrative',n.narrative,'investment_context',case when c.id is null then null else jsonb_build_object('age',c.age,'amount_to_invest',c.amount_to_invest,'amount_currency',c.amount_currency,'goal',c.goal,'time_horizon',c.time_horizon,'liquidity_need',c.liquidity_need,'required_return',c.required_return,'loss_consequence',c.loss_consequence,'experience',c.experience) end);
+ insert into public.report_snapshots(assessment_id,report_version,model_version,report) values(p_assessment_id,'report-v1.1',r.model_version,p) on conflict (assessment_id,report_version,model_version) do update set report=excluded.report,generated_at=now() returning id into rid;
+ return jsonb_build_object('id',rid,'report',p);
+end; $$;

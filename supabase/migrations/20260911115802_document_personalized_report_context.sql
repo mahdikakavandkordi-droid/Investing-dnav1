@@ -1,0 +1,1 @@
+comment on column public.investment_context.first_name is 'First name supplied by the participant for personalization of the user-facing report; not used in DNA scoring';

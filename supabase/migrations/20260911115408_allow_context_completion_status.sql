@@ -1,0 +1,1 @@
+comment on table public.investment_context is 'Investment context is collected after DNA result; it does not affect DNA scoring.';

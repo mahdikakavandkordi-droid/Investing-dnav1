@@ -1,0 +1,1 @@
+create index if not exists investment_context_assessment_id_idx on public.investment_context(assessment_id);
