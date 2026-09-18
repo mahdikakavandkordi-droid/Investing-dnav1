@@ -58,6 +58,23 @@ assert.match(profileBootstrapHardening,/revoke execute on function public\.get_o
 const profileOwnershipHardening=readFileSync(new URL('../supabase/migrations/20260918110922_make_profile_ownership_check_invoker.sql',import.meta.url),'utf8');
 assert.match(profileOwnershipHardening,/alter function public\.is_current_profile\(uuid\) security invoker/);
 assert.match(profileOwnershipHardening,/grant select\(id,user_id\) on public\.profiles to authenticated/);
+const internalGrantHardening=readFileSync(new URL('../supabase/migrations/20260918111110_revoke_legacy_browser_table_grants.sql',import.meta.url),'utf8');
+assert.match(internalGrantHardening,/revoke all privileges on table/);
+for (const internalTable of [
+  'investment_data_refresh_runs',
+  'investment_intelligence_profiles',
+  'investment_match_narratives',
+  'investment_official_facts',
+  'market_data_ingestion_log',
+  'market_data_normalization_rules',
+  'market_data_provider_adapters',
+  'market_data_refresh_runs',
+  'market_data_source_routing',
+  'market_data_sources'
+]) {
+  assert.ok(internalGrantHardening.includes('public.'+internalTable), 'Internal table grant hardening missing '+internalTable);
+}
+assert.match(internalGrantHardening,/from anon, authenticated/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
