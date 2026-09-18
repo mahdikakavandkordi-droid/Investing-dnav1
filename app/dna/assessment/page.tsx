@@ -301,6 +301,7 @@ function QuestionStep({
  const last=draft.index===questions.length-1;
  const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
  const multi=question.question_type==='multi_choice';
+ const scale=question.question_type==='scale';
  const chosenValues=multi
   ? Array.isArray(chosen)?chosen:typeof chosen==='string'&&chosen?[chosen]:[]
   : [];
@@ -349,19 +350,23 @@ function QuestionStep({
    <h1 className="question-title">{question.prompt}</h1>
    {multi&&<p className="question-hint">Select all that apply.</p>}
 
-   <div className={'question-options '+(options.length<=4?'question-options-compact':'')} role="group" aria-label="Answer choices">
+   <div className={'question-options '+(scale?'question-options-scale ':options.length<=4?'question-options-compact ':'')} role="group" aria-label="Answer choices">
     {options.map((option,index)=>{
      const selected=multi?chosenValues.includes(option.value):chosen===option.value;
      return <button
       aria-pressed={selected}
-      className={'option '+(selected?'active':'')}
+      className={'option '+(scale?'scale-option ':'')+(selected?'active':'')}
       key={option.value}
       disabled={busy}
       onClick={()=>choose(option.value)}
      >
-      <span className="option-indicator" aria-hidden="true">{selected?'✓':multi?'':'○'}</span>
-      <span className="option-copy">{option.label}</span>
-      <span className="option-index" aria-hidden="true">{index+1}</span>
+      {scale
+       ? <span className="scale-value">{option.label}</span>
+       : <>
+          <span className="option-indicator" aria-hidden="true">{selected?'✓':multi?'':'○'}</span>
+          <span className="option-copy">{option.label}</span>
+          <span className="option-index" aria-hidden="true">{index+1}</span>
+         </>}
      </button>;
     })}
    </div>
