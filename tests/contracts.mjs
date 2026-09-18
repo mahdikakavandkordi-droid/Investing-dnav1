@@ -51,6 +51,10 @@ assert.doesNotMatch(questionnaireBlock,/\.\.\.row/);
 assert.doesNotMatch(questionnaireBlock,/\.select\([^)]*weight/);
 assert.doesNotMatch(questionnaireBlock,/construct_role/);
 assert.match(edgeSource,/anonymous_code: participant\.anonymous_code/);
+assert.match(edgeSource,/async function ensureProfile\(admin: any, authUser: any\)/);
+assert.doesNotMatch(edgeSource,/userClient!\.rpc\('get_or_create_current_profile'\)/);
+const profileBootstrapHardening=readFileSync(new URL('../supabase/migrations/20260918111500_harden_profile_bootstrap_rpc.sql',import.meta.url),'utf8');
+assert.match(profileBootstrapHardening,/revoke execute on function public\.get_or_create_current_profile\(\) from public, anon, authenticated/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
