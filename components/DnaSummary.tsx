@@ -44,21 +44,35 @@ export function DnaSummary({dna,report}:{dna:DNA;report?:DNA|null}){
    clarificationRecommended={!!quality?.clarification_recommended}
   />
 
-  <RiskProfileSection archetype={archetype} tolerance={tolerance} capacity={capacity}/>
-
-  <DecisionProfileSection
-   behavioral={behavioral}
+  <QuickReadSection
+   summary={narrative.summary||meta.tagline}
    strength={narrative.strength}
    blindSpot={narrative.blind_spot}
+  />
+
+  <SnapshotSection
+   tolerance={tolerance}
+   capacity={capacity}
    decision={decision}
    pressure={pressure}
   />
 
-  <PlainEnglishSection
-   summary={narrative.summary||meta.tagline}
-   decisionText={decision.text}
-   pressureText={pressure.text}
-  />
+  <details className="result-deep-dive">
+   <summary>
+    <span><small>Full breakdown</small>Explore how your DNA was built</span>
+    <b aria-hidden="true">+</b>
+   </summary>
+   <div className="result-deep-dive-body">
+    <RiskProfileSection archetype={archetype} tolerance={tolerance} capacity={capacity}/>
+    <DecisionProfileSection
+     behavioral={behavioral}
+     strength={narrative.strength}
+     blindSpot={narrative.blind_spot}
+     decision={decision}
+     pressure={pressure}
+    />
+   </div>
+  </details>
 
   {context&&<ContextSummary context={context}/>} 
 
@@ -92,6 +106,54 @@ function ReportHero({
    <Image src={`/characters/${archetype.toLowerCase()}.png`} alt="" width={230} height={230} priority/>
   </div>
  </section>;
+}
+
+function QuickReadSection({summary,strength,blindSpot}:{summary:string;strength?:string;blindSpot?:string}){
+ return <section className="report-section report-quick-read">
+  <div className="eyebrow">Your DNA at a glance</div>
+  <h2>Start with the part that matters most.</h2>
+  <p className="quick-read-summary">{summary}</p>
+  <div className="quick-read-insights">
+   <div className="quick-read-insight quick-read-strength">
+    <span aria-hidden="true">✓</span>
+    <div><small>What may work in your favour</small><p>{strength||'No single behavioral strength stands out strongly enough yet.'}</p></div>
+   </div>
+   <div className="quick-read-insight quick-read-watch">
+    <span aria-hidden="true">!</span>
+    <div><small>Worth watching</small><p>{blindSpot||'No single behavioral watchpoint stands out strongly enough yet.'}</p></div>
+   </div>
+  </div>
+ </section>;
+}
+
+function SnapshotSection({
+ tolerance,capacity,decision,pressure
+}:{
+ tolerance:unknown;
+ capacity:unknown;
+ decision:{label:string;text:string};
+ pressure:{label:string;text:string};
+}){
+ return <section className="report-section report-snapshot">
+  <div className="report-snapshot-head">
+   <div><div className="eyebrow">Key signals</div><h2>Your profile, without the noise.</h2></div>
+   <span className="snapshot-note">Tap the full breakdown below for details</span>
+  </div>
+  <div className="snapshot-grid">
+   <SnapshotMetric label="Risk tolerance" value={score(tolerance)} suffix="/100" note={riskBand(tolerance)}/>
+   <SnapshotMetric label="Financial capacity" value={score(capacity)} suffix="/100" note={riskBand(capacity)}/>
+   <SnapshotMetric label="Decision tendency" value={decision.label} note="Your clearest pattern"/>
+   <SnapshotMetric label="Under pressure" value={pressure.label} note="When markets get stressful"/>
+  </div>
+ </section>;
+}
+
+function SnapshotMetric({label,value,suffix,note}:{label:string;value:string|number;suffix?:string;note:string}){
+ return <div className="snapshot-metric">
+  <span>{label}</span>
+  <strong>{value}{suffix&&<small>{suffix}</small>}</strong>
+  <em>{note}</em>
+ </div>;
 }
 
 function RiskProfileSection({archetype,tolerance,capacity}:{archetype:string;tolerance:unknown;capacity:unknown}){
@@ -218,16 +280,6 @@ function InsightCard({
   <span className="insight-icon">{icon}</span>
   <div><small>{kicker}</small><h3>{title}</h3><p>{text}</p></div>
  </div>;
-}
-
-function PlainEnglishSection({summary,decisionText,pressureText}:{summary:string;decisionText:string;pressureText:string}){
- return <section className="report-section report-story">
-  <div className="eyebrow">03 · What this means</div>
-  <h2>Your profile in plain English</h2>
-  <p>{summary}</p>
-  <p>{decisionText}</p>
-  <p>{pressureText}</p>
- </section>;
 }
 
 function ContextSummary({context}:{context:NonNullable<DNA['investment_context']>}){
