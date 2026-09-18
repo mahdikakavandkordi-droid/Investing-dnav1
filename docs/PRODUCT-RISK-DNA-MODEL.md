@@ -913,6 +913,8 @@ Implemented and live in shadow mode as of 2026-09-17:
 - four consumer dimensions with explicit direction;
 - source-backed BMO ETF Facts observations for holdings count, average daily volume and bid-ask spread where used in calibration;
 - service-only batch refresh of draft profiles;
+- consumer UI contract and investment-detail card wired to the published-only RPC;
+- public methodology surface explaining dimensions, confidence and separation from DNA Match;
 - **55 draft profiles and 0 published Product Risk DNA profiles**.
 
 ### ETF calibration candidate
@@ -941,6 +943,8 @@ Current research weights:
 
 These are **research calibration weights, not a regulatory standard**. They remain shadow-only until review. Asset-specific weighting is intentional: the same four consumer concepts are retained while the materiality of each risk differs by product structure.
 
+Overall confidence is evidence-sensitive rather than cosmetic. For ETFs, a High overall confidence requires High-confidence evidence across all four consumer dimensions. Medium fallback evidence for Access or Diversification caps overall confidence at Medium; insufficient core Loss/Price evidence yields Insufficient.
+
 Current ordering invariants include:
 
 - cashable GIC access > otherwise comparable non-redeemable GIC access;
@@ -957,7 +961,7 @@ Current ordering invariants include:
 3. strengthen direct-bond credit-rating/duration evidence instead of relying primarily on structural labels;
 4. build issue-level CP/ABCP evidence before allowing non-Unknown outputs;
 5. review the hidden weights/hard floors against external expert feedback;
-6. only then publish a controlled pilot subset and build the Product Risk UI / popups / methodology surface.
+6. only then publish a controlled pilot subset; the already-wired Product Risk card will remain hidden until the public RPC can read that reviewed subset.
 
 ## 13. Modular implementation contract
 

@@ -9,6 +9,10 @@ const baseEvaluators=read('supabase/migrations/20260917233349_product_risk_shado
 const drafts=read('supabase/migrations/20260917233435_product_risk_shadow_drafts_and_consumer_contract.sql');
 const etfCalibration=read('supabase/migrations/20260917235755_product_risk_etf_source_of_truth_calibration.sql');
 const crossAsset=read('supabase/migrations/20260917235954_product_risk_cross_asset_overall_calibration.sql');
+const confidence=read('supabase/migrations/20260918002215_product_risk_confidence_calibration.sql');
+const riskCard=read('components/ProductRiskCard.tsx');
+const detailPage=read('app/investment/[id]/page.tsx');
+const methodology=read('app/research/product-risk/page.tsx');
 
 for(const code of ['loss_potential','price_movement','access_to_money','diversification']){
  assert.match(dimensions,new RegExp("code:'"+code+"'"),'missing consumer dimension '+code);
@@ -43,5 +47,14 @@ assert.doesNotMatch(
 assert.match(crossAsset,/product_risk_overall_v1\('GIC'/);
 assert.match(crossAsset,/product_risk_overall_v1\('T_BILL'/);
 assert.match(crossAsset,/product_risk_overall_v1\('BOND'/);
+assert.match(confidence,/product_risk_overall_confidence_v1/);
+assert.match(confidence,/ae->>'confidence'/);
+assert.match(confidence,/de->>'confidence'/);
+assert.match(riskCard,/getProductRisk\(investmentId\)/);
+assert.match(riskCard,/status==='available'/);
+assert.match(riskCard,/Product Risk describes the investment/);
+assert.match(detailPage,/<ProductRiskCard investmentId=\{item\.id\}\/>/);
+assert.match(methodology,/Overall Risk is not DNA Match/);
+assert.match(methodology,/Only explicitly reviewed and published profiles/);
 
-console.log('PASS Product Risk DNA contracts: source-backed ETF calibration, directed dimensions, modular hidden overall, shadow-only publication gate');
+console.log('PASS Product Risk DNA contracts: calibrated confidence, published-only UI, directed dimensions and modular hidden overall');

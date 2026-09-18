@@ -20,6 +20,7 @@ import {InstrumentTermsCard} from '@/components/InstrumentTermsCard';
 import {InvestmentDnaCard} from '@/components/InvestmentDnaCard';
 import {OfficialFundFactsCard,OfficialFundDocumentCard} from '@/components/OfficialFundFactsCard';
 import {ResearchContextCard} from '@/components/ResearchContextCard';
+import {ProductRiskCard} from '@/components/ProductRiskCard';
 
 /** Generic cross-asset detail shell; ETF-only research is composed when eligible. */
 export default function Detail(){
@@ -117,6 +118,7 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
   <div className="detail-flow-v2">
    {isFund&&facts&&<OfficialFundFactsCard facts={facts}/>} 
    {isFund&&dna?<InvestmentDnaCard dna={dna}/>:!isFund?<InstrumentStructureCard instrument={item}/>:null}
+   <ProductRiskCard investmentId={item.id}/>
    {!isFund&&<InstrumentTermsCard instrument={item}/>} 
    {isFund&&research&&<ResearchContextCard context={research}/>} 
    {isFund&&<FundResearchDetails item={item} facts={facts}/>} 

@@ -5,6 +5,7 @@ import "./result-report.css";
 import "./investment-dna.css";
 import "./match-dna.css";
 import "./product-value.css";
+import "./product-risk.css";
 import "./redesign-brand.css";
 import "./redesign-research.css";
 import "./redesign-utility.css";
