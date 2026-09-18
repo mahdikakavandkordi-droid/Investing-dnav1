@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
+import Link from "next/link";
 import {supabase,pilot} from "@/lib/supabase";
 import {
  answerRows,
@@ -166,13 +167,38 @@ function AssessmentIntro({locale,cohort,busy,error,onLocale,onStart}:{locale:Ass
   </div>
   <h1>{copy.title}</h1><p className="assessment-lede">{copy.lede}</p>
   <div className="assessment-meta" aria-label="Assessment details"><span>{copy.questions}</span><span>{copy.guest}</span><span>{copy.save}</span></div>
+  <AssessmentDimensionsVisual copy={copy}/>
   <div className="assessment-principle"><span className="principle-mark">✦</span><div><p className="principle-title">{copy.principle}</p><p>{copy.principleBody}</p></div></div>
-  <button className="btn primary assessment-start" disabled={busy} onClick={onStart}>{busy?copy.starting:copy.start}</button>
+  <div className="assessment-intro-actions">
+   <button className="btn primary assessment-start" disabled={busy} onClick={onStart}>{busy?copy.starting:copy.start}</button>
+   <Link className="btn assessment-methodology-link" href="/research/investor-dna">{copy.methodology}</Link>
+  </div>
   <p className="muted fine assessment-account-note">No account is needed. If the result is useful, you can choose to save it after you see it.</p>
   <p className="muted fine assessment-consent">{copy.consent}</p>
   {cognitive&&<p className="notice">Research session: answer naturally. Your moderator may ask what you thought a question meant after you finish.</p>}
   {error&&<p role="alert" className="notice">{error}</p>}
  </div>;
+}
+
+function AssessmentDimensionsVisual({copy}:{copy:(typeof ASSESSMENT_COPY)[AssessmentLocale]}){
+ const dimensions=[
+  {key:'risk_tolerance',count:10,mark:'↕'},
+  {key:'behavioral_dna',count:10,mark:'◇'},
+  {key:'risk_capacity',count:5,mark:'▥'},
+  {key:'investment_experience',count:3,mark:'○'}
+ ] as const;
+ return <section className="assessment-dimensions-preview" aria-label={copy.measureTitle}>
+  <div className="assessment-dimensions-head">
+   <div><span>{copy.measureTitle}</span><p>{copy.measureNote}</p></div>
+   <div className="assessment-dna-core" aria-hidden="true"><b>DNA</b><small>28</small></div>
+  </div>
+  <div className="assessment-dimension-map">
+   {dimensions.map(item=><div className={'assessment-dimension-node dimension-'+item.key} key={item.key}>
+    <span className="dimension-mark" aria-hidden="true">{item.mark}</span>
+    <div><strong>{copy.sections[item.key]}</strong><small>{item.count} {item.count===1?'question':'questions'}</small></div>
+   </div>)}
+  </div>
+ </section>;
 }
 
 function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error,onPersist}:{locale:AssessmentLocale;cohort:AssessmentCohort;draft:Draft;questions:Question[];question:Question;busy:boolean;warning:string;error:string;onPersist:(draft:Draft)=>void;}){
