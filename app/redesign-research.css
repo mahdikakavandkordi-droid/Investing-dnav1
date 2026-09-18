@@ -9,3 +9,99 @@
 
 .instrument-structure-v2{padding:28px}.investment-dna-grid-v2{grid-template-columns:repeat(2,1fr)}.structure-extra-list{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.structure-extra-list p{margin:0;background:#f7f9f9;border-radius:13px;padding:13px;display:grid;gap:4px}.structure-extra-list span{font-size:10px;color:#81909a}.structure-extra-list strong{font-size:13px;color:#29475a}.structure-coverage-note{border-top:1px solid #e8eeee;padding-top:13px}
 .instrument-terms-v2{padding:28px}.instrument-terms-v2 h2{font-size:28px;color:var(--dna-ink);letter-spacing:-.035em;margin:8px 0 20px}.terms-grid-v2{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.term-stat-v2{background:#f7f9f9;border-radius:14px;padding:15px;display:grid;gap:5px}.term-stat-v2 span{font-size:10px;color:#7c8993}.term-stat-v2 strong{font-size:16px;color:#1d3b50}.terms-note-v2{margin-top:16px;padding:15px;border-radius:14px;background:#f3f8f7;color:#526b69;line-height:1.55}.terms-source-v2{margin:16px 0 0;color:#788891}.terms-source-v2 a{color:#0b7d74;font-weight:700}
+
+
+/* Asset-language refinement */
+.investment-card-v2{position:relative;overflow:hidden}
+.investment-card-v2:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#80cfc3}
+.investment-card-etf:before{background:#65c8b8}
+.investment-card-gic:before{background:#e8c85d}
+.investment-card-bond:before{background:#9b83d8}
+.investment-card-t_bill:before{background:#e59494}
+.investment-card-commercial_paper:before{background:#8aa9b5}
+.investment-card-etf .asset-tag{background:#dff4ef;color:#177f72}
+.investment-card-gic .asset-tag{background:#fff0bd;color:#86680b}
+.investment-card-bond .asset-tag{background:#eee5ff;color:#6a4aa6}
+.investment-card-t_bill .asset-tag{background:#ffe0e0;color:#aa4b4b}
+.investment-card-commercial_paper .asset-tag{background:#e7eff3;color:#4e7180}
+
+@media(max-width:760px){
+ .explore-hero-v2{padding:30px 0 22px}
+ .explore-hero-v2 .container,.explore-catalog-v2 .container{padding-left:16px;padding-right:16px}
+ .explore-hero-row{display:grid;gap:14px;align-items:start}
+ .explore-hero-row h1{font-size:34px;line-height:1.03;margin:8px 0 10px}
+ .explore-hero-row p{font-size:14px;line-height:1.52}
+ .explore-hero-row>.btn{justify-self:start}
+ .explore-search-v2{margin-top:20px;height:52px;border-radius:13px;padding:0 14px}
+ .explore-search-v2 input{font-size:14px}
+ .explore-tabs-v2{
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  margin:16px -16px 0;
+  padding:0 16px 4px;
+  scrollbar-width:none;
+ }
+ .explore-tabs-v2::-webkit-scrollbar{display:none}
+ .explore-tabs-v2 button{flex:0 0 auto;padding:8px 12px;font-size:11px}
+ .explore-catalog-v2{padding:22px 0 46px}
+ .explore-catalog-head{display:grid;gap:10px;margin-bottom:14px}
+ .explore-catalog-head>div>strong{font-size:15px}
+ .explore-catalog-head>div>span{font-size:11px;line-height:1.45}
+ .explore-catalog-head>.pill{justify-self:start}
+ .explore-grid-v2,.explore-loading-grid{grid-template-columns:1fr;gap:12px}
+ .investment-card-v2{
+  min-height:0;
+  padding:17px;
+  border-radius:16px;
+  box-shadow:0 7px 20px rgba(7,26,52,.035);
+ }
+ .investment-card-copy{margin-top:15px}
+ .investment-card-copy h2{font-size:19px;line-height:1.18}
+ .investment-card-copy .investment-card-issuer{font-size:11px}
+ .investment-card-copy p{font-size:11.5px;line-height:1.5;margin:8px 0}
+ .investment-card-metrics{grid-template-columns:repeat(2,1fr);gap:8px;margin:13px 0}
+ .investment-card-metrics div{padding:10px}
+ .investment-card-metrics span{font-size:9px}
+ .investment-card-metrics strong{font-size:13px}
+ .investment-card-footer{padding-top:13px}
+ .investment-card-footer a{font-size:11px}
+ .explore-skeleton{height:290px;border-radius:16px}
+}
+
+@media(max-width:560px){
+ .investment-detail-page-v2{padding:18px 0 46px}
+ .investment-detail-container-v2{padding:0 14px}
+ .detail-back-link{margin-bottom:14px;font-size:11px}
+ .detail-hero-v2{
+  display:grid;
+  gap:18px;
+  padding:20px;
+  border-radius:18px;
+ }
+ .detail-hero-copy-v2 h1{font-size:31px;line-height:1.05;margin:12px 0 6px}
+ .detail-issuer-v2{font-size:11px;margin-bottom:12px}
+ .detail-summary-v2{font-size:13px;line-height:1.55}
+ .detail-hero-actions-v2 .btn{width:100%;justify-content:center}
+ .detail-key-facts-v2{grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+ .detail-stat-v2{padding:12px;border-radius:12px}
+ .detail-stat-v2 span{font-size:9px}
+ .detail-stat-v2 strong{font-size:15px}
+ .detail-freshness-v2{font-size:10px;line-height:1.45}
+ .detail-flow-v2{gap:12px;margin-top:17px}
+ .detail-flow-v2>.card,
+ .detail-flow-v2>.investment-dna-card,
+ .detail-flow-v2>.official-facts-card,
+ .detail-flow-v2>.research-card,
+ .detail-flow-v2>.official-document-card,
+ .fund-research-details-v2,
+ .instrument-structure-v2,
+ .instrument-terms-v2{border-radius:16px!important}
+ .fund-research-details-v2,.instrument-structure-v2,.instrument-terms-v2,.official-facts-v2{padding:18px!important}
+ .fund-research-grid-v2{grid-template-columns:1fr;gap:8px}
+ .official-facts-intro h2{font-size:24px}
+ .official-facts-intro .official-summary{font-size:13px}
+ .allocation-overall-card{padding:15px;border-radius:14px}
+ .allocation-legend,.allocation-breakdown-grid{grid-template-columns:1fr}
+ .official-cost-grid-v2{grid-template-columns:repeat(2,1fr)!important}
+ .structure-extra-list,.terms-grid-v2{grid-template-columns:repeat(2,1fr)}
+}
