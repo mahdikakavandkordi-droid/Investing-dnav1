@@ -65,6 +65,43 @@ const vbalInstrument={
  profile_management_style:'Passive index-based allocation with automatic rebalancing.',
  profile_distribution_policy:'Typically quarterly distributions.'
 };
+const gicInstrument={
+ id:'34ebca65-b84e-4e2d-9395-072abb447fcc',symbol:'RBC-GIC-1Y-CASH',name:'RBC 1-Year Cashable GIC',
+ asset_type:'GIC',issuer_name:'Royal Bank of Canada',currency:'CAD',deposit_rate_pct:1.95,term_months:12,
+ redeemability:'redeemable',deposit_insurance_eligible:true,deposit_insurance_scheme:'CDIC',
+ capital_protection:'insured_deposit',liquidity_level:'medium',price_volatility:'none',income_predictability:'high',
+ growth_participation:'none',diversification_level:'concentrated',complexity_level:'low',time_structure:'fixed_term',
+ principal_protection_basis:'Eligible deposit principal is protected subject to CDIC rules and limits.',
+ data_status:'verified_partial',deposit_as_of_date:'2026-09-14',
+ description:'A one-year cashable GIC reference product designed to preserve principal while allowing earlier access subject to product terms.'
+};
+const bondInstrument={
+ id:'cd91b07d-41b5-46d1-b311-f33451057c9f',symbol:'GOC-BOND-5Y',name:'Government of Canada 5-Year Benchmark Bond',
+ asset_type:'BOND',issuer_name:'Government of Canada',currency:'CAD',coupon_pct:3,yield_to_maturity_pct:3.65,
+ maturity_date:'2031-09-01',remaining_term_months:60,capital_protection:'contractual',liquidity_level:'high',
+ price_volatility:'medium',income_predictability:'high',growth_participation:'none',interest_rate_sensitivity:'medium',
+ credit_exposure:'low',diversification_level:'single_issuer',complexity_level:'medium',time_structure:'fixed_maturity',
+ principal_protection_basis:'Face value is repaid at maturity subject to issuer credit risk.',
+ data_status:'verified_partial',fixed_income_as_of_date:'2026-09-14',
+ description:'Current five-year Government of Canada benchmark-bond reference.'
+};
+const tbillInstrument={
+ id:'3e242851-3263-4d96-a360-3ed79f2f599c',symbol:'GOC-TBILL-3M',name:'Government of Canada 3-Month T-Bill',
+ asset_type:'T_BILL',issuer_name:'Government of Canada',currency:'CAD',yield_to_maturity_pct:2.34,
+ remaining_term_months:3,discount_instrument:true,capital_protection:'contractual',liquidity_level:'high',
+ price_volatility:'very_low',income_predictability:'high',growth_participation:'none',interest_rate_sensitivity:'low',
+ credit_exposure:'low',diversification_level:'single_issuer',complexity_level:'low',time_structure:'fixed_maturity',
+ principal_protection_basis:'Face value is paid at maturity subject to Government of Canada credit risk.',
+ data_status:'verified_partial',fixed_income_as_of_date:'2026-09-14',
+ description:'A short-term Government of Canada Treasury Bill reference based on the Bank of Canada secondary-market yield series.'
+};
+const instrumentById={
+ [vbalInstrument.id]:vbalInstrument,
+ [gicInstrument.id]:gicInstrument,
+ [bondInstrument.id]:bondInstrument,
+ [tbillInstrument.id]:tbillInstrument
+};
+
 const vbalDna={
  investment_id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',asset_type:'ETF',category:'Asset Allocation',subcategory:'All-in-one',
  risk_band:'Low to Medium',official_risk_rating:'Low to Medium',official_risk_issuer:'Vanguard Investments Canada Inc.',
@@ -138,8 +175,8 @@ async function installMocks(ctx){
   if(url.includes('/rest/v1/rpc/app_get_instrument_dna'))return send(vbalDna);
   if(url.includes('/rest/v1/rpc/app_get_official_fund_facts'))return send(vbalFacts);
   if(url.includes('/rest/v1/rpc/app_get_investment_research_context'))return send(vbalResearch);
-  if(url.includes('/rest/v1/rpc/app_get_product_risk'))return send(vbalRisk);
-  if(url.includes('/rest/v1/rpc/app_get_instrument'))return send(vbalInstrument);
+  if(url.includes('/rest/v1/rpc/app_get_product_risk'))return send(body.p_investment_id===vbalInstrument.id?vbalRisk:{status:'unavailable'});
+  if(url.includes('/rest/v1/rpc/app_get_instrument'))return send(instrumentById[body.p_investment_id]||vbalInstrument);
   if(url.includes('/rest/v1/rpc/'))return send(null);
   return route.abort();
  });
@@ -168,6 +205,18 @@ async function runViewport(browser,label,viewport){
  await page.goto(ORIGIN+'/investment/'+matchItem.investment_id,{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'Vanguard Balanced ETF Portfolio',exact:true}).waitFor();
  await shot(page,label+'-01c-investment-detail');
+
+ await page.goto(ORIGIN+'/investment/'+gicInstrument.id,{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:'RBC 1-Year Cashable GIC',exact:true}).waitFor();
+ await shot(page,label+'-01d-gic-detail');
+
+ await page.goto(ORIGIN+'/investment/'+bondInstrument.id,{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:'Government of Canada 5-Year Benchmark Bond',exact:true}).waitFor();
+ await shot(page,label+'-01e-bond-detail');
+
+ await page.goto(ORIGIN+'/investment/'+tbillInstrument.id,{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:'Government of Canada 3-Month T-Bill',exact:true}).waitFor();
+ await shot(page,label+'-01f-tbill-detail');
 
  await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});
  await page.getByRole('button',{name:'Start as guest'}).waitFor();
