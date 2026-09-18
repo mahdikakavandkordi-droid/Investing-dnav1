@@ -1113,3 +1113,91 @@ footer.section .actions{margin:0}
  .platform-capability-cards article{flex-basis:80vw!important}
  .home-asset-rail{grid-auto-columns:minmax(280px,86vw)!important}
 }
+
+
+/* Desktop polish pass — clearer hierarchy, rail affordance and calmer depth. */
+@media(min-width:761px){
+ .platform-hero-grid{gap:54px!important;min-height:610px!important}
+ .platform-hero-copy h1{max-width:610px}
+ .platform-product-preview{
+  transform:translateY(4px);
+  border-color:#d4e8e4!important;
+  box-shadow:0 28px 75px rgba(29,77,82,.12)!important;
+ }
+ .platform-product-preview:before{
+  content:"";
+  position:absolute;
+  inset:auto -6% -22px 34%;
+  height:118px;
+  background:
+   linear-gradient(145deg,transparent 48%,rgba(73,127,139,.10) 49% 62%,transparent 63%) 0 0/165px 100% repeat-x;
+  pointer-events:none;
+ }
+ .preview-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+ .preview-card:hover{transform:translateY(-2px);border-color:#c9e1dd;box-shadow:0 12px 28px rgba(16,42,67,.065)}
+ .platform-capability-cards article{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+ .platform-capability-cards article:hover{transform:translateY(-2px);border-color:#c8dfdc;box-shadow:0 12px 26px rgba(16,42,67,.05)}
+ .platform-intelligence-grid{align-items:stretch}
+ .platform-match-panel,.platform-risk-panel{min-height:235px}
+}
+
+.home-asset-rail-shell{position:relative}
+.home-asset-rail-top{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:16px;
+ margin:-5px 0 10px;
+}
+.home-asset-rail-top>span{
+ color:#6f828b;
+ font-size:10px;
+ font-weight:800;
+ letter-spacing:.08em;
+ text-transform:uppercase;
+}
+.home-asset-rail-controls{display:flex;gap:7px}
+.home-asset-rail-controls button{
+ width:34px;height:34px;
+ border:1px solid #d5e4e1;
+ border-radius:50%;
+ background:#fff;
+ color:#1d5960;
+ font-size:16px;
+ cursor:pointer;
+ box-shadow:0 5px 14px rgba(16,42,67,.04);
+ transition:.18s ease;
+}
+.home-asset-rail-controls button:hover{
+ transform:translateY(-1px);
+ border-color:#8dc5bd;
+ color:#087f77;
+ box-shadow:0 8px 18px rgba(16,42,67,.07);
+}
+.home-asset-rail-shell:after{
+ content:"";
+ position:absolute;
+ top:44px;right:-1px;bottom:18px;
+ width:44px;
+ pointer-events:none;
+ background:linear-gradient(90deg,rgba(237,247,245,0),rgba(237,247,245,.88));
+ border-radius:0 18px 18px 0;
+}
+.home-asset-rail{
+ scrollbar-width:none!important;
+ padding-bottom:8px!important;
+}
+.home-asset-rail::-webkit-scrollbar{display:none}
+.home-asset-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.home-asset-card:hover{
+ transform:translateY(-3px);
+ border-color:#c7dfdb;
+ box-shadow:0 18px 38px rgba(16,42,67,.075);
+}
+
+@media(max-width:760px){
+ .home-asset-rail-top{margin:0 0 8px}
+ .home-asset-rail-top>span{font-size:9px}
+ .home-asset-rail-controls{display:none}
+ .home-asset-rail-shell:after{display:none}
+}
