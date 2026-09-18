@@ -539,17 +539,17 @@ footer.section .actions{margin:0}
 .approved-brand-lockup{
  display:flex!important;
  align-items:center!important;
- width:190px!important;
- min-width:190px!important;
+ width:auto!important;
+ min-width:184px!important;
  height:52px!important;
  overflow:visible!important;
 }
 .approved-brand-lockup img{
  display:block!important;
- width:190px!important;
- height:auto!important;
- max-width:190px!important;
- max-height:48px!important;
+ width:auto!important;
+ height:38px!important;
+ max-width:184px!important;
+ max-height:38px!important;
  object-fit:contain!important;
  object-position:left center!important;
  clip-path:none!important;
@@ -748,7 +748,7 @@ footer.section .actions{margin:0}
  .platform-intelligence-grid{grid-template-columns:1fr 1fr}.platform-intro-copy{grid-column:1/-1}
 }
 @media(max-width:800px){
- .approved-brand-lockup{width:155px!important;min-width:155px!important}.approved-brand-lockup img{width:155px!important;max-width:155px!important;max-height:42px!important}
+ .approved-brand-lockup{width:auto!important;min-width:150px!important}.approved-brand-lockup img{width:auto!important;height:31px!important;max-width:150px!important;max-height:31px!important}
  .platform-nav-links{display:none!important}
  .platform-account-links .profile-link{display:none}
  .platform-nav-cta{font-size:11px!important;padding:9px 11px!important}
@@ -765,7 +765,7 @@ footer.section .actions{margin:0}
 }
 @media(max-width:560px){
  .platform-home .container{padding-left:16px;padding-right:16px}
- .approved-brand-lockup{width:138px!important;min-width:138px!important;height:42px!important}.approved-brand-lockup img{width:138px!important;max-width:138px!important;max-height:38px!important}
+ .approved-brand-lockup{width:auto!important;min-width:132px!important;height:42px!important}.approved-brand-lockup img{width:auto!important;height:27px!important;max-width:132px!important;max-height:27px!important}
  .platform-hero-copy h1{font-size:38px;line-height:1.02}.platform-hero-copy>p{font-size:14px}
  .platform-hero-actions{display:grid}.platform-hero-actions .btn{width:100%;justify-content:center}
  .platform-hero-trust{display:grid;gap:9px}
