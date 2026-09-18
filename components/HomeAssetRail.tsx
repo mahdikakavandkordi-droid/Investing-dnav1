@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
 import {searchInstruments} from "@/lib/instruments";
 import type {Instrument} from "@/lib/instruments";
@@ -18,6 +18,7 @@ export function HomeAssetRail(){
  const [items,setItems]=useState<Instrument[]>([]);
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
+ const railRef=useRef<HTMLDivElement|null>(null);
 
  useEffect(()=>{
   let active=true;
@@ -39,8 +40,21 @@ export function HomeAssetRail(){
   <Link href="/explore">Open Explore →</Link>
  </div>;
 
- return <div className="home-asset-rail" aria-label="Investment types">
-  {cards.map(item=><AssetCard item={item} key={item.id}/>)}
+ const scroll=(direction:number)=>{
+  railRef.current?.scrollBy({left:direction*340,behavior:"smooth"});
+ };
+
+ return <div className="home-asset-rail-shell">
+  <div className="home-asset-rail-top">
+   <span>Asset-specific research cards</span>
+   <div className="home-asset-rail-controls" aria-label="Scroll investment types">
+    <button type="button" onClick={()=>scroll(-1)} aria-label="Scroll assets left">←</button>
+    <button type="button" onClick={()=>scroll(1)} aria-label="Scroll assets right">→</button>
+   </div>
+  </div>
+  <div className="home-asset-rail" aria-label="Investment types" ref={railRef}>
+   {cards.map(item=><AssetCard item={item} key={item.id}/>)}
+  </div>
  </div>;
 }
 
