@@ -50,6 +50,11 @@ jobs:
           VISUAL_AUDIT_ORIGIN: http://127.0.0.1:3000
           VISUAL_AUDIT_DIR: visual-audit
         run: node tests/visual-audit.cjs
+      - name: Include approved brand assets
+        if: always()
+        run: |
+          cp public/logo.png visual-audit/approved-logo-source.png
+          cp public/investing-dna-lockup.png visual-audit/current-lockup.png
       - name: Upload visual audit
         if: always()
         uses: actions/upload-artifact@v4
