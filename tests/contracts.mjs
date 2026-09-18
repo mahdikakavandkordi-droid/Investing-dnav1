@@ -75,6 +75,10 @@ for (const internalTable of [
   assert.ok(internalGrantHardening.includes('public.'+internalTable), 'Internal table grant hardening missing '+internalTable);
 }
 assert.match(internalGrantHardening,/from anon, authenticated/);
+const browserPrivilegeHardening=readFileSync(new URL('../supabase/migrations/20260918111253_revoke_browser_ddl_table_privileges.sql',import.meta.url),'utf8');
+assert.match(browserPrivilegeHardening,/revoke truncate, references, trigger/);
+assert.match(browserPrivilegeHardening,/on all tables in schema public/);
+assert.match(browserPrivilegeHardening,/from anon, authenticated/);
 
 const supabaseSource=readFileSync(new URL('../lib/supabase.ts',import.meta.url),'utf8');
 assert.match(supabaseSource,/flowType:\s*["']implicit["']/);
