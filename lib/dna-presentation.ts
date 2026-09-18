@@ -8,15 +8,15 @@ import {humanize} from '@/lib/dna';
  * canonical assessment/Match engine.
  */
 export const ARCHETYPES:Record<string,{title:string;tagline:string}>={
- VAULT:{title:'The Capital Protector',tagline:'Protection comes first, and your current financial capacity also calls for caution.'},
- ANCHOR:{title:'The Steady Builder',tagline:'You prefer a steadier path, with room for measured investment risk.'},
- COOLHAND:{title:'The Calm Conservative',tagline:'Your finances can absorb more risk than you naturally prefer to take.'},
- SCOUT:{title:'The Cautious Explorer',tagline:'You are open to some risk, while your current financial capacity calls for restraint.'},
- MAVERICK:{title:'The Balanced Risk Taker',tagline:'Your comfort with risk and financial capacity are broadly balanced.'},
- STRIKER:{title:'The Calculated Aggressor',tagline:'You are comfortable with meaningful risk and currently have more room to absorb it.'},
- HOTSHOT:{title:'The High-Comfort / Lower-Capacity Profile',tagline:'Your willingness to take risk is higher than the financial room you currently have to absorb losses.'},
- HIGHROLLER:{title:'The High-Comfort / Moderate-Capacity Profile',tagline:'You are comfortable taking significant risk with moderate financial capacity behind it.'},
- JACKPOT:{title:'The High-Comfort / Higher-Capacity Profile',tagline:'Both your willingness and your current capacity for investment risk are relatively high.'}
+ VAULT:{title:'Protect today. Compound tomorrow.',tagline:'Protection comes first, and your current financial capacity also calls for caution.'},
+ ANCHOR:{title:'Stay steady. Build with balance.',tagline:'You prefer a steadier path, with room for measured investment risk.'},
+ COOLHAND:{title:'Calm mind. Steady progress.',tagline:'Your finances can absorb more risk than you naturally prefer to take.'},
+ SCOUT:{title:'Look ahead. Find opportunities.',tagline:'You are open to some risk, while your current financial capacity calls for restraint.'},
+ MAVERICK:{title:'Your path. Your perspective.',tagline:'Your comfort with risk and financial capacity are broadly balanced.'},
+ STRIKER:{title:'Turn insight into action.',tagline:'You are comfortable with meaningful risk and currently have more room to absorb it.'},
+ HOTSHOT:{title:'Embrace the ride. Go further.',tagline:'Your willingness to take risk is higher than the financial room you currently have to absorb losses.'},
+ HIGHROLLER:{title:'Explore more. Navigate with purpose.',tagline:'You are comfortable taking significant risk with moderate financial capacity behind it.'},
+ JACKPOT:{title:"Challenge more. Shape what's next.",tagline:'Both your willingness and your current capacity for investment risk are relatively high.'}
 };
 
 /**
