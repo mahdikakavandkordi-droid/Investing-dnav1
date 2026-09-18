@@ -466,3 +466,68 @@
   .result-page .behavior-card:last-child{grid-column:auto}
   .result-page .bias-signal-card{flex-basis:84%!important}
 }
+
+
+/* Hard mobile QA guard: no report child may widen the viewport. */
+.result-page,.result-page .result-container,.result-page .dna-report-v2{
+  max-width:100%;
+  min-width:0;
+}
+.result-page{overflow-x:clip}
+.result-page .result-container{overflow-x:clip}
+.result-page .dna-report-v2>*,
+.result-page .result-container>*{
+  min-width:0;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+@media(max-width:760px){
+  .result-page .result-container{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:clip!important;
+  }
+  .result-page .dna-report-v2{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+  .result-page .report-save-launch,
+  .result-page .result-save-card,
+  .result-page .result-next-card,
+  .result-page .report-section.matches-section{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
+  .result-page .report-save-launch,
+  .result-page .result-save-card,
+  .result-page .result-next-card{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+  .result-page .report-save-launch .btn,
+  .result-page .result-save-card .btn,
+  .result-page .result-next-card .btn{
+    width:100%!important;
+    max-width:100%!important;
+    justify-content:center!important;
+  }
+  .result-page .bias-signal-grid{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  .result-page .risk-matrix-wrap-v2,
+  .result-page .risk-matrix,
+  .result-page .dna-hero-signals{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+}
