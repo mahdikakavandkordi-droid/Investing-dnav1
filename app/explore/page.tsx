@@ -127,7 +127,7 @@ function InvestmentCard({item}:{item:Instrument}){
     <span className="asset-tag">{assetLabel(item.asset_type)}</span>
     {item.symbol&&<span className="symbol-tag">{item.symbol}</span>}
    </div>
-   <span className={canMatch?'match-dot match-dot-on':'match-dot'} title={canMatch?'DNA Match available':'Research profile only'}/>
+   <span className={canMatch?'research-state research-state-match':'research-state'}>{canMatch?'DNA Match':'Research'}</span>
   </div>
 
   <div className="investment-card-copy">
