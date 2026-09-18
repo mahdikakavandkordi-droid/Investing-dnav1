@@ -24,7 +24,7 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
  const meaning=[relationship,decision.text,pressure.text,narrative.strength||''].filter((text,index,all)=>!!text&&all.indexOf(text)===index).slice(0,4);
  return <div className="dna-report dna-report-v2">
   <header className="report-part-header"><div><span>Part 1 · Your Investor DNA</span><strong>Personal Profile</strong></div><p>Understand who you are as an investor before applying that DNA to a specific goal.</p></header>
-  <ReportHero canonicalArchetype={archetype} displayName={displayName} character={narrative.character||meta.title} tagline={summary} firstName={firstName} tolerance={tolerance} capacity={capacity} decisionLabel={decision.label} pressureLabel={pressure.label} clarificationRecommended={!!quality?.clarification_recommended}/>
+  <ReportHero canonicalArchetype={archetype} displayName={displayName} character={narrative.character||meta.title} tagline={summary} firstName={firstName} clarificationRecommended={!!quality?.clarification_recommended}/>
   <ProfileSnapshot context={context} personal={{first_name:firstName||'',age:age||0}} tolerance={tolerance} capacity={capacity}/>
   <ReportOverview archetype={archetype} tolerance={tolerance} capacity={capacity} meaning={meaning}/>
   <DecisionProfileSection behavioral={behavioral} strength={narrative.strength} blindSpot={narrative.blind_spot} decision={decision} pressure={pressure}/>
@@ -35,25 +35,8 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
  </div>;
 }
 
-function ReportHero({canonicalArchetype,displayName,character,tagline,firstName,tolerance,capacity,decisionLabel,pressureLabel,clarificationRecommended}:{canonicalArchetype:string;displayName:string;character:string;tagline:string;firstName?:string;tolerance:unknown;capacity:unknown;decisionLabel:string;pressureLabel:string;clarificationRecommended:boolean;}){
- return <section className={'dna-hero dna-hero-v2 dna-'+canonicalArchetype.toLowerCase()}>
-  <div className="dna-hero-scenery" aria-hidden="true"><span className="dna-hero-sun"/><span className="dna-hero-mountain mountain-a"/><span className="dna-hero-mountain mountain-b"/><span className="dna-hero-path"/></div>
-  <div className="dna-hero-copy">
-   <div className="eyebrow">Your Investor DNA</div>
-   <p className="dna-greeting">{firstName?`${firstName}, this is your current profile.`:'This is your current profile.'}</p>
-   <h1>{displayName}</h1>
-   <h2>{character}</h2>
-   <p className="dna-tagline">{tagline}</p>
-   <div className="dna-hero-signals" aria-label="Profile highlights">
-    <span><small>Risk tolerance</small><strong>{riskBand(tolerance)}</strong></span>
-    <span><small>Financial capacity</small><strong>{riskBand(capacity)}</strong></span>
-    <span><small>Decision style</small><strong>{decisionLabel}</strong></span>
-    <span><small>Under pressure</small><strong>{pressureLabel}</strong></span>
-   </div>
-   {clarificationRecommended&&<span className="consistency-pill">A few answers point in different directions</span>}
-  </div>
-  <div className="dna-character" aria-hidden="true"><Image src={`/characters/${canonicalArchetype.toLowerCase()}.png`} alt="" width={520} height={420} priority/></div>
- </section>;
+function ReportHero({canonicalArchetype,displayName,character,tagline,firstName,clarificationRecommended}:{canonicalArchetype:string;displayName:string;character:string;tagline:string;firstName?:string;clarificationRecommended:boolean;}){
+ return <section className={'dna-hero dna-hero-v2 dna-'+canonicalArchetype.toLowerCase()}><div className="dna-hero-scenery" aria-hidden="true"><span className="dna-hero-sun"/><span className="dna-hero-mountain mountain-a"/><span className="dna-hero-mountain mountain-b"/><span className="dna-hero-path"/></div><div className="dna-hero-copy"><div className="eyebrow">Your Investor DNA</div><p className="dna-greeting">{firstName?`${firstName}, this is your current profile.`:'This is your current profile.'}</p><h1>{displayName}</h1><h2>{character}</h2><p className="dna-tagline">{tagline}</p>{clarificationRecommended&&<span className="consistency-pill">A few answers point in different directions</span>}</div><div className="dna-character" aria-hidden="true"><Image src={`/characters/${canonicalArchetype.toLowerCase()}.png`} alt="" width={320} height={320} priority/></div></section>;
 }
 
 function ProfileSnapshot({context,personal,tolerance,capacity}:{context?:DNA['investment_context'];personal:PersonalizationProfile;tolerance:unknown;capacity:unknown;}){
@@ -69,7 +52,7 @@ function ProfileSnapshot({context,personal,tolerance,capacity}:{context?:DNA['in
 }
 
 function ReportOverview({archetype,tolerance,capacity,meaning}:{archetype:string;tolerance:unknown;capacity:unknown;meaning:string[];}){
- return <section className="report-overview-grid"><div className="report-overview-card dna-map-card"><div className="eyebrow">Your position</div><h2>Investor DNA map</h2><p className="report-card-intro">Your profile combines willingness to take risk with your current financial capacity to absorb it.</p><div className="risk-matrix-wrap risk-matrix-wrap-v2"><div className="matrix-axis matrix-axis-y">Higher financial capacity ↑</div><div className="risk-matrix" aria-label="Investor DNA risk matrix">{RISK_MATRIX.flat().map(key=><div key={key} className={'matrix-cell '+(key===archetype?'active':'')} aria-label={key===archetype?`Your zone: ${displayArchetype(key)}`:'Other Investor DNA zone'}>{key===archetype?<strong>{displayArchetype(key)}</strong>:<span className="matrix-dot" aria-hidden="true"/>}</div>)}</div><div className="matrix-axis matrix-axis-x">Lower risk tolerance ← &nbsp; → Higher risk tolerance</div></div><div className="overview-risk-metrics"><RiskMetric label="Risk tolerance" value={tolerance}/><RiskMetric label="Financial capacity" value={capacity}/></div></div><div className="report-overview-card meaning-card"><div className="eyebrow">What this means</div><h2>Your profile at a glance</h2><p className="report-card-intro">A short read before the deeper decision-profile section below.</p><div className="meaning-list">{meaning.map((text,index)=><div className="meaning-item" key={text}><span>{index+1}</span><p>{text}</p></div>)}</div></div></section>;
+ return <section className="report-overview-grid"><div className="report-overview-card dna-map-card"><div className="eyebrow">Your position</div><h2>Investor DNA map</h2><p className="report-card-intro">Your profile combines willingness to take risk with your current financial capacity to absorb it.</p><div className="risk-matrix-wrap risk-matrix-wrap-v2"><div className="matrix-axis matrix-axis-y">Higher financial capacity ↑</div><div className="risk-matrix" aria-label="Investor DNA risk matrix">{RISK_MATRIX.flat().map(key=><div key={key} className={'matrix-cell '+(key===archetype?'active':'')}><span>{displayArchetype(key)}</span></div>)}</div><div className="matrix-axis matrix-axis-x">Lower risk tolerance ← &nbsp; → Higher risk tolerance</div></div><div className="overview-risk-metrics"><RiskMetric label="Risk tolerance" value={tolerance}/><RiskMetric label="Financial capacity" value={capacity}/></div></div><div className="report-overview-card meaning-card"><div className="eyebrow">What this means</div><h2>Your profile at a glance</h2><p className="report-card-intro">A short read before the deeper decision-profile section below.</p><div className="meaning-list">{meaning.map((text,index)=><div className="meaning-item" key={text}><span>{index+1}</span><p>{text}</p></div>)}</div></div></section>;
 }
 function RiskMetric({label,value}:{label:string;value:unknown}){const available=typeof value==='number'&&Number.isFinite(value);return <div className="overview-risk-metric"><span>{label}</span><strong>{riskBand(value)}</strong><small>{available?`${score(value)}/100`:'Not scored'}</small></div>}
 
