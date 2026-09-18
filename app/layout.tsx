@@ -1,3 +1,4 @@
+// Preview: mobile homepage DNA preview removed
 // Vercel preview sync: 2026-09-18
 import type {ReactNode} from 'react';
 import "./globals.css";
