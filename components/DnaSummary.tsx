@@ -5,6 +5,32 @@ import {
  ARCHETYPES,BEHAVIOR,RISK_MATRIX,behaviorBand,displayArchetype,formatInvestmentContext,pressureInsight,riskBand,riskRelationship,standoutDecision
 } from "@/lib/dna-presentation";
 
+
+const RISK_TOLERANCE_META:Record<string,{label:string;help:string}>={
+ growth_risk_tradeoff:{label:'Growth–risk trade-off',help:'How much price movement you are willing to accept in pursuit of higher long-term growth.'},
+ loss_tolerance:{label:'Loss tolerance',help:'How difficult a meaningful portfolio decline would feel while your plan is unchanged.'},
+ uncertainty_volatility:{label:'Uncertainty & volatility',help:'How comfortable you are with short-term uncertainty and changing market values.'},
+ risk_emotion:{label:'Emotional comfort with risk',help:'How strongly the possibility of losses affects your comfort before investing.'},
+ crash_resilience:{label:'Downturn resilience',help:'How strongly a major market decline would make you want to reduce risk.'}
+};
+
+const RISK_CAPACITY_META:Record<string,{label:string;help:string}>={
+ financial_buffer:{label:'Financial buffer',help:'How much room your household cash flow has after essential costs and required debt payments.'},
+ income_stability:{label:'Income stability',help:'How predictable the income supporting essential living costs is over the next year.'},
+ emergency_reserve:{label:'Emergency reserve',help:'How long essential expenses could be covered without borrowing or selling these investments.'},
+ financial_responsibility:{label:'Financial commitments',help:'How much required debt and essential obligations constrain the household balance sheet.'},
+ loss_impact:{label:'Impact of a loss',help:'Whether a material investment loss could disrupt essential spending or an important commitment.'}
+};
+
+const EXPERIENCE_PRODUCT_LABELS:Record<string,string>={
+ none:'I have not invested before',
+ cash:'Cash, savings, or GICs',
+ funds:'Mutual funds or unleveraged ETFs',
+ stocks:'Individual stocks',
+ bonds:'Individual bonds',
+ complex:'Options, leveraged funds, or other complex products'
+};
+
 const ARCHETYPE_CHARACTER_FILES:Record<string,string>={
  VAULT:'vault',
  ANCHOR:'anchor',
@@ -19,6 +45,8 @@ const ARCHETYPE_CHARACTER_FILES:Record<string,string>={
 
 export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;personal?:PersonalizationProfile|null}){
  const behavioral=report?.behavioral_profile||dna.behavioral_profile||{};
+ const experience=report?.experience_profile||dna.experience_profile;
+ const assessmentDimensions=report?.assessment_dimensions||dna.assessment_dimensions;
  const quality=report?.quality_profile||dna.quality_profile;
  const narrative=report?.narrative||dna.narrative||{};
  const context=report?.investment_context||dna.investment_context;
@@ -39,6 +67,7 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
   <ReportHero canonicalArchetype={archetype} displayName={displayName} character={narrative.character||meta.title} tagline={summary} firstName={firstName} clarificationRecommended={!!quality?.clarification_recommended}/>
   <ProfileSnapshot context={context} personal={{first_name:firstName||'',age:age||0}} tolerance={tolerance} capacity={capacity}/>
   <ReportOverview archetype={archetype} tolerance={tolerance} capacity={capacity} meaning={meaning}/>
+  <AssessmentAnswersSection profile={assessmentDimensions} behavioral={behavioral} experience={experience} quality={quality} tolerance={tolerance} capacity={capacity}/>
   <DecisionProfileSection behavioral={behavioral} strength={narrative.strength} blindSpot={narrative.blind_spot} decision={decision} pressure={pressure}/>
   <BiasSignalsSection behavioral={behavioral}/>
   <PlainEnglishSection summary={summary} decisionText={decision.text} pressureText={pressure.text}/>
@@ -67,6 +96,102 @@ function ReportOverview({archetype,tolerance,capacity,meaning}:{archetype:string
  return <section className="report-overview-grid"><div className="report-overview-card dna-map-card"><div className="eyebrow">Your position</div><h2>Investor DNA map</h2><p className="report-card-intro">Your profile combines willingness to take risk with your current financial capacity to absorb it.</p><div className="risk-matrix-wrap risk-matrix-wrap-v2"><div className="matrix-axis matrix-axis-y">Higher financial capacity ↑</div><div className="risk-matrix" aria-label="Investor DNA risk matrix">{RISK_MATRIX.flat().map(key=><div key={key} className={'matrix-cell '+(key===archetype?'active':'')}><span>{displayArchetype(key)}</span></div>)}</div><div className="matrix-axis matrix-axis-x">Lower risk tolerance ← &nbsp; → Higher risk tolerance</div></div><div className="overview-risk-metrics"><RiskMetric label="Risk tolerance" value={tolerance}/><RiskMetric label="Financial capacity" value={capacity}/></div></div><div className="report-overview-card meaning-card"><div className="eyebrow">What this means</div><h2>Your profile at a glance</h2><p className="report-card-intro">A short read before the deeper decision-profile section below.</p><div className="meaning-list">{meaning.map((text,index)=><div className="meaning-item" key={text}><span>{index+1}</span><p>{text}</p></div>)}</div></div></section>;
 }
 function RiskMetric({label,value}:{label:string;value:unknown}){const available=typeof value==='number'&&Number.isFinite(value);return <div className="overview-risk-metric"><span>{label}</span><strong>{riskBand(value)}</strong><small>{available?`${score(value)}/100`:'Not scored'}</small></div>}
+
+
+function AssessmentAnswersSection({profile,behavioral,experience,quality,tolerance,capacity}:{profile?:DNA['assessment_dimensions'];behavioral:Record<string,number>;experience?:DNA['experience_profile'];quality?:DNA['quality_profile'];tolerance:unknown;capacity:unknown;}){
+ const rt=profile?.risk_tolerance;
+ const bd=profile?.behavioral_dna;
+ const rc=profile?.risk_capacity;
+ const ex=profile?.investment_experience;
+ const rtDimensions=rt?.dimensions||{};
+ const behaviorDimensions=bd?.dimensions||behavioral||{};
+ const rcDimensions=rc?.dimensions||{};
+ const fallbackProducts=(experience as (DNA['experience_profile']&{owned_products?:string[]})|undefined)?.owned_products||[];
+ const products=(ex?.owned_products?.length?ex.owned_products:fallbackProducts).map(value=>EXPERIENCE_PRODUCT_LABELS[value]||value);
+ const decisionExperience=ex?.decision_experience||experienceLevel(experience?.dimensions?.decision_experience,'decision');
+ const downturnExperience=ex?.downturn_experience||experienceLevel(experience?.dimensions?.downturn_experience,'downturn');
+ const count=profile?.question_count||28;
+ return <section className="report-section report-section-v2 assessment-breakdown-section">
+  <div className="assessment-breakdown-head">
+   <div><div className="eyebrow">How your answers shaped the result</div><h2>Your {count}-answer Investor DNA</h2><p className="report-lede">Your archetype is only the headline. The assessment combines four separate layers so you can see what is driving the result instead of getting a black-box label.</p></div>
+   <div className="assessment-count-ring" aria-label={`${count} assessment questions`}><strong>{count}</strong><span>answers</span></div>
+  </div>
+  <div className="assessment-source-strip" aria-label="Assessment sections">
+   <span><b>{rt?.answer_count??10}</b> Risk tolerance</span>
+   <span><b>{bd?.answer_count??10}</b> Behavioral DNA</span>
+   <span><b>{rc?.answer_count??5}</b> Financial capacity</span>
+   <span><b>{ex?.answer_count??3}</b> Experience</span>
+  </div>
+
+  <div className="assessment-dimension-layout">
+   <DimensionPanel
+    tone="tolerance"
+    eyebrow="10 answers · willingness"
+    title="Risk tolerance"
+    overall={rt?.overall_score??(typeof tolerance==='number'?tolerance:undefined)}
+    intro="This is about the amount of uncertainty and market movement you can emotionally live with. It is separate from whether your finances can afford the loss."
+    dimensions={rtDimensions}
+    meta={RISK_TOLERANCE_META}
+   />
+   <DimensionPanel
+    tone="capacity"
+    eyebrow="5 answers · ability"
+    title="Financial capacity"
+    overall={rc?.overall_score??(typeof capacity==='number'?capacity:undefined)}
+    intro="This measures your financial ability to absorb losses. A household constraint can cap capacity even when the raw answers would otherwise produce a higher score."
+    dimensions={rcDimensions}
+    meta={RISK_CAPACITY_META}
+    note={typeof rc?.guard?.reason==='string'?rc.guard.reason:undefined}
+   />
+  </div>
+
+  <div className="assessment-subsection">
+   <div className="assessment-subsection-title"><div><div className="eyebrow">10 answers · decision behaviour</div><h3>Behavioral DNA</h3></div><p>These scores describe decision tendencies — not intelligence, skill or a grade.</p></div>
+   <div className="answer-dimension-grid behavior-answer-grid">{Object.entries(BEHAVIOR).map(([key,meta])=><AnswerDimensionCard key={key} label={meta.label} help={meta.help} value={behaviorDimensions[key]} band={behaviorBand(key,behaviorDimensions[key])}/>)}</div>
+  </div>
+
+  <div className="assessment-subsection experience-subsection">
+   <div className="assessment-subsection-title"><div><div className="eyebrow">3 answers · context only</div><h3>Investment experience</h3></div><p>Experience adds context to the report. It does not make your risk tolerance or financial capacity score higher.</p></div>
+   <div className="experience-answer-grid">
+    <article><span>Decision-making experience</span><strong>{decisionExperience||'Not available'}</strong></article>
+    <article><span>Experience through a broad market decline</span><strong>{downturnExperience||'Not available'}</strong></article>
+    <article className="experience-products"><span>Products personally owned and followed</span><div>{products.length?products.map(product=><em key={product}>{product}</em>):<strong>Not available</strong>}</div></article>
+   </div>
+  </div>
+
+  <div className="assessment-quality-note">
+   <span aria-hidden="true">✓</span>
+   <p><strong>Response-quality check:</strong> {quality?.clarification_recommended?'A couple of related answers are far enough apart that they are worth reviewing.':'No clarification flag is currently raised.'} These checks are discussion prompts only and do not change your risk scores.</p>
+  </div>
+ </section>;
+}
+
+function DimensionPanel({tone,eyebrow,title,overall,intro,dimensions,meta,note}:{tone:string;eyebrow:string;title:string;overall?:number;intro:string;dimensions:Record<string,number>;meta:Record<string,{label:string;help:string}>;note?:string;}){
+ const available=typeof overall==='number'&&Number.isFinite(overall);
+ return <div className={'assessment-dimension-panel '+tone}>
+  <header><div><div className="eyebrow">{eyebrow}</div><h3>{title}</h3></div><div className="dimension-overall"><span>Overall</span><strong>{available?Math.round(overall!):'—'}</strong><small>{available?'/100':''}</small></div></header>
+  <p className="dimension-intro">{intro}</p>
+  <div className="answer-dimension-list">{Object.entries(meta).map(([key,item])=><AnswerDimensionRow key={key} label={item.label} help={item.help} value={dimensions[key]}/>)}</div>
+  {note&&<div className="capacity-guard-note"><b>Capacity guard applied</b><span>{note}</span></div>}
+ </div>;
+}
+function AnswerDimensionRow({label,help,value}:{label:string;help:string;value:unknown}){
+ const available=typeof value==='number'&&Number.isFinite(value);
+ const numeric=available?Math.max(0,Math.min(100,value)):0;
+ return <div className="answer-dimension-row"><div className="answer-dimension-copy"><span>{label}</span><small>{help}</small></div><div className="answer-dimension-score"><b>{available?dimensionBand(numeric):'Not available'}</b><em>{available?`${Math.round(numeric)}/100`:'—'}</em><div className="answer-scorebar">{available&&<i style={{width:`${numeric}%`}}/>}</div></div></div>;
+}
+function AnswerDimensionCard({label,help,value,band}:{label:string;help:string;value:unknown;band:string}){
+ const available=typeof value==='number'&&Number.isFinite(value);
+ const numeric=available?Math.max(0,Math.min(100,value)):0;
+ return <article className="answer-dimension-card"><header><span>{label}</span><strong>{available?band:'Not available'}</strong></header><div className="answer-scorebar">{available&&<i style={{width:`${numeric}%`}}/>}</div><div className="answer-card-score">{available?`${Math.round(numeric)}/100`:'—'}</div><p>{help}</p></article>;
+}
+function dimensionBand(value:number){if(value<40)return 'Lower';if(value<70)return 'Moderate';return 'Higher'}
+function experienceLevel(value:unknown,kind:'decision'|'downturn'){
+ if(typeof value!=='number'||!Number.isFinite(value))return '';
+ const n=Math.max(0,Math.min(3,Math.round(value)));
+ if(kind==='decision')return ['I have not invested before','Less than 2 years','2–5 years','More than 5 years'][n];
+ return ['No','I saw one happen, but had little money invested','Yes, once','Yes, more than once'][n];
+}
 
 function DecisionProfileSection({behavioral,strength,blindSpot,decision,pressure}:{behavioral:Record<string,number>;strength?:string;blindSpot?:string;decision:{label:string;text:string};pressure:{label:string;text:string};}){
  return <section className="report-section report-section-v2"><div className="eyebrow">How you decide</div><h2>Your decision fingerprint</h2><p className="report-lede">These are tendencies, not grades. They describe what may pull your decisions in different directions.</p><div className="behavior-grid">{Object.entries(BEHAVIOR).map(([key,meta])=><BehaviorCard key={key} label={meta.label} help={meta.help} band={behaviorBand(key,behavioral[key])} value={behavioral[key]}/>)}</div><div className="decision-cards"><DecisionCard icon="↗" kicker="Your clearest decision tendency" label={decision.label} text={decision.text}/><DecisionCard icon="≈" kicker="When markets get stressful" label={pressure.label} text={pressure.text}/></div><div className="strength-watch-grid"><InsightCard className="strength-card" icon="✓" kicker="Your strengths" title="What may work in your favour" text={strength||'No single behavioral dimension stands out strongly enough yet to call it a clear strength.'}/><InsightCard className="watch-card" icon="!" kicker="Worth watching" title="Where your process may need support" text={blindSpot||'No single behavioral watchpoint stands out strongly enough yet.'}/></div></section>;
