@@ -121,7 +121,7 @@ function InvestmentCard({item}:{item:Instrument}){
   .slice(0,3);
  const canMatch=matchEligible(item.asset_type);
 
- return <article className="investment-card-v2">
+ return <article className={"investment-card-v2 investment-card-"+String(item.asset_type||"unknown").toLowerCase()}>
   <div className="investment-card-top">
    <div className="investment-card-tags">
     <span className="asset-tag">{assetLabel(item.asset_type)}</span>
