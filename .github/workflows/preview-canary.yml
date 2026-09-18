@@ -53,25 +53,33 @@ jobs:
           export TEST_ORIGIN
 
           echo "Waiting for protected preview endpoint: ${TEST_ORIGIN}"
-          for i in $(seq 1 30); do
-            code=$(curl -sS \
-              -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
-              -H "x-vercel-set-bypass-cookie: true" \
-              -o /tmp/preview.html \
-              -w '%{http_code}' \
-              "${TEST_ORIGIN}/dna/assessment" || true)
+          echo "Automation bypass secret is present (length: ${#VERCEL_AUTOMATION_BYPASS_SECRET})"
 
-            if [ "$code" = "200" ]; then
-              echo "Protected preview endpoint is responding via Automation Bypass"
-              break
-            fi
+          header_code=$(curl -sS \
+            -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
+            -H "x-vercel-set-bypass-cookie: true" \
+            -o /tmp/header-preview.html \
+            -w '%{http_code}' \
+            "${TEST_ORIGIN}/dna/assessment" || true)
 
-            echo "Attempt $i: HTTP ${code}"
-            if [ "$i" = "30" ]; then
-              echo "Protected preview never became reachable"
-              exit 1
-            fi
-            sleep 4
-          done
+          query_code=$(curl -sS \
+            --get \
+            --data-urlencode "x-vercel-protection-bypass=${VERCEL_AUTOMATION_BYPASS_SECRET}" \
+            -o /tmp/query-preview.html \
+            -w '%{http_code}' \
+            "${TEST_ORIGIN}/dna/assessment" || true)
+
+          echo "Automation bypass diagnostics: header=${header_code}, query=${query_code}"
+
+          if [ "$header_code" != "200" ] && [ "$query_code" != "200" ]; then
+            echo "Automation bypass was not accepted by Vercel"
+            exit 1
+          fi
+
+          export VERCEL_BYPASS_MODE="header"
+          if [ "$header_code" != "200" ] && [ "$query_code" = "200" ]; then
+            export VERCEL_BYPASS_MODE="query"
+          fi
+          echo "Using Vercel bypass mode: ${VERCEL_BYPASS_MODE}"
 
           node tests/run-deployed-preview-canary.cjs
