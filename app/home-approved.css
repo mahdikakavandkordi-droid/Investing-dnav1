@@ -268,7 +268,9 @@
   }
   .platform-hero-copy>p{max-width:360px!important;font-size:14px!important;line-height:1.52!important}
   .platform-hero-trust span{background:rgba(255,255,255,.72)!important}
-  .platform-product-preview{margin-top:24px!important;padding:13px!important;border-radius:18px!important}
+  /* Mobile simplification: remove the illustrative Investor DNA preview entirely.
+     The real assessment CTA is the primary action on small screens. */
+  .platform-product-preview{display:none!important}
   .platform-preview-grid{
     display:flex!important;
     gap:10px!important;
