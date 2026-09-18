@@ -40,11 +40,11 @@ export default function Home(){
      </div>
     </div>
 
-    <div className="platform-product-preview" aria-label="Illustrative product preview">
+    <div className="platform-product-preview" aria-label="Your Investor DNA (preview)">
      <div className="platform-preview-label">Illustrative product preview</div>
      <div className="platform-preview-grid">
       <article className="preview-card preview-dna">
-       <div className="preview-card-head"><span className="preview-icon">◉</span><span>Your Investor DNA</span></div>
+       <div className="preview-card-head"><span className="preview-icon">◉</span><span>Investor profile</span></div>
        <strong>The Balanced Builder</strong>
        <p>Seeks steady growth, values stability, and prefers a measured approach.</p>
        <div className="preview-chips"><span>Long-term minded</span><span>Moderate risk</span><span>Diversified growth</span></div>
