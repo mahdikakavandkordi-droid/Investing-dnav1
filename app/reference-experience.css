@@ -210,5 +210,213 @@ footer.section .actions{margin:0}
 @media(max-width:520px){
  .reference-archetype-grid{grid-template-columns:1fr}.reference-archetype-art{height:168px}.reference-archetype-art img{height:158px!important}
  .reference-home-actions{display:grid}.reference-home-actions .btn{width:100%}
- .dna-journey{display:none}
+ .dna-journey{display:flex;min-height:180px}
+}
+
+
+/* --------------------------------------------------------------------------
+ * Visual QA corrections — real Chrome screenshots, 2026-09-18
+ * -------------------------------------------------------------------------- */
+
+/* Keep the approved lockup fully visible instead of inheriting mixed image
+   dimensions from older visual layers. */
+.brand-lockup{
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-start;
+ flex:0 0 auto;
+ min-width:186px;
+ height:52px;
+ overflow:visible!important;
+ line-height:0;
+}
+.brand-lockup img{
+ display:block!important;
+ width:186px!important;
+ height:auto!important;
+ max-width:186px!important;
+ max-height:46px!important;
+ object-fit:contain!important;
+ object-position:left center!important;
+ clip-path:none!important;
+ transform:none!important;
+}
+
+/* Make pair-based DNA movement visually obvious, not merely mathematically true. */
+.dna-rung-complete{stroke:#63b9af!important;stroke-width:3!important;opacity:.92!important}
+.dna-rung-active{stroke:#087f78!important;stroke-width:6!important;opacity:1!important}
+.dna-marker-halo{fill:rgba(13,148,136,.34)!important}
+.dna-marker{fill:#087f78!important;stroke:#fff!important;stroke-width:4!important}
+.dna-journey-caption b{font-size:14px!important;color:#123c4e!important}
+.dna-journey-caption span{font-size:12px!important;line-height:1.45!important}
+
+/* Applied DNA is a real second report layer, not a small summary card. */
+.applied-dna-section{
+ overflow:hidden;
+ margin-top:34px!important;
+ padding:0!important;
+ background:#fff!important;
+ border:1px solid #d9e7e7!important;
+ border-radius:22px!important;
+ box-shadow:0 14px 38px rgba(16,42,67,.065)!important;
+}
+.applied-dna-section:after{display:none!important}
+.applied-dna-hero{
+ min-height:265px;
+ position:relative;
+ overflow:hidden;
+ padding:34px 38px;
+ background:linear-gradient(105deg,#fff 0 58%,#e8f4f3 58% 100%);
+}
+.applied-dna-heading{position:relative;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;max-width:850px}
+.applied-dna-heading h2{font-size:38px!important;line-height:1.04;letter-spacing:-.045em;margin:8px 0 10px!important;max-width:570px}
+.applied-dna-heading p{max-width:610px;margin:0;color:#607581;line-height:1.6}
+.identity-chip{display:inline-flex;white-space:nowrap;padding:8px 11px;border-radius:999px;background:#e8f7f4;color:#087b72;font-size:11px;font-weight:850;letter-spacing:.04em}
+.applied-dna-scenery{position:absolute;right:0;top:0;width:43%;height:100%;overflow:hidden}
+.applied-sun{position:absolute;right:68px;top:34px;width:100px;height:100px;border-radius:50%;background:rgba(244,211,165,.74)}
+.applied-ridge{position:absolute;left:-12%;right:-12%;bottom:-4px;height:58%;clip-path:polygon(0 100%,8% 72%,25% 48%,38% 70%,56% 18%,70% 60%,82% 34%,100% 72%,100% 100%);background:#91b7bf;opacity:.72}
+.applied-ridge.front{height:42%;background:#2d6171;opacity:.9;transform:translateY(18px)}
+.applied-path{position:absolute;right:-32px;bottom:-8px;width:250px;height:100px;border:13px solid transparent;border-left-color:rgba(255,255,255,.92);border-radius:50%;transform:rotate(-18deg)}
+.applied-context-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:0!important;margin:0!important;border-top:1px solid #e4eeee;border-bottom:1px solid #e4eeee;background:#fbfdfd}
+.applied-context-card{padding:18px 20px!important;border:0!important;border-radius:0!important;background:transparent!important;display:grid;gap:5px}
+.applied-context-card+.applied-context-card{border-left:1px solid #e4eeee!important}
+.applied-context-card span{font-size:11px!important;text-transform:uppercase;letter-spacing:.07em;color:#71848e!important;font-weight:760}
+.applied-context-card strong{font-size:16px!important;color:#173a4e!important}
+.applied-insight-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.65fr);gap:14px;padding:20px;background:#f8fbfa}
+.applied-alignment-panel,.applied-considerations{background:#fff;border:1px solid #e0eaea;border-radius:16px;padding:22px}
+.applied-alignment-panel h3,.applied-considerations h3{font-size:20px;margin:7px 0 16px;letter-spacing:-.025em;color:#173a4e}
+.applied-alignment-list{display:grid}
+.applied-alignment-row{display:grid;grid-template-columns:32px 1fr;gap:11px;padding:12px 0;border-top:1px solid #edf2f1}
+.applied-alignment-row:first-child{border-top:0;padding-top:0}
+.applied-alignment-icon{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#e6f7f3;color:#087d74;font-size:12px;font-weight:900}
+.applied-alignment-row div{display:grid;gap:3px}
+.applied-alignment-row small{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#0b8b82;font-weight:800}
+.applied-alignment-row strong{font-size:14px;color:#173a4e}
+.applied-alignment-row p{font-size:12px;line-height:1.48;color:#667b87;margin:0}
+.applied-considerations ul{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+.applied-considerations li{position:relative;padding-left:23px;color:#5f7480;font-size:12px;line-height:1.48}
+.applied-considerations li:before{content:"?";position:absolute;left:0;top:0;width:16px;height:16px;border-radius:50%;background:#e7f4f2;color:#087f78;display:grid;place-items:center;font-size:10px;font-weight:900}
+.applied-protection{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;padding-top:15px;border-top:1px solid #edf2f1}
+.applied-protection span{font-size:11px;color:#71848e}.applied-protection strong{font-size:12px;color:#173a4e;text-align:right}
+.applied-principle{margin:0 20px 20px!important;border-radius:14px!important;background:linear-gradient(120deg,#eaf7f4,#f6fbfa)!important;border:1px solid #d9ebe7!important}
+
+/* Dashboard: the JSX was modernized before the corresponding layout rules.
+   These styles make the new card system the actual visual system. */
+.dashboard-reference-main{display:grid;gap:14px}
+.dashboard-hero{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;gap:22px}
+.dashboard-account{
+ display:grid!important;
+ grid-template-columns:1fr auto;
+ gap:4px 12px!important;
+ align-items:center!important;
+ min-width:250px;
+ padding:13px 14px!important;
+ background:rgba(255,255,255,.88)!important;
+ border:1px solid rgba(210,228,228,.92)!important;
+ border-radius:14px!important;
+ box-shadow:none!important;
+}
+.dashboard-account>span{grid-column:1;font-size:10px!important;text-transform:uppercase;letter-spacing:.08em;color:#758792!important}
+.dashboard-account>strong{grid-column:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px!important}
+.dashboard-signout{grid-column:2;grid-row:1/3;border:1px solid #d4e2e1;border-radius:9px;background:#fff;color:#355665;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer}
+.dashboard-intent{
+ display:flex;align-items:center;justify-content:space-between;gap:18px;
+ padding:18px 20px;background:#fff;border:1px solid #dce8e7;border-radius:16px;
+ box-shadow:0 7px 24px rgba(16,42,67,.035)
+}
+.dashboard-intent>div:first-child{display:grid;gap:3px}.dashboard-intent strong{font-size:17px;color:#173a4e}.dashboard-intent p{margin:0;color:#657985;font-size:12px}
+.dashboard-kicker{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#0b8b82;font-weight:850}
+.dashboard-grid{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:14px!important;
+ align-items:stretch
+}
+.dashboard-card{
+ min-width:0;
+ min-height:265px;
+ padding:22px!important;
+ background:#fff!important;
+ border:1px solid #dde8e8!important;
+ display:flex!important;
+ flex-direction:column;
+ gap:14px;
+}
+.dashboard-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.dashboard-card-head h2{font-size:23px;line-height:1.12;margin:6px 0 0;color:#15374c;letter-spacing:-.03em}
+.dashboard-card>p{margin:0;color:#637985;line-height:1.55;font-size:13px}
+.status-dot{display:inline-flex;align-items:center;justify-content:center;padding:6px 8px;border-radius:999px;background:#f0f4f4;color:#667b84;font-size:10px;font-weight:850;white-space:nowrap}
+.status-dot.complete{background:#e5f7f2;color:#087d74}
+.dashboard-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.dashboard-stats>div{display:grid;gap:3px;padding:11px 12px;border-radius:11px;background:#f5faf9;border:1px solid #e2eceb}
+.dashboard-stats span{font-size:10px;color:#748690}.dashboard-stats strong{font-size:15px;color:#15374c}
+.dashboard-card-actions{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-top:auto;padding-top:3px}
+.dashboard-card-actions .btn,.dashboard-card>.btn{align-self:flex-start}
+.text-link{color:#087f78;font-size:12px;font-weight:820}
+.context-chips{display:flex;gap:7px;flex-wrap:wrap}
+.context-chips span{padding:6px 9px;border-radius:999px;background:#edf7f5;color:#327268;font-size:11px;font-weight:760;text-transform:capitalize}
+.dashboard-saved-list{display:grid!important;margin:0!important;border-top:1px solid #edf2f1}
+.dashboard-saved-list a{display:grid!important;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #edf2f1}
+.dashboard-saved-list a strong{font-size:13px;color:#15374c}
+.dashboard-saved-list a span{min-width:0;color:#667a86;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dashboard-watchlist .text-link{margin-top:3px}
+.dashboard-continue{
+ display:grid;
+ grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);
+ gap:22px;
+ align-items:center;
+ overflow:hidden;
+ padding:25px!important;
+ min-height:190px;
+ position:relative;
+}
+.dashboard-continue:after{content:"";position:absolute;right:-26px;bottom:-42px;width:310px;height:155px;clip-path:polygon(0 100%,24% 55%,38% 74%,58% 18%,73% 62%,86% 38%,100% 100%);background:#6f9ba5;opacity:.28}
+.dashboard-continue>div{position:relative;z-index:2}
+.dashboard-continue h2{font-size:28px;margin:6px 0 8px!important}.dashboard-continue p{margin:0!important;line-height:1.55;font-size:13px}
+.dashboard-quick-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;position:relative;z-index:3}
+.dashboard-quick-links a{display:grid;gap:3px;padding:12px 13px;border-radius:11px!important;color:#15374c!important;font-size:12px;font-weight:850;border:1px solid rgba(255,255,255,.5)}
+.dashboard-quick-links a span{font-size:10px;color:#71838d;font-weight:600;line-height:1.35}
+
+/* Mobile needs a compact but visible DNA journey. */
+@media(max-width:760px){
+ .brand-lockup{min-width:150px;height:46px}
+ .brand-lockup img{width:150px!important;max-width:150px!important;max-height:38px!important}
+ .dna-journey{
+  display:flex!important;
+  min-height:164px!important;
+  border-radius:18px!important;
+  order:-1;
+ }
+ .dna-journey-heading{padding:11px 14px!important}
+ .dna-journey-heading span{font-size:10px!important}.dna-journey-heading strong{font-size:11px!important}
+ .dna-journey-inner{
+  display:grid!important;
+  grid-template-columns:118px minmax(0,1fr)!important;
+  gap:12px;
+  padding:8px 14px 10px!important;
+ }
+ .dna-journey svg{width:112px!important;height:104px!important;overflow:visible}
+ .dna-journey-caption{margin:0!important;text-align:left!important}
+ .dna-journey-caption b{font-size:13px!important}.dna-journey-caption span{font-size:11px!important}
+ .dashboard-grid{grid-template-columns:1fr!important}
+ .dashboard-card{min-height:0!important;padding:18px!important}
+ .dashboard-continue{grid-template-columns:1fr!important;padding:20px!important}
+ .dashboard-quick-links{grid-template-columns:1fr 1fr}
+ .dashboard-account{min-width:0;width:100%}
+ .applied-dna-hero{padding:26px 21px;min-height:330px;background:linear-gradient(180deg,#fff 0 58%,#e8f4f3 58% 100%)}
+ .applied-dna-heading{display:grid}.applied-dna-heading h2{font-size:31px!important}.identity-chip{justify-self:start}
+ .applied-dna-scenery{top:auto;bottom:0;width:100%;height:42%}
+ .applied-context-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .applied-context-card:nth-child(3){border-left:0!important;border-top:1px solid #e4eeee!important}
+ .applied-context-card:nth-child(4){border-top:1px solid #e4eeee!important}
+ .applied-insight-grid{grid-template-columns:1fr;padding:12px}
+}
+@media(max-width:520px){
+ .brand-lockup{min-width:124px;height:42px}.brand-lockup img{width:124px!important;max-width:124px!important;max-height:34px!important}
+ .dna-journey{display:flex!important;min-height:154px!important}
+ .dashboard-reference-rail{margin-bottom:2px}
+ .dashboard-quick-links{grid-template-columns:1fr}
+ .dashboard-stats{grid-template-columns:1fr 1fr}
+ .applied-context-grid{grid-template-columns:1fr!important}
+ .applied-context-card+.applied-context-card{border-left:0!important;border-top:1px solid #e4eeee!important}
 }
