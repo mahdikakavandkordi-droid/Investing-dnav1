@@ -1,0 +1,11 @@
+create or replace function public.get_investment_intelligence(p_assessment_id uuid)
+returns jsonb language plpgsql security definer set search_path=public as $$
+declare v jsonb;
+begin
+ select jsonb_build_object('model_version','intelligence-v1.0','assessment_id',p_assessment_id,
+ 'growth',coalesce((select jsonb_agg(to_jsonb(x) order by x.match_score desc) from (select inv.symbol,inv.name,m.match_score,i.style_class,i.growth_score,i.best_use_cases,i.key_tradeoffs from public.investment_match_results m join public.investment_intelligence_profiles i on i.investment_id=m.investment_id and i.model_version='intelligence-v1.0' join public.investments inv on inv.id=m.investment_id where m.assessment_id=p_assessment_id and i.style_class='growth' order by m.match_score desc limit 5)x),'[]'::jsonb),
+ 'stability',coalesce((select jsonb_agg(to_jsonb(x) order by x.match_score desc) from (select inv.symbol,inv.name,m.match_score,i.style_class,i.stability_score,i.best_use_cases,i.key_tradeoffs from public.investment_match_results m join public.investment_intelligence_profiles i on i.investment_id=m.investment_id and i.model_version='intelligence-v1.0' join public.investments inv on inv.id=m.investment_id where m.assessment_id=p_assessment_id and i.style_class='stability_income' order by m.match_score desc limit 5)x),'[]'::jsonb),
+ 'balanced',coalesce((select jsonb_agg(to_jsonb(x) order by x.match_score desc) from (select inv.symbol,inv.name,m.match_score,i.style_class,i.growth_score,i.income_score,i.best_use_cases,i.key_tradeoffs from public.investment_match_results m join public.investment_intelligence_profiles i on i.investment_id=m.investment_id and i.model_version='intelligence-v1.0' join public.investments inv on inv.id=m.investment_id where m.assessment_id=p_assessment_id and i.style_class='balanced' order by m.match_score desc limit 5)x),'[]'::jsonb),
+ 'disclaimer','Investment intelligence is for discovery and comparison, not personalized investment advice.') into v;
+ return v;
+end;$$;

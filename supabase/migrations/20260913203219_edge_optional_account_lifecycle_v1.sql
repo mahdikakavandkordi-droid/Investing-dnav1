@@ -1,0 +1,1 @@
+create index if not exists assessments_profile_status_idx on public.assessments(profile_id,status); create index if not exists pilot_participants_session_hash_idx on public.pilot_participants(session_token_hash) where withdrawn_at is null;
