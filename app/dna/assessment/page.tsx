@@ -250,6 +250,12 @@ function AssessmentIntro({
    </label>
   </div>
 
+  <div className="assessment-visual" aria-hidden="true">
+   <div className="assessment-dna-orbit">
+    <span/><span/><span/><span/><span/>
+   </div>
+  </div>
+
   <h1>{copy.title}</h1>
   <p className="assessment-lede">{copy.lede}</p>
   <div className="assessment-meta" aria-label="Assessment details">
@@ -324,31 +330,41 @@ function QuestionStep({
 
  return <div className="assessment-card question-shell" dir={direction} lang={locale}>
   <div className="question-header">
-   <div>
-    <div className="eyebrow">{section}</div>
-    <div className="question-count">{copy.question} {current} / {questions.length}</div>
-    {researchCode&&<div className="fine muted">Research code: <strong>{researchCode}</strong></div>}
+   <div className="question-identity">
+    <div className="question-dna-mark" aria-hidden="true"><span/><span/><span/></div>
+    <div>
+     <div className="eyebrow">{section}</div>
+     <div className="question-count">{copy.question} {current} <span>/ {questions.length}</span></div>
+     {researchCode&&<div className="fine muted">Research code: <strong>{researchCode}</strong></div>}
+    </div>
    </div>
-   <div className="question-percent">{Math.round((current/questions.length)*100)}%</div>
+   <div className="question-progress-copy">
+    <span>{Math.round((current/questions.length)*100)}%</span>
+    <small>complete</small>
+   </div>
   </div>
 
   <progress aria-label="Assessment progress" max={questions.length} value={current}/>
-  <h1 className="question-title">{question.prompt}</h1>
-  {multi&&<p className="question-hint">Select all that apply.</p>}
+  <div className="question-main">
+   <h1 className="question-title">{question.prompt}</h1>
+   {multi&&<p className="question-hint">Select all that apply.</p>}
 
-  <div className="question-options" role="group" aria-label="Answer choices">
-   {options.map(option=>{
-    const selected=multi?chosenValues.includes(option.value):chosen===option.value;
-    return <button
-     aria-pressed={selected}
-     className={'option '+(selected?'active':'')}
-     key={option.value}
-     disabled={busy}
-     onClick={()=>choose(option.value)}
-    >
-     <span>{option.label}</span>
-    </button>;
-   })}
+   <div className={'question-options '+(options.length<=4?'question-options-compact':'')} role="group" aria-label="Answer choices">
+    {options.map((option,index)=>{
+     const selected=multi?chosenValues.includes(option.value):chosen===option.value;
+     return <button
+      aria-pressed={selected}
+      className={'option '+(selected?'active':'')}
+      key={option.value}
+      disabled={busy}
+      onClick={()=>choose(option.value)}
+     >
+      <span className="option-indicator" aria-hidden="true">{selected?'✓':multi?'':'○'}</span>
+      <span className="option-copy">{option.label}</span>
+      <span className="option-index" aria-hidden="true">{index+1}</span>
+     </button>;
+    })}
+   </div>
   </div>
 
   <div className="question-actions">
