@@ -99,7 +99,7 @@ async function runViewport(browser,label,viewport){
  await page.getByLabel('Age').fill('35');
  await page.getByRole('button',{name:/See my Investor DNA/}).click();
  await page.waitForURL(url=>url.pathname==='/dna/result');
- await page.getByRole('heading',{name:'ANCHOR'}).waitFor();
+ await page.getByRole('heading',{name:'ANCHOR',exact:true}).waitFor();
  await shot(page,label+'-07-personal-report');
 
  await page.goto(ORIGIN+'/dna/context?returnTo=/dna/result',{waitUntil:'domcontentloaded'});
