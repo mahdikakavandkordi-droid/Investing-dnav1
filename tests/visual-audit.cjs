@@ -221,6 +221,12 @@ async function runViewport(browser,label,viewport){
  await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});
  await page.getByRole('button',{name:'Start as guest'}).waitFor();
  await shot(page,label+'-02-assessment-intro');
+
+ await page.goto(ORIGIN+'/research/investor-dna',{waitUntil:'networkidle'});
+ await page.getByRole('heading',{name:/How the 28 answers become an Investor DNA profile/}).waitFor();
+ await shot(page,label+'-02b-investor-dna-methodology');
+ await page.goto(ORIGIN+'/dna/assessment',{waitUntil:'domcontentloaded'});
+ await page.getByRole('button',{name:'Start as guest'}).waitFor();
  await page.getByRole('button',{name:'Start as guest'}).click();
 
  await page.getByText('Question 1 of 4',{exact:true}).waitFor();
