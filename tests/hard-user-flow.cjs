@@ -145,8 +145,10 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
   await page.goto(ORIGIN+'/dna/result');
   await page.getByRole('heading',{name:display,exact:true}).waitFor();
   assert.equal((await page.locator('.matrix-cell.active').innerText()).trim(),display,canonical+' matrix highlight');
+  const characterFile=canonical==='HOTSHOT'?'charger':canonical==='HIGHROLLER'?'pathfinder':canonical==='JACKPOT'?'vanguard':canonical.toLowerCase();
+  assert.equal(await page.locator('.dna-character img').count(),1,canonical+' renders only the matched character');
   const src=decodeURIComponent((await page.locator('.dna-character img').getAttribute('src'))||'');
-  assert.match(src,new RegExp(canonical.toLowerCase()+'\\.png'),canonical+' character asset');
+  assert.match(src,new RegExp(characterFile+'\\.webp'),canonical+' character illustration');
   const text=await page.locator('body').innerText();
   assert.doesNotMatch(text,/91\/100|84\/100/,canonical+' leaked stale DNA-only numeric Match');
   assert.match(text,/cognitive & emotional bias signals/i,canonical+' report lost bias section');
