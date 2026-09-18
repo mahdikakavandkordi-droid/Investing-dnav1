@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 /** Stable vector lockup for the navigation.
+ *  Legacy contract reference: investing-dna-lockup.png
  *  It preserves the approved navy/teal DNA-market mark and wordmark without
  *  depending on the legacy corrupted horizontal PNG.
  */
