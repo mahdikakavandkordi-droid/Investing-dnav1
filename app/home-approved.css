@@ -295,3 +295,43 @@
   .platform-hero-actions .btn{font-size:13px!important}
   .preview-card{flex-basis:86%!important}
 }
+
+
+/* Header logo guard — keep the approved raster lockup intact.
+   This intentionally overrides legacy crop-window experiments. */
+.platform-nav .approved-brand-lockup{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  width:auto!important;
+  min-width:190px!important;
+  height:50px!important;
+  overflow:visible!important;
+  line-height:0!important;
+}
+.platform-nav .approved-brand-lockup>img{
+  display:block!important;
+  position:static!important;
+  width:188px!important;
+  height:auto!important;
+  max-width:188px!important;
+  max-height:44px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  clip-path:none!important;
+  transform:none!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+@media(max-width:760px){
+  .platform-nav .approved-brand-lockup{min-width:154px!important;height:44px!important}
+  .platform-nav .approved-brand-lockup>img{
+    width:154px!important;
+    max-width:154px!important;
+    max-height:37px!important;
+  }
+}
+@media(max-width:420px){
+  .platform-nav .approved-brand-lockup{min-width:143px!important}
+  .platform-nav .approved-brand-lockup>img{width:143px!important;max-width:143px!important}
+}
