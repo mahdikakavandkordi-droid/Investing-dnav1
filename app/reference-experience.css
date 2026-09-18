@@ -781,3 +781,56 @@ footer.section .actions{margin:0}
  .home-asset-card{min-height:480px}
  .platform-risk-dimensions{grid-template-columns:1fr 1fr}
 }
+
+
+/* Approved logo master — exact artwork from /public/logo.png.
+   Two crop windows create a horizontal nav lockup without modifying the mark. */
+.approved-master-logo{
+ display:inline-flex!important;
+ align-items:center!important;
+ gap:8px!important;
+ width:auto!important;
+ min-width:194px!important;
+ height:52px!important;
+ overflow:visible!important;
+ line-height:0!important;
+}
+.approved-master-logo>span{position:relative;display:block;overflow:hidden;flex:0 0 auto}
+.approved-logo-symbol{width:27px;height:42px}
+.approved-logo-symbol img{
+ position:absolute!important;
+ width:127px!important;
+ height:127px!important;
+ max-width:none!important;
+ max-height:none!important;
+ left:-50.6px!important;
+ top:-34.6px!important;
+ object-fit:initial!important;
+ transform:none!important;
+}
+.approved-logo-wordmark{width:160px;height:25px}
+.approved-logo-wordmark img{
+ position:absolute!important;
+ width:235px!important;
+ height:235px!important;
+ max-width:none!important;
+ max-height:none!important;
+ left:-38.4px!important;
+ top:-153.2px!important;
+ object-fit:initial!important;
+ transform:none!important;
+}
+@media(max-width:800px){
+ .approved-master-logo{min-width:164px!important;height:46px!important;gap:7px!important}
+ .approved-logo-symbol{width:23px;height:36px}
+ .approved-logo-symbol img{width:109px!important;height:109px!important;left:-43.5px!important;top:-29.7px!important}
+ .approved-logo-wordmark{width:134px;height:21px}
+ .approved-logo-wordmark img{width:198px!important;height:198px!important;left:-32.5px!important;top:-129.2px!important}
+}
+@media(max-width:560px){
+ .approved-master-logo{min-width:145px!important;height:42px!important;gap:6px!important}
+ .approved-logo-symbol{width:21px;height:32px}
+ .approved-logo-symbol img{width:97px!important;height:97px!important;left:-38.7px!important;top:-26.5px!important}
+ .approved-logo-wordmark{width:118px;height:19px}
+ .approved-logo-wordmark img{width:179px!important;height:179px!important;left:-29.3px!important;top:-116.8px!important}
+}
