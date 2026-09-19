@@ -349,6 +349,22 @@ async function runViewport(browser,label,viewport){
   await assertMobileShell(page,'Profile');
   await shot(page,label+'-14c-account-signed-out');
 
+  await page.goto(ORIGIN+'/profile',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Create your free account or sign in',exact:true}).waitFor();
+  await assertMobileShell(page,'Home');
+  await shot(page,label+'-14d-profile-signed-out');
+
+  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
+  await page.getByLabel('Search investments').fill('zz-no-such-investment');
+  await page.getByRole('heading',{name:'No investments match that search',exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-14e-explore-empty');
+
+  await page.goto(ORIGIN+'/investment/not-a-valid-id',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Could not load this investment',exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-14f-investment-invalid');
+
   // Restore the authenticated session for the account-state visual.
   await page.evaluate(({key,value})=>localStorage.setItem(key,JSON.stringify(value)),{key:'sb-bxjjannguzzzqsamnhem-auth-token',value:session});
   await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
