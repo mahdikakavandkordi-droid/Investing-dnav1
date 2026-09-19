@@ -14,6 +14,7 @@ on:
     branches:
       - codex/integration-product-risk-platform-v1
       - codex/daily-market-refresh-v1
+      - codex/maturity-sprint-1
   workflow_dispatch:
 
 jobs:
