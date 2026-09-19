@@ -158,7 +158,7 @@ The server-owned return marker is private account state. The browser may cache t
 
 Research-stage limitations and non-advice language must remain accurate and visible, but do not lead every card with internal model/compliance language. First explain the user-facing purpose, then provide the relevant limitation/provenance where it matters.
 
-## 10. What to test when changing the journey
+## 11. What to test when changing the journey
 
 A change to these invariants should update the relevant browser regression and, when it changes an ownership/data contract, a database regression.
 
