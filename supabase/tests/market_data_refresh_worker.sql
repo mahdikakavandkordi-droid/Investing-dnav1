@@ -69,4 +69,20 @@ begin
   end if;
 end $$;
 
+begin;
+do $
+declare
+  v_run uuid;
+  v_finished jsonb;
+begin
+  v_run:=public.start_market_data_worker_run('manual');
+  v_finished:=public.finish_market_data_worker_run(
+    v_run,'no_work',0,0,0,0,0,jsonb_build_object('regression',true)
+  );
+  if v_finished->>'status' <> 'no_work' then
+    raise exception 'worker audit lifecycle did not reach no_work';
+  end if;
+end $;
+rollback;
+
 select 'PASS: market-data refresh policy, due-plan and service boundary' as result;
