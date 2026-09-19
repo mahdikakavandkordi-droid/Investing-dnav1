@@ -88,14 +88,14 @@ export default function Compare(){
  return <section className="section compare-page-v2">
   <div className="container">
    <div className="eyebrow">Compare</div>
-   <h1>Compare Investment DNA side by side</h1>
-   <p className="muted">Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.</p>
+   <h1><span className="desktop-compare-title">Compare Investment DNA side by side</span><span className="mobile-compare-title">Compare investments</span></h1>
+   <p className="muted"><span className="desktop-compare-copy">Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.</span><span className="mobile-compare-copy">Choose two or three investments and swipe through the key differences.</span></p>
 
    {loading?<p>Loading comparison tools…</p>:<ComparisonPicker items={items} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
    {error&&<p className="notice" role="alert">{error}</p>}
 
    {rows.length>=2&&<>
-    <div className="compare-grid">
+    <div className="compare-grid mobile-compare-rail">
      {rows.map(item=><ComparisonCard key={item.id} item={item} dnaPresent={!!state?.dna} matchStatus={matchStatus} match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}/>) }
     </div>
     <p className="fine muted">Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.</p>
