@@ -13,7 +13,7 @@ The worker never changes an old real source date just to make a card look fresh.
 
 | Asset / data | Desired cadence | Automated now? | Notes |
 | --- | --- | --- | --- |
-| ETF price / OHLC / volume | Daily after close | Yes at policy/worker level | Requires an active network provider for the ETF's market |
+| ETF price / OHLC / volume | Daily after close | Yes | Current TSX bridge uses a temporary Yahoo Finance research feed; replace with a licensed provider after funding |
 | ETF holdings | Weekly | No | Issuer-specific automation comes later |
 | ETF issuer metadata / MER / mandate | Monthly | No | Slow-moving data should not be fetched daily |
 | GIC posted rate / terms | Weekly | No | Provider/issuer-specific adapter required |
@@ -79,23 +79,28 @@ A market holiday can legitimately produce no new bar. The next run can retry wit
 
 ## Current provider state
 
-The existing `massive` adapter is implemented by the worker and is suitable for its configured U.S. route. Massive's stock feed is U.S.-market coverage.
+The worker now has two provider paths:
 
-The current Investor DNA ETF catalog is Canadian/TSX. Its existing `internal_verified` source is historical research data, not a network fetcher, and is intentionally excluded from automated source resolution.
+- `massive` for the configured U.S. route;
+- `yahoo_free` / `yahoo_finance_unofficial` as a temporary zero-cost TSX ETF bridge.
 
-Therefore the current 40 Canadian ETFs correctly resolve to `no_automated_provider` rather than being falsely marked fresh.
+The free TSX route transforms symbols to Yahoo's Toronto convention (`VFV` → `VFV.TO`), fetches daily OHLC/volume after close and writes through the same canonical audited ingestion path.
+
+This source is deliberately priority `90`, below verified issuer/internal sources. If a verified row already exists for the same instrument/date, the free row is skipped instead of replacing it.
+
+Yahoo Finance is not being treated as an official issuer source or as a permanent licensed data contract. It is an MVP research bridge until funding supports a production-grade Canadian market-data vendor.
 
 ## Activation checklist
 
-Before the schedule is turned on:
+For the temporary free TSX bridge:
 
-1. select a Canadian/TSX provider with acceptable API and display/licensing terms;
-2. add its source, routing and provider adapter;
-3. add the provider implementation to `market-data-refresh`;
-4. store its API credential as a Supabase Edge Function secret;
-5. add GitHub repository secret `SUPABASE_SERVICE_ROLE_KEY`;
-6. manually dispatch the workflow with `dry_run=true`;
-7. run one controlled write refresh and verify latest dates, source keys and audit logs;
-8. set repository variable `MARKET_DATA_REFRESH_ENABLED=true`.
+1. add GitHub repository secret `SUPABASE_SERVICE_ROLE_KEY`;
+2. manually dispatch the workflow with `dry_run=true`;
+3. run one controlled write refresh and verify latest dates, source keys and audit logs;
+4. set repository variable `MARKET_DATA_REFRESH_ENABLED=true`.
 
-The scheduled workflow is deliberately gated by that variable so merging the code does not start provider traffic before the data source is approved.
+No paid market-data API credential is required for the temporary Yahoo route.
+
+After funding, replace this bridge with a licensed Canadian provider, give that provider a higher source priority, run a source-overlap canary, and only then retire `yahoo_free`.
+
+The scheduled workflow remains gated so merging code alone does not start traffic.
