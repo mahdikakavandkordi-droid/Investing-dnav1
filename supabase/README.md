@@ -20,6 +20,12 @@ Privileged Edge Function used for assessment and controlled-pilot operations.
 
 Current action family includes start/questionnaire/save/submit/context/claim plus analytics/feedback. The function can hold service-role capability, so every action must validate untrusted browser input/session/ownership before privileged access.
 
+### `functions/market-data-refresh/`
+
+Service-only post-close market-data worker. It asks the database for due work, calls only implemented/approved provider adapters, normalizes provider rows and writes through the canonical ingestion RPC. Current U.S. Massive support does not make the Canadian/TSX catalog operational; Canadian provider selection remains an activation gate.
+
+See `docs/MARKET-DATA-REFRESH.md`.
+
 ### `tests/`
 SQL regressions that prove backend contracts against a real schema. Prefer rollback transactions for fixtures/mutations so tests do not contaminate research/pilot data.
 
