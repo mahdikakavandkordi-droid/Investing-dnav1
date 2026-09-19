@@ -38,8 +38,8 @@ export type PortfolioBlueprint={
 const clamp=(value:number,min=0,max=100)=>Math.max(min,Math.min(max,value));
 const round5=(value:number)=>Math.round(value/5)*5;
 
-function scoreOr(value:unknown,fallback:number){
-  return typeof value==='number'&&Number.isFinite(value)?clamp(value):fallback;
+function scoreOrNull(value:unknown){
+  return typeof value==='number'&&Number.isFinite(value)?clamp(value):null;
 }
 
 function baseEquity(anchor:number){
@@ -134,8 +134,9 @@ function isGrowthBlocked(context:BlueprintContextInput){
 export function buildPortfolioBlueprint(dna:BlueprintDNAInput,context?:BlueprintContextInput|null):PortfolioBlueprint|null{
   if(!context?.goal||!context.time_horizon||!context.liquidity_need||!context.principal_required)return null;
 
-  const tolerance=scoreOr(dna.risk_tolerance,50);
-  const capacity=scoreOr(dna.risk_capacity,50);
+  const tolerance=scoreOrNull(dna.risk_tolerance);
+  const capacity=scoreOrNull(dna.risk_capacity);
+  if(tolerance==null||capacity==null)return null;
 
   // Financial capacity is a ceiling, not a bonus. Willingness alone should not
   // push the core allocation past what the current financial capacity can absorb.
