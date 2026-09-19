@@ -132,7 +132,7 @@ A new branch `codex/daily-market-refresh-v1` adds the V1 post-close refresh infr
 - gated GitHub schedule at 01:30 UTC Tue-Sat;
 - backend regression and operational documentation.
 
-Important: this is **not yet an operational Canadian daily feed**. The current 40 ETF catalog entries are Canadian/TSX and deliberately return `no_automated_provider`. The existing Massive adapter is U.S.-market only. Do not enable the scheduled workflow until a Canadian provider is approved/configured and the controlled dry-run/write canary passes.
+Update: a temporary zero-cost Canadian ETF route is now configured as `yahoo_free` using Yahoo Finance `.TO` symbols. All 40 current TSX ETFs resolve to this automated route in the due plan. The source is priority 90 and cannot replace higher-priority verified rows for the same date. Treat it as a pre-funding research bridge, not launch-grade licensed market data. The scheduled workflow is still gated until its GitHub service-role secret and controlled dry-run/write canary are complete.
 
 ## Immediate follow-ups
 
