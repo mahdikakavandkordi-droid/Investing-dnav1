@@ -210,6 +210,13 @@ async function runViewport(browser,label,viewport){
 
  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:mobile?'Explore':/Research different structures without the jargon\./}).waitFor();
+ if(mobile){
+  const exploreCard=page.locator('.investment-card-v2').first();
+  await exploreCard.waitFor();
+  const box=await exploreCard.boundingBox();
+  assert.ok(box&&box.height<360);
+  assert.ok(await page.locator('.explore-tabs-v2').isVisible());
+ }
  await shot(page,label+'-01b-explore');
 
  await page.goto(ORIGIN+'/investment/'+matchItem.investment_id,{waitUntil:'networkidle'});
