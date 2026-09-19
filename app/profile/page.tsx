@@ -49,7 +49,7 @@ export default function Profile(){
 
 function SignedInDashboard({email,personal,intent,intentSaved,pending,state,items,listError,closest,busy,onSaveIntent,onClaim,onRetryList,onSignOut}:{email:string;personal:PersonalizationProfile|null;intent:Instrument|null;intentSaved:boolean;pending:ClaimTicket|null;state:AppState|null;items:SavedInstrument[];listError:string;closest?:MatchItem;busy:boolean;onSaveIntent:()=>void;onClaim:()=>void;onRetryList:()=>void;onSignOut:()=>void}){
  const dna=state?.dna;const context=state?.report?.investment_context||dna?.investment_context;const contextComplete=hasCompleteInvestmentContext(context);const archetype=dna?.archetype?displayArchetype(dna.archetype):'Investor DNA';const matchStatus=state?.matches?.status;const numericMatch=matchStatus==='available'&&closest?.match_score!=null;const firstName=personal?.first_name;
- return <><MobileDashboardHome personal={personal} state={state} items={items} closest={closest}/><div className="dashboard-reference-shell"><aside className="dashboard-reference-rail" aria-label="Dashboard navigation"><span className="rail-title">My workspace</span><Link className="active" href="/profile">⌂ Dashboard</Link><Link href="/dna/result">⌬ My DNA</Link><Link href="/dna/context?returnTo=/profile">◎ My goal</Link><Link href="/watchlist">♡ Watchlist</Link><Link href="/compare">⇄ Compare</Link></aside><div className="dashboard-reference-main"><header className="dashboard-hero"><div><div className="eyebrow">My Investor DNA</div><h1>{firstName?`Welcome back, ${firstName}`:'Your research workspace'}</h1><p>Same discipline. A brighter tomorrow. Your DNA stays steady while goals and research evolve around it.</p></div><div className="dashboard-account"><span>Signed in as</span><strong>{email}</strong><button className="dashboard-signout" disabled={busy} onClick={onSignOut}>Sign out</button></div></header>
+ return <><MobileDashboardHome personal={personal} state={state} items={items} closest={closest} intent={intent} intentSaved={intentSaved} busy={busy} onSaveIntent={onSaveIntent}/><div className="dashboard-reference-shell"><aside className="dashboard-reference-rail" aria-label="Dashboard navigation"><span className="rail-title">My workspace</span><Link className="active" href="/profile">⌂ Dashboard</Link><Link href="/dna/result">⌬ My DNA</Link><Link href="/dna/context?returnTo=/profile">◎ My goal</Link><Link href="/watchlist">♡ Watchlist</Link><Link href="/compare">⇄ Compare</Link></aside><div className="dashboard-reference-main"><header className="dashboard-hero"><div><div className="eyebrow">My Investor DNA</div><h1>{firstName?`Welcome back, ${firstName}`:'Your research workspace'}</h1><p>Same discipline. A brighter tomorrow. Your DNA stays steady while goals and research evolve around it.</p></div><div className="dashboard-account"><span>Signed in as</span><strong>{email}</strong><button className="dashboard-signout" disabled={busy} onClick={onSignOut}>Sign out</button></div></header>
  {intent&&<div className="dashboard-intent"><div><span className="dashboard-kicker">Save intent</span><strong>{intent.symbol||intent.name}</strong><p>{intentSaved?'Already in your watchlist.':'Your research intent is still intact.'}</p></div><div className="actions compact">{!intentSaved&&<button className="btn primary" disabled={busy} onClick={onSaveIntent}>Save to watchlist</button>}<Link className="btn" href={'/investment/'+intent.id}>Open research</Link></div></div>}
  {pending&&<div className="dashboard-intent dashboard-claim"><div><span className="dashboard-kicker">DNA ready</span><strong>Save your completed report</strong><p>Attach this assessment to your account so it remains available in your dashboard.</p></div><button className="btn primary" disabled={busy} onClick={onClaim}>{busy?'Saving…':'Save my DNA'}</button></div>}
  <div className="dashboard-grid"><section className="dashboard-card dashboard-dna"><div className="dashboard-card-head"><div><span className="dashboard-kicker">My Investor DNA</span><h2>{dna?archetype:'Not connected yet'}</h2></div><span className={dna?'status-dot complete':'status-dot'}>{dna?'Saved':'Start'}</span></div>{dna?<><p>{personal?.age?`Age ${personal.age} · `:''}Your personal research profile is saved and does not change just because you add a different investment goal.</p><div className="dashboard-stats"><div><span>Risk tolerance</span><strong>{formatScore(dna.risk_tolerance)}</strong></div><div><span>Risk capacity</span><strong>{formatScore(dna.risk_capacity)}</strong></div></div><div className="dashboard-card-actions"><Link className="btn primary" href="/dna/result">View full report</Link><Link className="text-link" href="/dna/assessment?fresh=1">Retake assessment →</Link></div></>:<><p>Complete the assessment to create your personal Investor DNA report.</p><Link className="btn primary" href="/dna/assessment">Start Investing DNA</Link></>}</section>
@@ -59,7 +59,7 @@ function SignedInDashboard({email,personal,intent,intentSaved,pending,state,item
  <section className="dashboard-continue"><div><span className="dashboard-kicker">Your journey continues</span><h2>Explore more opportunities.</h2><p>Explore investments, compare options and build your watchlist around the research that matters to you.</p></div><div className="dashboard-quick-links"><Link href="/explore">Explore <span>Cross-asset research</span></Link><Link href="/screener">ETF Screener <span>Filter the ETF universe</span></Link><Link href="/compare">Compare <span>Side-by-side research</span></Link><Link href="/match">DNA Match <span>Compatibility, not a recommendation</span></Link></div></section></div></div></>;
 }
 
-function MobileDashboardHome({personal,state,items,closest}:{personal:PersonalizationProfile|null;state:AppState|null;items:SavedInstrument[];closest?:MatchItem}){
+function MobileDashboardHome({personal,state,items,closest,intent,intentSaved,busy,onSaveIntent}:{personal:PersonalizationProfile|null;state:AppState|null;items:SavedInstrument[];closest?:MatchItem;intent:Instrument|null;intentSaved:boolean;busy:boolean;onSaveIntent:()=>void}){
  const dna=state?.dna;
  const context=state?.report?.investment_context||dna?.investment_context;
  const contextComplete=hasCompleteInvestmentContext(context);
@@ -72,6 +72,18 @@ function MobileDashboardHome({personal,state,items,closest}:{personal:Personaliz
    <h1>{firstName?`Good to see you, ${firstName}`:'Your investing workspace'}</h1>
    <p>Know yourself. Research with context.</p>
   </header>
+
+  {intent&&<section className="mobile-home-intent">
+   <div>
+    <span className="mobile-card-kicker">Save research</span>
+    <strong>{intent.symbol||intent.name}</strong>
+    <small>{intentSaved?'Already saved to your watchlist.':'Keep this research connected to your account.'}</small>
+   </div>
+   <div className="mobile-home-intent-actions">
+    {!intentSaved&&<button className="btn primary" disabled={busy} onClick={onSaveIntent}>{busy?'Saving…':'Save to watchlist'}</button>}
+    <Link className="btn" href={'/investment/'+intent.id}>Open research</Link>
+   </div>
+  </section>}
 
   <Link className="mobile-dna-summary" href={dna?'/dna/result':'/dna/assessment'}>
    <div className="mobile-dna-summary-copy">
