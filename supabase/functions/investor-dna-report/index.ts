@@ -327,7 +327,19 @@ Deno.serve(async(req)=>{
       provider:'resend',
       status:delivered?'accepted':'failed'
     });
-    if(!delivered)return json({error:'The email provider did not accept this report. Download the PDF and try again later.'},502);
+    if(!delivered){
+      const diagnostic=body?.diagnostics===true&&response&&typeof response==='object'
+        ? {
+            provider_status:send.status,
+            provider_error_name:typeof response?.name==='string'?response.name.slice(0,80):null,
+            provider_error_message:typeof response?.message==='string'?response.message.slice(0,240):null
+          }
+        : {};
+      return json({
+        error:'The email provider did not accept this report. Download the PDF and try again later.',
+        ...diagnostic
+      },502);
+    }
 
     return json({sent:true});
   }catch(error){
