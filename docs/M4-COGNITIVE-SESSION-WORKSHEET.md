@@ -109,6 +109,7 @@ Evidence:
 - Least credible/confusing part:
 - Could they explain why an ETF fit or conflicted with their DNA in their own words?
 - Did they interpret DNA Match as a recommendation to buy? `yes / no / unclear`
+- Did they interpret a Match score as an estimate of future return/performance? `yes / no / unclear`
 - What would make them return?
 - Did they submit `/feedback`? `yes / no`
 
