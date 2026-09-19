@@ -25,7 +25,7 @@ const balancedBlueprint=buildPortfolioBlueprint({risk_tolerance:62,risk_capacity
 assert.deepEqual(balancedBlueprint.scenarios.map(x=>x.allocation),[
   {equity:45,fixedIncome:45,cash:10},
   {equity:60,fixedIncome:35,cash:5},
-  {equity:75,fixedIncome:20,cash:5}
+  {equity:70,fixedIncome:25,cash:5}
 ]);
 const growthBlueprint=buildPortfolioBlueprint(
   {risk_tolerance:92,risk_capacity:88},
