@@ -213,7 +213,7 @@ assert.match(homeAssetRailSource,/GIC/);
 assert.match(homeAssetRailSource,/BOND/);
 assert.match(homeAssetRailSource,/T_BILL/);
 assert.match(homeAssetRailSource,/COMMERCIAL_PAPER/);
-const sharedBlueprintSource=readFileSync(new URL('../supabase/functions/_shared/portfolio-blueprint.ts',import.meta.url),'utf8');
+const sharedBlueprintSource=readFileSync(new URL('../lib/portfolio-blueprint.ts',import.meta.url),'utf8');
 const reportBlueprintSource=readFileSync(new URL('../supabase/functions/investor-dna-report/portfolio-blueprint.ts',import.meta.url),'utf8');
 assert.equal(reportBlueprintSource,sharedBlueprintSource,'PDF report service must use the exact same blueprint engine as the app');
 const reportEdgeSource=readFileSync(new URL('../supabase/functions/investor-dna-report/index.ts',import.meta.url),'utf8');
