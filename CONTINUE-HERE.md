@@ -132,7 +132,7 @@ A new branch `codex/daily-market-refresh-v1` adds the V1 post-close refresh infr
 - gated GitHub schedule at 01:30 UTC Tue-Sat;
 - backend regression and operational documentation.
 
-Update: a temporary zero-cost Canadian ETF route is now configured as `yahoo_free` using Yahoo Finance `.TO` symbols. All 40 current TSX ETFs resolve to this automated route in the due plan. The source is priority 90 and cannot replace higher-priority verified rows for the same date. Treat it as a pre-funding research bridge, not launch-grade licensed market data. The scheduled workflow is still gated until its GitHub service-role secret and controlled dry-run/write canary are complete.
+Update: the temporary zero-cost Canadian ETF route `yahoo_free` is now operational using Yahoo Finance `.TO` symbols. Supabase Cron owns the post-close schedule via a Vault-held random worker token; no paid data credential or GitHub secret is required. The controlled VFV canary completed with 4/4 rows and 0 errors, then the full 40-ETF catch-up completed with 200/200 rows and 0 errors. All 40 ETFs now have latest price-history date 2026-09-18. The source is priority 90 and cannot replace higher-priority verified rows for the same date. Treat it as a pre-funding research bridge, not launch-grade licensed market data.
 
 ## Immediate follow-ups
 
