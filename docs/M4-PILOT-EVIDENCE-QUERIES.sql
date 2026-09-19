@@ -119,7 +119,15 @@ select
   round(avg(f.trust_score)::numeric,2) as avg_explanation_trust,
   round(avg(f.usefulness_score)::numeric,2) as avg_usefulness,
   round(100.0*avg(case when f.understood_match then 1 else 0 end),1) as understood_match_yes_pct,
-  round(100.0*avg(case when f.would_return then 1 else 0 end),1) as would_return_yes_pct
+  round(100.0*avg(case when f.would_return then 1 else 0 end),1) as would_return_yes_pct,
+  count(*) filter(where f.interpreted_match_as_buy_recommendation is true) as match_as_buy_count,
+  round(100.0*avg(case
+    when f.interpreted_match_as_buy_recommendation is null then null
+    when f.interpreted_match_as_buy_recommendation then 1 else 0 end),1) as match_as_buy_pct,
+  count(*) filter(where f.interpreted_match_score_as_return_forecast is true) as score_as_return_count,
+  round(100.0*avg(case
+    when f.interpreted_match_score_as_return_forecast is null then null
+    when f.interpreted_match_score_as_return_forecast then 1 else 0 end),1) as score_as_return_pct
 from public.pilot_feedback f
 join cohort_assessments a on a.assessment_id=f.assessment_id;
 

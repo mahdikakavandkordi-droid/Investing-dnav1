@@ -1,7 +1,7 @@
 # Investing DNA — Pilot Operations Runbook
 
 **Current research assessment:** `v1.10-cognitive-candidate` / `dna-v1.10-research`  
-**Current Match engine:** `investment-dna-match-v6`
+**Current Match engine:** `investment-dna-match-v7`
 
 ## Purpose
 
@@ -32,6 +32,16 @@ See `docs/COGNITIVE-TEST-PROTOCOL.md` for the moderator procedure and revision r
 
 Normal product testing continues on `DEV_V1_10` until a separate quantitative-pilot version is frozen. Do not use old cohort evidence as validation evidence for v1.10.
 
+Current live gate on 2026-09-19:
+
+- `COGNITIVE_V1_10`: planned, target 12, **0 participants / 0 completed**;
+- `DEV_V1_10`: engineering-only, 6 participants / 4 completed;
+- no frozen `PRODUCT_PILOT_*` cohort exists.
+
+Therefore the quantitative 20–50 user product pilot is **not open**.
+
+Future product-pilot cohorts can be protected by `pilot_cohort_dependencies`. The Edge Function checks `service_pilot_cohort_gate(...)` before creating a participant/session. A gated cohort with an incomplete prerequisite returns a closed-state response even if its cohort code is known.
+
 ## First-party product funnel
 
 The app records only privacy-minimized product events. It does not put email, name, IP address or questionnaire answer text into the analytics tables.
@@ -55,6 +65,10 @@ Tracked events:
 - `watchlist_removed`
 - `watchlist_viewed`
 - `profile_viewed`
+- `workspace_viewed`
+- `workspace_resume_clicked`
+- `auth_callback_session_established`
+- `account_state_restored`
 - `feedback_submitted`
 
 `visitor_id` is a random browser identifier and `browser_session_id` is a random per-session identifier. Signed-in identity and profile IDs are attached server-side when available.
@@ -92,6 +106,18 @@ from public.v_pilot_product_funnel
 order by event_name;
 ```
 
+### Service-only pilot measurement snapshot
+
+Use the canonical aggregate measurement function for a frozen cohort:
+
+```sql
+select public.service_pilot_measurement_snapshot('PRODUCT_PILOT_CODE');
+```
+
+It returns cohort/version state, progress, average completion time, funnel counts, returning-session/workspace counts, structured feedback, event coverage and stop/review flags. It does not return email, raw answers, auth credentials or open feedback text.
+
+A mismatch between completed assessments and instrumented funnel events is an instrumentation-coverage signal, not a conversion result. Current DEV history contains records from before the present event layer, so DEV rates must not be copied into the pilot scorecard.
+
 ### Feedback summary
 
 ```sql
@@ -126,7 +152,10 @@ order by 1 desc,2;
 ### Open feedback for qualitative review
 
 ```sql
-select created_at,ease_score,trust_score,usefulness_score,understood_match,would_return,open_feedback
+select created_at,ease_score,trust_score,usefulness_score,understood_match,
+       interpreted_match_as_buy_recommendation,
+       interpreted_match_score_as_return_forecast,
+       would_return,open_feedback
 from public.pilot_feedback
 where open_feedback is not null
 order by created_at desc;
@@ -144,6 +173,8 @@ These are **internal operating targets**, not scientific cutoffs. Revisit them a
 | Average explanation trust | >= 3.5 / 5 | Users broadly trust how results are presented |
 | Average usefulness | >= 3.5 / 5 | Product is creating perceived value |
 | Would return | >= 60% yes | Early evidence of retention potential |
+| Interpreted Match as telling them what to buy | Stop/review if repeated | Direct safety/comprehension signal |
+| Interpreted Match score as future return/performance | Stop/review if repeated | Prevent score-as-forecast misunderstanding |
 | Save intent (claim/watchlist) | Observe first; do not optimize prematurely | Establish a real baseline before setting a conversion target |
 
 Do not change the questionnaire merely to improve product funnel metrics.
@@ -167,6 +198,16 @@ Before each moderated cognitive session:
 ## Data review cadence
 
 For a small controlled pilot, review after each cognitive round and after every 5–10 product-pilot users. Do not optimize individual events after every single participant; look for repeated patterns.
+
+For each product-pilot batch:
+
+1. run `service_pilot_measurement_snapshot(...)`;
+2. run `docs/M4-PILOT-EVIDENCE-QUERIES.sql`;
+3. review qualitative comments separately;
+4. classify any instrumentation gap before interpreting rates;
+5. record keep / targeted fix / stop-research-further in `docs/M4-PILOT-SCORECARD.md`.
+
+Do not create or open the product-pilot cohort until the accepted cognitive cohort is closed/frozen, the hosted Auth canary passes on the intended app head, and the product cohort has an explicit prerequisite dependency.
 
 ## Launch gates still outside automated engineering checks
 

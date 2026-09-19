@@ -141,7 +141,11 @@ Deno.serve(async (req) => {
       const visitorId = uuidOrNull(body?.visitor_id);
       const score = (value: unknown) => Number.isInteger(value) && Number(value) >= 1 && Number(value) <= 5 ? Number(value) : null;
       const ease = score(body?.ease_score), trust = score(body?.trust_score), usefulness = score(body?.usefulness_score);
-      if (!browserSessionId || !visitorId || !ease || !trust || !usefulness || typeof body?.understood_match !== 'boolean' || typeof body?.would_return !== 'boolean') {
+      if (!browserSessionId || !visitorId || !ease || !trust || !usefulness
+        || typeof body?.understood_match !== 'boolean'
+        || typeof body?.interpreted_match_as_buy_recommendation !== 'boolean'
+        || typeof body?.interpreted_match_score_as_return_forecast !== 'boolean'
+        || typeof body?.would_return !== 'boolean') {
         return json({ error: 'Complete all pilot feedback fields' }, 400);
       }
       const openFeedback = typeof body?.open_feedback === 'string' ? body.open_feedback.trim().slice(0, 1500) : null;
@@ -156,6 +160,8 @@ Deno.serve(async (req) => {
         trust_score: trust,
         usefulness_score: usefulness,
         understood_match: body.understood_match,
+        interpreted_match_as_buy_recommendation: body.interpreted_match_as_buy_recommendation,
+        interpreted_match_score_as_return_forecast: body.interpreted_match_score_as_return_forecast,
         would_return: body.would_return,
         open_feedback: openFeedback || null,
         updated_at: now,
@@ -171,6 +177,11 @@ Deno.serve(async (req) => {
       const consentVersion = body?.consent_version ?? `platform-${language_code}`;
       const { data: cohort, error: ce } = await admin.from('pilot_cohorts').select('id,code,questionnaire_version,model_version,status,access_code_hash').eq('code', cohortCode).single();
       if (ce || !cohort || !['planned','collecting'].includes(cohort.status)) return json({ error: 'Pilot cohort unavailable' }, 400);
+
+      const { data: gate, error: gateError } = await admin.rpc('service_pilot_cohort_gate', { p_cohort_id: cohort.id });
+      if (gateError) throw gateError;
+      if (gate?.gated && gate?.allowed !== true) return json({ error: 'Pilot cohort is not open yet.' }, 409);
+
       if (cohort.access_code_hash) {
         const accessCode = typeof body?.cohort_access_code === 'string' ? body.cohort_access_code.trim() : '';
         if (!accessCode || accessCode.length > 100 || await sha256(accessCode) !== cohort.access_code_hash) return json({ error: 'Invalid research invite code' }, 403);

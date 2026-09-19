@@ -18,6 +18,8 @@ export default function Feedback(){
  const [trust,setTrust]=useState<Score|null>(null);
  const [useful,setUseful]=useState<Score|null>(null);
  const [understood,setUnderstood]=useState<boolean|null>(null);
+ const [matchAsBuy,setMatchAsBuy]=useState<boolean|null>(null);
+ const [scoreAsReturn,setScoreAsReturn]=useState<boolean|null>(null);
  const [returnAgain,setReturnAgain]=useState<boolean|null>(null);
  const [text,setText]=useState('');
  const [busy,setBusy]=useState(false);
@@ -37,7 +39,7 @@ export default function Feedback(){
 
  async function submit(event:FormEvent){
   event.preventDefault();
-  if(!ease||!trust||!useful||understood===null||returnAgain===null)return;
+  if(!ease||!trust||!useful||understood===null||matchAsBuy===null||scoreAsReturn===null||returnAgain===null)return;
 
   setBusy(true);
   setError('');
@@ -48,6 +50,8 @@ export default function Feedback(){
     trust_score:trust,
     usefulness_score:useful,
     understood_match:understood,
+    interpreted_match_as_buy_recommendation:matchAsBuy,
+    interpreted_match_score_as_return_forecast:scoreAsReturn,
     would_return:returnAgain,
     open_feedback:text
    });
@@ -79,6 +83,20 @@ export default function Feedback(){
      onChange={setUnderstood}
     />
     <BooleanQuestion
+     legend="Did DNA Match feel like it was telling you which investment to buy?"
+     value={matchAsBuy}
+     yesLabel="Yes"
+     noLabel="No"
+     onChange={setMatchAsBuy}
+    />
+    <BooleanQuestion
+     legend="Did you interpret a Match score as an estimate of future return or performance?"
+     value={scoreAsReturn}
+     yesLabel="Yes"
+     noLabel="No"
+     onChange={setScoreAsReturn}
+    />
+    <BooleanQuestion
      legend="Would you come back to Investing DNA to research or compare another investment?"
      value={returnAgain}
      yesLabel="Yes"
@@ -98,7 +116,7 @@ export default function Feedback(){
      />
     </label>
 
-    <button className="btn primary" disabled={busy||!ease||!trust||!useful||understood===null||returnAgain===null}>
+    <button className="btn primary" disabled={busy||!ease||!trust||!useful||understood===null||matchAsBuy===null||scoreAsReturn===null||returnAgain===null}>
      {busy?'Saving…':'Send pilot feedback'}
     </button>
     {error&&<p className="notice" role="alert">{error}</p>}

@@ -39,6 +39,8 @@ Use `docs/M4-PILOT-EVIDENCE-QUERIES.sql` for the privacy-minimized aggregate fun
 | Average explanation trust | | >=3.5 / 5 | |
 | Average usefulness | | >=3.5 / 5 | |
 | Would return — yes | | >=60% | |
+| Interpreted Match as telling them what to buy | | Stop/review if repeated | |
+| Interpreted Match score as expected return/performance | | Stop/review if repeated | |
 | Save intent / action | | Observe baseline first | |
 | Actual returning visitors (new session, >=6h later) | | Observe baseline first | |
 | Returning workspace viewers | | Observe baseline first | |

@@ -124,6 +124,19 @@ Until real evidence exists, do not claim:
 - real-world email reliability,
 - successful 20–50 user pilot.
 
+## Pilot-readiness infrastructure — 19 September 2026
+
+Engineering support for the evidence phase now includes:
+
+- service-only `service_pilot_measurement_snapshot(cohort_code)` for privacy-minimized cohort/funnel/feedback/retention aggregates;
+- explicit structured feedback for the two critical Match misunderstandings: directive-to-buy and score-as-return-forecast;
+- pilot data dictionary v1.3 classification for the new product-safety feedback;
+- generic `pilot_cohort_dependencies` plus a service gate enforced by the Edge Function so a future product-pilot cohort cannot open before its prerequisite research cohort is complete/frozen;
+- backend regression proving the current cognitive prerequisite would block a rollback-only test product cohort;
+- batch-review operating procedure in `docs/PILOT-OPERATIONS.md`.
+
+Current cognitive evidence is still 0/12 for `COGNITIVE_V1_10`, so the quantitative product pilot remains unopened. DEV traffic must not be treated as pilot evidence.
+
 ## First implementation batch
 
 Started at M4 entry:

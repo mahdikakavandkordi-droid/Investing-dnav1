@@ -83,11 +83,11 @@ pilot feedback rows: 0
 
 The real Magic Link/account canary therefore remains **PARTIAL, not PASS**.
 
-The live `investing-dna-pilot` Edge Function is ACTIVE at version 20, and its live `index.ts` plus `deno.json` exactly match the repository copies.
+The live `investing-dna-pilot` Edge Function is ACTIVE at version 23. Sprint 4 adds structured safety feedback plus server-enforced pilot cohort prerequisite checks.
 
 Current Advisor snapshot:
 
-- Security: 37 `rls_enabled_no_policy` INFO findings. The market refresh and returning-workspace state tables are intentionally service-only with RLS and no browser policy. Existing service/internal findings still must be classified, not blindly opened.
+- Security: 38 `rls_enabled_no_policy` INFO findings. The market refresh, returning-workspace and pilot cohort dependency tables are intentionally service-only with RLS and no browser policy. Existing service/internal findings still must be classified, not blindly opened.
 - Security: leaked-password protection WARN is present. The current product is passwordless Magic Link, so this is not an active password-flow blocker; revisit if password auth is introduced.
 - Security also reports one `extension_in_public` WARN for `pg_net`; the extension is non-relocatable in the current install, so it is classified as a scheduler-extension warning rather than worked around by weakening permissions.
 - Performance: 41 `unused_index` INFO findings. The new refresh/retention indexes are young operational indexes; do not drop young/pilot indexes solely because the Advisor has not observed usage yet. The retention foreign-key coverage warning was fixed with `investor_workspace_item_state_investment_idx`.
@@ -181,6 +181,46 @@ Live controlled retention regression (transaction rolled back) proved:
 - after a newer VFV price row => returning=true, 1 new market update, VFV returned in updated_saved_items.
 
 Backend regression remains PASS.
+
+## Maturity Sprint 3 — 2026-09-19
+
+Branch `codex/maturity-sprint-3-auth-canary` / Draft PR #11 is stacked on Sprint 2.
+
+- hosted Magic Link callback now emits privacy-minimized `auth_callback_session_established` evidence after a real browser session exists;
+- `account_state_restored` is emitted only after account state and Watchlist state both load successfully;
+- Auth callback token fragments remain scrubbed from the visible URL;
+- `docs/AUTH-CANARY-EVIDENCE.sql` provides privacy-minimized server-side evidence queries;
+- exact-head CI for commit `8943603691c8c87b8e65b9ff65cac6bd0b7a3658` passed in run `35462289927`;
+- the real hosted canary remains PARTIAL until the same-browser external-email sign-out/sign-in round trip is completed.
+
+## Maturity Sprint 4 — 2026-09-19
+
+Branch `codex/maturity-sprint-4-pilot-readiness` is stacked on Sprint 3.
+
+Implemented:
+
+- live migration `20260919185629_pilot_readiness_measurement_v1.sql` adds two structured Match-safety comprehension fields and service-only `service_pilot_measurement_snapshot(cohort_code)`;
+- live migration `20260919185813_pilot_cohort_prerequisite_gate_v1.sql` adds generic cohort dependencies so a future product-pilot cohort cannot open before its prerequisite research cohort is complete/frozen;
+- the Edge Function enforces the prerequisite gate before creating a pilot participant/session;
+- `investing-dna-pilot` is ACTIVE at version 23;
+- feedback now directly measures whether Match was interpreted as a directive to buy or its score as expected future return/performance;
+- pilot data dictionary v1.3 classifies the new fields as operational product-validation evidence, excluded from psychometric scoring/validation;
+- `supabase/tests/pilot_readiness.sql` passes live, including a rollback-only future product-pilot dependency test;
+- `docs/PILOT-OPERATIONS.md`, scorecard and evidence query pack now use the canonical measurement/gating workflow.
+
+Current live evidence gate:
+
+```text
+COGNITIVE_V1_10: planned, target 12, 0 participants, 0 completed
+DEV_V1_10: engineering-only, 6 participants, 4 completed
+PRODUCT_PILOT_*: not created
+```
+
+Therefore the 20–50 user quantitative product pilot remains intentionally unopened. DEV event/funnel counts are instrumentation checks only and must not be treated as product-pilot rates.
+
+Current Advisor snapshot after Sprint 4:
+- 38 RLS/no-policy INFO findings, with the new dependency table intentionally service-only;
+- 41 unused-index INFO findings, including the new dependency index which is too new to judge by usage.
 
 ## Immediate follow-ups
 
