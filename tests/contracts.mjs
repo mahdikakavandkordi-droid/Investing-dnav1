@@ -24,15 +24,15 @@ const blueprintContext=(overrides={})=>({
 const balancedBlueprint=buildPortfolioBlueprint({risk_tolerance:62,risk_capacity:68},blueprintContext());
 assert.deepEqual(balancedBlueprint.scenarios.map(x=>x.allocation),[
   {equity:45,fixedIncome:45,cash:10},
-  {equity:60,fixedIncome:30,cash:10},
-  {equity:70,fixedIncome:20,cash:10}
+  {equity:60,fixedIncome:35,cash:5},
+  {equity:75,fixedIncome:20,cash:5}
 ]);
 const growthBlueprint=buildPortfolioBlueprint(
   {risk_tolerance:92,risk_capacity:88},
   blueprintContext({time_horizon:'gt_10y',liquidity_need:'low'})
 );
 assert.deepEqual(growthBlueprint.scenarios.map(x=>x.allocation),[
-  {equity:70,fixedIncome:15,cash:15},
+  {equity:70,fixedIncome:20,cash:10},
   {equity:85,fixedIncome:10,cash:5},
   {equity:90,fixedIncome:5,cash:5}
 ]);
