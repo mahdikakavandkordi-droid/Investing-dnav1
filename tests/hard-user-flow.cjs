@@ -209,8 +209,8 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/same DNA/i);
  assert.match(text,/Part 3 · Portfolio Blueprint/i);
  assert.match(text,/Your Core Blueprint/i);
- assert.match(text,/60%\s*Equity/i);
- assert.match(text,/75%\s*Equity/i);
+ assert.match(text,/Equity\s*60%/i);
+ assert.match(text,/Equity\s*75%/i);
 
  await page.goto(ORIGIN+'/match');
  await page.getByText('Context-aware match',{exact:true}).waitFor();
@@ -252,7 +252,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  await page.goto(ORIGIN+'/dna/result');
  await page.getByRole('heading',{name:'VANGUARD',exact:true}).waitFor();
  const vanguardReportText=await page.locator('body').innerText();
- assert.match(vanguardReportText,/85%\s*Equity/i,'high-tolerance/high-capacity core blueprint did not differ from the moderate persona');
+ assert.match(vanguardReportText,/Equity\s*85%/i,'high-tolerance/high-capacity core blueprint did not differ from the moderate persona');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Desktop report has horizontal overflow');
  assert.deepEqual(runtimeErrors,[],'Browser runtime errors were observed during hard flow');
  console.log('PASS hard user flow: archetypes + defensive Match states + mobile/desktop + connected ETF surfaces');
