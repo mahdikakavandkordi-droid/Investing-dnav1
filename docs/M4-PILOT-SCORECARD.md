@@ -40,7 +40,9 @@ Use `docs/M4-PILOT-EVIDENCE-QUERIES.sql` for the privacy-minimized aggregate fun
 | Average usefulness | | >=3.5 / 5 | |
 | Would return — yes | | >=60% | |
 | Save intent / action | | Observe baseline first | |
-| Actual returning visitors | | Observe baseline first | |
+| Actual returning visitors (new session, >=6h later) | | Observe baseline first | |
+| Returning workspace viewers | | Observe baseline first | |
+| Workspace resume clicks | | Observe baseline first | |
 
 These are internal pilot targets, not validated scientific thresholds or investment-industry benchmarks.
 
