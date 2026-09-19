@@ -14,6 +14,7 @@ import {
 import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from "@/lib/match-presentation";
 import type {AppState,DNA,MatchItem,MatchPayload,PersonalizationProfile} from "@/lib/dna";
 import {DnaSummary} from "@/components/DnaSummary";
+import {ReportActions} from "@/components/ReportActions";
 
 export default function Result(){
  const [dna,setDna]=useState<DNA|null>(null);
@@ -25,6 +26,8 @@ export default function Result(){
  const [error,setError]=useState('');
  const [sendingEmail,setSendingEmail]=useState(false);
  const [emailMessage,setEmailMessage]=useState('');
+ const [assessmentId,setAssessmentId]=useState<string|null>(null);
+ const [guestSessionToken,setGuestSessionToken]=useState<string|null>(null);
 
  useEffect(()=>{
   let active=true;
@@ -37,6 +40,8 @@ export default function Result(){
      setReport(local.result.report?.report||null);
      setMatches(local.result.match||null);
      setPending(!local.result.account_linked);
+     setAssessmentId(local.session.assessment_id);
+     setGuestSessionToken(local.result.account_linked?null:local.session.session_token);
      setPersonal(local.personalization||personalFromContext(local.result.report?.report?.investment_context||local.result.result.investment_context));
     }
     return;
@@ -45,6 +50,7 @@ export default function Result(){
     const state=await rpc<AppState>('get_current_investor_app_state');
     if(active){
      setDna(state.dna);setReport(state.report);setMatches(state.matches||null);setPending(false);
+     setAssessmentId(state.assessment_id||null);setGuestSessionToken(null);
      setPersonal(normalizePersonalization(session.user.user_metadata)||personalFromContext(state.report?.investment_context||state.dna?.investment_context));
     }
    }
@@ -79,6 +85,7 @@ export default function Result(){
  if(!dna)return <MissingResult error={error}/>;
  return <main className="result-page"><div className="container result-container">
   <DnaSummary dna={dna} report={report} personal={personal}/>
+  <ReportActions assessmentId={assessmentId} guestSessionToken={guestSessionToken}/>
   {pending
    ? <GuestSaveCard personal={personal} sending={sendingEmail} message={emailMessage} onSubmit={emailSaveLink}/>
    : <SavedResultCard/>}
