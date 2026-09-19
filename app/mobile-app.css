@@ -871,6 +871,7 @@
 
 
 /* Product-review pass — reduce mobile scroll and focus deep research */
+.mobile-research-disclosure{display:contents}
 .mobile-research-summary,
 .match-context-summary{display:none}
 .mobile-research-disclosure-body,
