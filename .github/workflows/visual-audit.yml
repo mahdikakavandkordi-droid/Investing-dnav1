@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - codex/integration-product-risk-platform-v1
+      - codex/mobile-app-v1
     paths:
       - 'app/**'
       - 'components/**'
