@@ -223,6 +223,26 @@ Callable builder/risk functions, old portfolio views and the empty risk-analysis
 
 No assessment/context/account-state path should execute Portfolio Builder as a side effect.
 
+## 10. Market-data refresh service
+
+Market-data ingestion remains private/service-only.
+
+Core operational contracts:
+
+- `market_data_refresh_policies` — asset/data cadence and automation switch;
+- `get_due_price_history_ingestion_plan()` — returns only stale, post-close ETF price-history work;
+- `resolve_automated_market_data_source()` — selects only active network-capable provider routes, excluding the internal verified foundation;
+- `market-data-refresh` Edge Function — provider fetch/normalization boundary;
+- Supabase Cron + `pg_net` — primary post-close scheduler;
+- Supabase Vault + `verify_market_data_worker_token(...)` — scheduler-to-Edge authentication without exposing a browser credential;
+- `ingest_price_history_batch()` — canonical, idempotent, source-priority-aware write path;
+- `market_data_worker_runs` — worker-level outcome audit;
+- `market_data_refresh_runs` / `market_data_ingestion_log` — provider/batch and row-level ingestion audit.
+
+The browser has no execute/read/write privileges on these operational contracts. Provider credentials belong in runtime secrets. The scheduled call uses a random Vault-held worker token; only its hash is stored in the service-only auth table.
+
+Only ETF price history is automation-enabled in V1. The current Canadian/TSX implementation uses the temporary low-priority `yahoo_free` research route and has completed a live canary/catch-up. Replace it with a licensed provider after funding. See `MARKET-DATA-REFRESH.md`.
+
 ## 10. Migration policy
 
 Applied migrations are append-only historical evidence.
@@ -241,7 +261,7 @@ A timeout/connector error is unknown state, not success. Re-read live state befo
 
 If an already-applied migration is missing from source control, restore its exact historical source without re-running it. Source filenames and contents for applied migrations must match the live ledger rather than a reconstructed convenience timestamp.
 
-## 11. Data provenance
+## 12. Data provenance
 
 For investment research:
 
@@ -251,7 +271,7 @@ For investment research:
 - missing values stay null;
 - educational/reference instruments do not receive invented live yields/prices.
 
-## 12. Verification map
+## 13. Verification map
 
 Database regressions live in `supabase/tests/` and cover:
 
@@ -264,7 +284,7 @@ Database regressions live in `supabase/tests/` and cover:
 
 Browser flows prove client integration, not live database permissions. Real external email/account canary remains a separate M4 gate.
 
-## 13. Backend change checklist
+## 14. Backend change checklist
 
 Before calling backend work complete, answer:
 

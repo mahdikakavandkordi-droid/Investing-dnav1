@@ -87,9 +87,10 @@ The live `investing-dna-pilot` Edge Function is ACTIVE at version 20, and its li
 
 Current Advisor snapshot:
 
-- Security: 32 `rls_enabled_no_policy` INFO findings. Many are service/internal tables and must be classified, not blindly opened with browser policies.
+- Security: 35 `rls_enabled_no_policy` INFO findings. The market refresh policy/audit/auth tables are intentionally service-only with RLS and no browser policy. Existing service/internal findings still must be classified, not blindly opened.
 - Security: leaked-password protection WARN is present. The current product is passwordless Magic Link, so this is not an active password-flow blocker; revisit if password auth is introduced.
-- Performance: 38 `unused_index` INFO findings. Do not drop young-pilot indexes solely because the Advisor has not observed usage yet.
+- Security also reports one `extension_in_public` WARN for `pg_net`; the extension is non-relocatable in the current install, so it is classified as a scheduler-extension warning rather than worked around by weakening permissions.
+- Performance: 40 `unused_index` INFO findings. The new refresh indexes are young operational indexes; do not drop young/pilot indexes solely because the Advisor has not observed usage yet.
 
 No ownership/RLS semantics should be changed merely to make Advisor counts smaller.
 
@@ -119,6 +120,20 @@ guest Investing DNA result
 The Profile email flow now explicitly tells the user to keep the current tab open, use the newest link in the same browser/device, exposes a 60-second resend cooldown, and lets the user change the email address.
 
 Do not change the two deferred authenticated ownership helpers until Canary A/B prove the intended hosted path.
+
+## Daily market-data refresh workstream — 2026-09-19
+
+A new branch `codex/daily-market-refresh-v1` adds the V1 post-close refresh infrastructure:
+
+- live migrations `20260919162529_market_data_refresh_policy_v1` and `20260919162631_market_data_worker_audit_v1`;
+- service-only asset/data cadence matrix;
+- due-plan and automated-source-resolution RPCs;
+- live `market-data-refresh` Edge Function v1 with service-role enforcement;
+- canonical ingestion through the existing source-priority-aware `ingest_price_history_batch` contract;
+- gated GitHub schedule at 01:30 UTC Tue-Sat;
+- backend regression and operational documentation.
+
+Update: the temporary zero-cost Canadian ETF route `yahoo_free` is now operational using Yahoo Finance `.TO` symbols. Supabase Cron owns the post-close schedule via a Vault-held random worker token; no paid data credential or GitHub secret is required. The controlled VFV canary completed with 4/4 rows and 0 errors, then the full 40-ETF catch-up completed with 200/200 rows and 0 errors. All 40 ETFs now have latest price-history date 2026-09-18. The source is priority 90 and cannot replace higher-priority verified rows for the same date. Treat it as a pre-funding research bridge, not launch-grade licensed market data.
 
 ## Immediate follow-ups
 

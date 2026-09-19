@@ -1,0 +1,61 @@
+name: Market data refresh fallback
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Plan only; do not fetch or write market data"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Explain scheduler ownership
+        run: |
+          echo "The production post-close schedule is owned by Supabase Cron."
+          echo "This GitHub workflow is a manual maintenance fallback only."
+
+      - name: Invoke service-only market refresh worker
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+            echo "SUPABASE_SERVICE_ROLE_KEY repository secret is required for this optional GitHub fallback."
+            exit 1
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            BODY='{"dry_run":true,"trigger_source":"manual"}'
+          else
+            BODY='{"dry_run":false,"trigger_source":"manual"}'
+          fi
+
+          RESPONSE="$(curl -sS \
+            -X POST \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            --data "$BODY" \
+            "https://bxjjannguzzzqsamnhem.supabase.co/functions/v1/market-data-refresh")"
+
+          echo "$RESPONSE" | jq .
+
+          STATUS="$(echo "$RESPONSE" | jq -r '.status // .error // "unknown"')"
+          case "$STATUS" in
+            completed|partial|no_work|dry_run)
+              echo "Market refresh status: $STATUS"
+              ;;
+            *)
+              echo "Market refresh is not operationally healthy: $STATUS"
+              exit 2
+              ;;
+          esac

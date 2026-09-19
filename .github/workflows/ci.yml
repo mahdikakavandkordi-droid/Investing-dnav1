@@ -7,6 +7,7 @@ on:
       - codex/visual-redesign-v1
       - codex/product-risk-dna-research
       - codex/integration-product-risk-platform-v1
+      - codex/daily-market-refresh-v1
   workflow_dispatch:
 
 jobs:
