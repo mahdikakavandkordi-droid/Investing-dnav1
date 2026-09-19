@@ -233,13 +233,15 @@ Core operational contracts:
 - `get_due_price_history_ingestion_plan()` — returns only stale, post-close ETF price-history work;
 - `resolve_automated_market_data_source()` — selects only active network-capable provider routes, excluding the internal verified foundation;
 - `market-data-refresh` Edge Function — provider fetch/normalization boundary;
+- Supabase Cron + `pg_net` — primary post-close scheduler;
+- Supabase Vault + `verify_market_data_worker_token(...)` — scheduler-to-Edge authentication without exposing a browser credential;
 - `ingest_price_history_batch()` — canonical, idempotent, source-priority-aware write path;
 - `market_data_worker_runs` — worker-level outcome audit;
 - `market_data_refresh_runs` / `market_data_ingestion_log` — provider/batch and row-level ingestion audit.
 
-The browser has no execute/read/write privileges on these operational contracts. Provider credentials belong in runtime secrets.
+The browser has no execute/read/write privileges on these operational contracts. Provider credentials belong in runtime secrets. The scheduled call uses a random Vault-held worker token; only its hash is stored in the service-only auth table.
 
-Only ETF price history is automation-enabled in V1. A Canadian/TSX provider is still required before the scheduled path can be considered operational for the current ETF catalog. See `MARKET-DATA-REFRESH.md`.
+Only ETF price history is automation-enabled in V1. The current Canadian/TSX implementation uses the temporary low-priority `yahoo_free` research route and has completed a live canary/catch-up. Replace it with a licensed provider after funding. See `MARKET-DATA-REFRESH.md`.
 
 ## 10. Migration policy
 
