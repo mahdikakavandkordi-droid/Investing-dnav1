@@ -240,6 +240,12 @@ async function runViewport(browser,label,viewport){
  await page.getByRole('button',{name:'Start as guest'}).click();
 
  await page.getByText('Question 1 of 4',{exact:true}).waitFor();
+ if(mobile){
+  assert.equal(await page.locator('.mobile-app-nav').count(),0);
+  assert.ok(await page.locator('.mobile-app-header').isVisible());
+  assert.equal(await page.locator('.platform-nav:visible').count(),0);
+  assert.equal(await page.locator('footer.section:visible').count(),0);
+ }
  await shot(page,label+'-03-question-1-step-1');
  await page.getByRole('button',{name:'Moderate ups and downs',exact:true}).click();
  await page.getByRole('button',{name:'Next',exact:true}).click();
