@@ -10,11 +10,13 @@ on:
       - codex/daily-market-refresh-v1
       - codex/maturity-sprint-1
       - codex/maturity-sprint-2-retention
+      - codex/maturity-sprint-3-auth-canary
   pull_request:
     branches:
       - codex/integration-product-risk-platform-v1
       - codex/daily-market-refresh-v1
       - codex/maturity-sprint-1
+      - codex/maturity-sprint-2-retention
   workflow_dispatch:
 
 jobs:
