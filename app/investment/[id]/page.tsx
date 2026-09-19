@@ -119,16 +119,47 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
   <div className="mobile-detail-actions" aria-label="Investment actions"><Link className="btn" href={`/compare?ids=${item.id}`}>Compare</Link><Link className="btn primary" href={`/profile?investment=${item.id}`}>Save</Link></div>
 
   <div className="detail-flow-v2">
-   {isFund&&facts&&<OfficialFundFactsCard facts={facts}/>} 
-   {isFund&&dna?<InvestmentDnaCard dna={dna}/>:!isFund?<InstrumentStructureCard instrument={item}/>:null}
-   <ProductRiskCard investmentId={item.id}/>
-   {!isFund&&<InstrumentTermsCard instrument={item}/>} 
-   {isFund&&research&&<ResearchContextCard context={research}/>} 
-   {isFund&&<FundResearchDetails item={item} facts={facts}/>} 
-   <InstrumentConnection id={item.id} assetType={item.asset_type}/>
-   {isFund&&facts&&<OfficialFundDocumentCard facts={facts}/>} 
+   {isFund
+    ? <>
+      <ResearchDisclosure title="Fund DNA & fees">
+       {facts&&<OfficialFundFactsCard facts={facts}/>}
+       {dna&&<InvestmentDnaCard dna={dna}/>}
+      </ResearchDisclosure>
+      <ResearchDisclosure title="Risk">
+       <ProductRiskCard investmentId={item.id}/>
+      </ResearchDisclosure>
+      <ResearchDisclosure title="Performance & holdings">
+       {research&&<ResearchContextCard context={research}/>}
+      </ResearchDisclosure>
+      <ResearchDisclosure title="About this ETF">
+       <FundResearchDetails item={item} facts={facts}/>
+      </ResearchDisclosure>
+      <ResearchDisclosure title="Save & official documents">
+       <InstrumentConnection id={item.id} assetType={item.asset_type}/>
+       {facts&&<OfficialFundDocumentCard facts={facts}/>}
+      </ResearchDisclosure>
+     </>
+    : <>
+      <ResearchDisclosure title="Structure & terms">
+       <InstrumentStructureCard instrument={item}/>
+       <InstrumentTermsCard instrument={item}/>
+      </ResearchDisclosure>
+      <ResearchDisclosure title="Risk">
+       <ProductRiskCard investmentId={item.id}/>
+      </ResearchDisclosure>
+      <ResearchDisclosure title="Save for later">
+       <InstrumentConnection id={item.id} assetType={item.asset_type}/>
+      </ResearchDisclosure>
+     </>}
   </div>
  </div>;
+}
+
+function ResearchDisclosure({title,children}:{title:string;children:React.ReactNode}){
+ return <details className="mobile-research-disclosure">
+  <summary><span>{title}</span><span className="mobile-disclosure-icon" aria-hidden="true">+</span></summary>
+  <div className="mobile-research-disclosure-body">{children}</div>
+ </details>;
 }
 
 function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|null}){
