@@ -26,6 +26,25 @@ begin
     raise exception 'pilot cohort gate must remain service-only';
   end if;
 
+  if has_table_privilege('anon','public.v_pilot_feedback_summary','SELECT')
+     or has_table_privilege('authenticated','public.v_pilot_feedback_summary','SELECT')
+  then
+    raise exception 'pilot feedback summary view must remain service-only';
+  end if;
+
+  select count(*) into v_count
+  from information_schema.columns
+  where table_schema='public'
+    and table_name='v_pilot_feedback_summary'
+    and column_name in (
+      'match_as_buy_count','match_as_buy_pct',
+      'score_as_return_count','score_as_return_pct'
+    );
+
+  if v_count <> 4 then
+    raise exception 'service pilot feedback summary must expose all four Match-safety aggregate fields';
+  end if;
+
   select count(*) into v_count
   from information_schema.columns
   where table_schema='public'
