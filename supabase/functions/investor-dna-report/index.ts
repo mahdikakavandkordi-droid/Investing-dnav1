@@ -26,6 +26,13 @@ function cleanEmail(value:unknown){
   const email=value.trim().toLowerCase();
   return email.length<=254&&EMAIL_RE.test(email)?email:null;
 }
+function cleanSender(value:unknown){
+  if(typeof value!=='string')return null;
+  const match=value.trim().match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  if(!match)return null;
+  const email=match[0].toLowerCase();
+  return EMAIL_RE.test(email)?`Investor DNA <${email}>`:null;
+}
 function labelGoal(value:unknown){
   const map:Record<string,string>={
     growth:'General long-term growth',retirement:'Retirement',house_purchase:'Home purchase',
@@ -278,7 +285,9 @@ Deno.serve(async(req)=>{
     const action=body?.action;
 
     if(action==='status'){
-      return json({email_pdf_enabled:!!Deno.env.get('RESEND_API_KEY')&&!!Deno.env.get('REPORT_FROM_EMAIL')});
+      return json({
+        email_pdf_enabled:!!Deno.env.get('RESEND_API_KEY')&&!!cleanSender(Deno.env.get('REPORT_FROM_EMAIL'))
+      });
     }
     if(action!=='pdf'&&action!=='email_pdf')return json({error:'Unsupported action'},400);
 
@@ -298,7 +307,7 @@ Deno.serve(async(req)=>{
     const email=cleanEmail(body?.email);
     if(!email)return json({error:'Enter a valid email address.'},400);
     const apiKey=Deno.env.get('RESEND_API_KEY');
-    const from=Deno.env.get('REPORT_FROM_EMAIL');
+    const from=cleanSender(Deno.env.get('REPORT_FROM_EMAIL'));
     if(!apiKey||!from)return json({error:'Email PDF delivery is not configured yet. Use Download PDF for now.'},503);
 
     const since=new Date(Date.now()-60*60*1000).toISOString();
