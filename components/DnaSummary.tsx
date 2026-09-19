@@ -1,4 +1,5 @@
 import Image from "next/image";
+import {PortfolioBlueprint} from "@/components/PortfolioBlueprint";
 import {hasCompleteInvestmentContext,score} from "@/lib/dna";
 import type {DNA,PersonalizationProfile} from "@/lib/dna";
 import {
@@ -72,6 +73,7 @@ export function DnaSummary({dna,report,personal}:{dna:DNA;report?:DNA|null;perso
   <BiasSignalsSection behavioral={behavioral}/>
   <PlainEnglishSection summary={summary} decisionText={decision.text} pressureText={pressure.text}/>
   {hasCompleteInvestmentContext(context)&&<AppliedDnaSection context={context!} firstName={firstName} displayName={displayName} tolerance={tolerance} capacity={capacity}/>} 
+  {hasCompleteInvestmentContext(context)&&<PortfolioBlueprint dna={{...dna,...report}} context={context!}/>}
   <p className="muted fine result-disclaimer">Educational self-assessment only. Investor DNA describes research-oriented tendencies and is not investment advice or a recommendation to buy or sell any investment.</p>
  </div>;
 }
