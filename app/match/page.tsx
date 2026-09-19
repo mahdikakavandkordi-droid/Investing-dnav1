@@ -234,24 +234,32 @@ function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfil
   ['Principal protection',formatInvestmentContext('principal_required',context.principal_required)]
  ];
 
- return <section className="card">
-  <div className="eyebrow">What this Match is using</div>
-  <h2>Your money context</h2>
-  <p className="muted">These answers affect the ETF comparison below. They do not change your underlying Investor DNA.</p>
-  <div className="grid2 section compact">
-   {rows.map(([label,value])=><div className="fingerprint" key={label}>
-    <span>{label}</span>
-    <strong>{value}</strong>
-   </div>)}
+ return <details className="card match-context-disclosure">
+  <summary>
+   <span><span className="eyebrow">What this Match is using</span><strong>Your money context</strong></span>
+   <span className="match-context-summary-meta">4 inputs <b aria-hidden="true">+</b></span>
+  </summary>
+  <div className="match-context-body">
+   <div className="match-context-desktop-heading">
+    <div className="eyebrow">What this Match is using</div>
+    <h2>Your money context</h2>
+    <p className="muted">These answers affect the ETF comparison below. They do not change your underlying Investor DNA.</p>
+   </div>
+   <div className="grid2 section compact">
+    {rows.map(([label,value])=><div className="fingerprint" key={label}>
+     <span>{label}</span>
+     <strong>{value}</strong>
+    </div>)}
+   </div>
+   {goalLens&&<div className="notice match-goal-lens">
+    <strong>How this goal changes Match</strong>
+    <p>{goalLens}</p>
+   </div>}
+   <div className="actions compact">
+    <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
+   </div>
   </div>
-  {goalLens&&<div className="notice">
-   <strong>How this goal changes Match</strong>
-   <p>{goalLens}</p>
-  </div>}
-  <div className="actions compact">
-   <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
-  </div>
- </section>;
+ </details>;
 }
 
 function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;constraints:ConstraintShape;featuredCount:number}){
