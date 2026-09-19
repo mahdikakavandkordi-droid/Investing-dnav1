@@ -6,6 +6,8 @@ Use this scorecard only after the cognitive phase is complete and the questionna
 
 Do not optimize after every participant. Review in defined batches (recommended every 5–10 users) and distinguish signal from one-off anecdotes.
 
+Use `docs/M4-PILOT-EVIDENCE-QUERIES.sql` for the privacy-minimized aggregate funnel/feedback extraction. Set its cohort parameter to the frozen product-pilot cohort. Do not mix `DEV_*`, cognitive-session traffic or engineering canary traffic into product-pilot rates.
+
 ## Pilot cohort
 
 - Frozen questionnaire version:
