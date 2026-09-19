@@ -1,4 +1,5 @@
 import type {CSSProperties} from 'react';
+import Link from 'next/link';
 import type {DNA,InvestmentContextProfile} from '@/lib/dna';
 import {buildPortfolioBlueprint} from '@/lib/portfolio-blueprint';
 import type {Allocation,BlueprintScenario} from '@/lib/portfolio-blueprint';
@@ -36,7 +37,7 @@ export function PortfolioBlueprint({dna,context}:{dna:DNA;context:InvestmentCont
 
     <div className="blueprint-boundary">
       <span aria-hidden="true">i</span>
-      <p><strong>Asset-class blueprint, not a portfolio recommendation.</strong> {blueprint.note} Geographic, sector and security-level allocations are intentionally not inferred here.</p>
+      <p><strong>Asset-class blueprint, not a portfolio recommendation.</strong> {blueprint.note} Geographic, sector and security-level allocations are intentionally not inferred here. <Link href="/research/portfolio-blueprint">See how this blueprint is built →</Link></p>
     </div>
   </section>;
 }
