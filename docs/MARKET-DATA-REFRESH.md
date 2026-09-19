@@ -27,7 +27,7 @@ Only ETF `price_history` has `automation_enabled=true` in V1. Other policy rows 
 ## Runtime
 
 ```text
-GitHub schedule / manual dispatch
+Supabase Cron / manual operator call
         |
         v
 market-data-refresh Edge Function
@@ -59,23 +59,26 @@ Worker executions are audited in `market_data_worker_runs`. Provider ingestion i
 
 ## Market-close timing
 
-The repository schedule is:
+The active Supabase Cron schedule is:
 
 ```text
 30 1 * * 2-6
 ```
 
-That runs at 01:30 UTC Tuesday through Saturday, which corresponds to approximately 20:30 EST / 21:30 EDT on the prior Monday-Friday market day. The database policy also refuses to plan a daily ETF refresh before 19:00 `America/Toronto`.
+That runs at 01:30 UTC Tuesday through Saturday, which corresponds to approximately 20:30 EST / 21:30 EDT on the prior Monday-Friday market day. The database policy also refuses to plan a daily ETF refresh before 19:00 `America/Toronto`. The schedule is stored in `cron.job` as `investor-dna-market-data-refresh`.
 
 A market holiday can legitimately produce no new bar. The next run can retry without fabricating a price or freshness date.
 
 ## Security boundary
 
-- Edge Function deployment has JWT verification enabled.
-- Function body additionally requires the bearer token to equal `SUPABASE_SERVICE_ROLE_KEY`.
-- Operational policy/run tables and due-plan/source-resolution RPCs are service-only.
+- The Edge Function uses custom server authentication for Supabase Cron.
+- A random worker token is generated server-side, stored encrypted in Supabase Vault and only its SHA-256 hash is retained in `market_data_worker_auth`.
+- `pg_net` reads the Vault secret at execution time and sends it as `x-market-worker-token`.
+- The Edge Function verifies that token through a service-only RPC before any ingestion work.
+- Direct service-role invocation remains available for operators.
+- Operational policy/auth/run tables and due-plan/source-resolution RPCs are service-only.
 - Browser users cannot trigger ingestion or write market history directly.
-- API keys stay in runtime secrets, never in the repository.
+- Provider secrets, if later required, stay in runtime secrets rather than the repository.
 
 ## Current provider state
 
@@ -90,17 +93,12 @@ This source is deliberately priority `90`, below verified issuer/internal source
 
 Yahoo Finance is not being treated as an official issuer source or as a permanent licensed data contract. It is an MVP research bridge until funding supports a production-grade Canadian market-data vendor.
 
-## Activation checklist
+## Activation / current state
 
-For the temporary free TSX bridge:
+The temporary free TSX bridge is active without any paid credential or GitHub secret. Supabase Cron owns the recurring schedule.
 
-1. add GitHub repository secret `SUPABASE_SERVICE_ROLE_KEY`;
-2. manually dispatch the workflow with `dry_run=true`;
-3. run one controlled write refresh and verify latest dates, source keys and audit logs;
-4. set repository variable `MARKET_DATA_REFRESH_ENABLED=true`.
+A controlled canary on 2026-09-19 completed successfully for `VFV`: 4 rows fetched, 4 inserted, 0 errors. A full catch-up then completed for all 40 current Canadian ETFs: 200 rows fetched, 200 inserted, 0 errors. After that run, all 40 ETFs had a latest price-history date of 2026-09-18.
 
-No paid market-data API credential is required for the temporary Yahoo route.
+The source remains explicitly temporary and low priority. After funding, replace it with a licensed Canadian provider, give that provider a higher source priority, run a source-overlap canary, and only then retire `yahoo_free`.
 
-After funding, replace this bridge with a licensed Canadian provider, give that provider a higher source priority, run a source-overlap canary, and only then retire `yahoo_free`.
-
-The scheduled workflow remains gated so merging code alone does not start traffic.
+`.github/workflows/market-data-refresh.yml` remains only as an optional manual maintenance fallback; it is not the production scheduler.
