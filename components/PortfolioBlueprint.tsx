@@ -50,7 +50,7 @@ function ScenarioCard({scenario}:{scenario:BlueprintScenario}){
         <span className="scenario-kicker">{scenario.key==='defensive'?'Scenario 1':scenario.key==='core'?'Scenario 2':'Scenario 3'}</span>
         <h3>{scenario.title}</h3>
       </div>
-      {scenario.key==='core'?<span className="scenario-status">Closest fit</span>:scenario.constrained?<span className="scenario-status neutral">Constraint capped</span>:null}
+      {scenario.key==='core'?<span className="scenario-status">Core scenario</span>:scenario.constrained?<span className="scenario-status neutral">Constraint capped</span>:null}
     </header>
     <p>{scenario.subtitle}</p>
     <div className="scenario-allocation-row">
