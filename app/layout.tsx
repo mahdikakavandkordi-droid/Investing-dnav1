@@ -1,6 +1,7 @@
 // Final onboarding visuals deployed: 2026-09-18
 // Vercel preview sync: 2026-09-18
 import type {ReactNode} from 'react';
+import type {Viewport} from 'next';
 import "./globals.css";
 import "./assessment-onboarding.css";
 import "./assessment-methodology.css";
@@ -26,6 +27,7 @@ import {MobileAppNav} from "@/components/MobileAppNav";
 import {MobileAppHeader} from "@/components/MobileAppHeader";
 
 export const metadata={title:"Investor DNA",description:"Know yourself. Understand your investments."};
+export const viewport:Viewport={width:"device-width",initialScale:1,viewportFit:"cover",themeColor:"#f5f8f8"};
 
 export default function RootLayout({children}:{children:ReactNode}){
  return <html lang="en"><body><Nav/><MobileAppHeader/><ProductAnalytics/><main>{children}</main><Footer/><MobileAppNav/></body></html>;
