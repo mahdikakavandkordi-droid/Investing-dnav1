@@ -52,8 +52,18 @@ function labelPrincipal(value:unknown){
   return 'Not provided';
 }
 function safeText(value:unknown,fallback='Not available'){
-  if(typeof value==='string'&&value.trim())return value.trim().replace(/[\u0000-\u001f]+/g,' ').slice(0,1200);
-  return fallback;
+  if(typeof value!=='string'||!value.trim())return fallback;
+  return value.trim()
+    .replace(/[\u0000-\u001f]+/g,' ')
+    .replace(/[\u2018\u2019]/g,"'")
+    .replace(/[\u201c\u201d]/g,'"')
+    .replace(/[\u2013\u2014]/g,'-')
+    .replace(/\u2026/g,'...')
+    .replace(/\u2022/g,'*')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^\x20-\x7E]/g,'?')
+    .slice(0,1200);
 }
 function safeScore(value:unknown){
   const n=Number(value);
@@ -165,6 +175,34 @@ async function buildPdf(report:Record<string,any>,assessmentId:string){
   heading('Decision profile');
   paragraph('Strength: '+safeText(report.narrative?.strength||report.strengths));
   paragraph('Worth watching: '+safeText(report.narrative?.blind_spot||report.watchouts));
+
+  const behavioral=report.behavioral_profile&&typeof report.behavioral_profile==='object'
+    ? report.behavioral_profile as Record<string,unknown>
+    : {};
+  const behaviorLabels:Record<string,string>={
+    decision_independence:'Decision independence',
+    long_term_orientation:'Long-term orientation',
+    reference_flexibility:'Reference flexibility',
+    evidence_discipline:'Evidence discipline',
+    emotional_decision_control:'Emotional decision control'
+  };
+  if(Object.keys(behavioral).length){
+    ensure(28);page.drawText('Behavioral DNA',{x:margin,y,font:bold,size:10,color:ink});y-=17;
+    for(const [key,label] of Object.entries(behaviorLabels)){
+      const value=safeScore(behavioral[key]);
+      if(value!=null)pair(label,value+'/100');
+    }
+  }
+
+  const experience=report.assessment_dimensions?.investment_experience;
+  if(experience&&typeof experience==='object'){
+    ensure(28);page.drawText('Investment experience context',{x:margin,y,font:bold,size:10,color:ink});y-=17;
+    if(typeof experience.decision_experience==='string')pair('Decision experience',safeText(experience.decision_experience));
+    if(typeof experience.downturn_experience==='string')pair('Market downturn experience',safeText(experience.downturn_experience));
+    if(Array.isArray(experience.owned_products)&&experience.owned_products.length){
+      paragraph('Products personally owned/followed: '+experience.owned_products.map((x:unknown)=>safeText(String(x),'')).filter(Boolean).join(', '),8,muted,maxWidth,4);
+    }
+  }
   rule();
 
   const context=(report.investment_context&&typeof report.investment_context==='object')?report.investment_context:null;
@@ -192,14 +230,14 @@ async function buildPdf(report:Record<string,any>,assessmentId:string){
       ensure(44);
       page.drawText(scenario.title,{x:margin,y,font:bold,size:11,color:scenario.key==='core'?teal:ink});
       const a=scenario.allocation;
-      page.drawText(`${a.equity}% Equity   ·   ${a.fixedIncome}% Fixed income   ·   ${a.cash}% Cash`,{x:margin+145,y,font:regular,size:9,color:ink});
+      page.drawText(`${a.equity}% Equity   -   ${a.fixedIncome}% Fixed income   -   ${a.cash}% Cash`,{x:margin+145,y,font:regular,size:9,color:ink});
       y-=17;
       paragraph(scenario.subtitle,8,muted,maxWidth,5);
       if(scenario.constraintNote)paragraph(scenario.constraintNote,8,muted,maxWidth,5);
     }
     ensure(20);
     page.drawText('Why the Core Blueprint lands here',{x:margin,y,font:bold,size:10,color:ink});y-=16;
-    for(const reason of blueprint.reasons)paragraph('• '+reason,8,muted,maxWidth,3);
+    for(const reason of blueprint.reasons)paragraph('* '+reason,8,muted,maxWidth,3);
   }else{
     paragraph('Add a complete goal, time horizon, liquidity need and principal-protection choice to generate the educational asset-class blueprint.');
   }
