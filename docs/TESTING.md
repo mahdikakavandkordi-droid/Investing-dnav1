@@ -66,7 +66,7 @@ A deliberate full reload is different: a completed guest result is not promised 
 
 ### `test:funds`
 
-Covers ETF Detail research, retry/error state, account intent continuity, watchlist behavior, DNA Match presentation/navigation, Screener -> Compare, returning profile flow, analytics and mobile viewport.
+Covers ETF Detail research, retry/error state, account intent continuity, watchlist behavior, DNA Match presentation/navigation, Screener -> Compare, returning profile/Home flow, retention analytics and mobile viewport.
 
 The connected browser flow also protects the Match v7 context transition end to end:
 
@@ -85,6 +85,8 @@ context_required -> DNA-only
 review_required  -> Review
 available        -> numeric context-aware Match
 ```
+
+It also protects the returning-user loop: the signed-in Home restores DNA/context/Watchlist/Match after reload, shows a factual Since-your-last-visit market-data update when the retention RPC reports newer saved-investment data, and emits `workspace_viewed`. Browser mocks prove UI/contract behavior only; the live SQL retention regression separately proved first-visit baseline then per-item new-price detection inside a rollback transaction.
 
 ### `test:m4`
 
