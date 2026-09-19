@@ -96,6 +96,7 @@
 .blueprint-boundary{display:flex;gap:11px;align-items:flex-start;margin-top:16px;padding:13px 14px;border-radius:14px;background:#f3f8f7;color:#586e78}
 .blueprint-boundary>span{width:22px;height:22px;flex:0 0 22px;border-radius:50%;display:grid;place-items:center;background:#e2f3ef;color:#087c73;font-size:11px;font-weight:820}
 .blueprint-boundary p{margin:0;font-size:11px;line-height:1.55}
+.blueprint-boundary a{color:#087c73;font-weight:760}
 
 @media(max-width:980px){
  .portfolio-blueprint-head{display:grid}
