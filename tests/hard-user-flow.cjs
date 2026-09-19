@@ -205,6 +205,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
 
  await page.goto(ORIGIN+'/match');
  await page.getByText('Context-aware match',{exact:true}).waitFor();
+ await page.locator('.match-context-summary').click();
  text=await page.locator('body').innerText();
  assert.match(text,/91\s*\/100|91\/100/);
  assert.match(text,/Long-term growth/i);
