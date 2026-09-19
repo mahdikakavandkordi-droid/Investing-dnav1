@@ -1210,3 +1210,27 @@
  /* Preserve a predictable safe bottom on every app state. */
  body:has(.mobile-app-nav) main{padding-bottom:max(22px,var(--mobile-safe))}
 }
+
+
+/* Post-merge mobile continuity fix: keep save intent in the native mobile dashboard. */
+@media(max-width:760px){
+ .profile-page.dashboard-page .dashboard-intent:not(.dashboard-claim){display:none!important}
+ .mobile-home-intent{
+  display:grid;
+  gap:10px;
+  margin:0 0 10px;
+  padding:14px;
+  border:1px solid #dce8e7;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(16,42,67,.035);
+ }
+ .mobile-home-intent>div:first-child{display:grid;gap:4px}
+ .mobile-home-intent strong{color:#17394d;font-size:16px}
+ .mobile-home-intent small{color:#71838d;font-size:10px;line-height:1.4}
+ .mobile-home-intent-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+ .mobile-home-intent-actions .btn{width:100%;min-height:41px;font-size:11px}
+}
+@media(max-width:390px){
+ .mobile-home-intent-actions{grid-template-columns:1fr}
+}
