@@ -139,16 +139,16 @@ export default function Matches(){
 function MatchHero(){
  return <div className="match-dna-hero">
   <div className="eyebrow">DNA Match · ETFs</div>
-  <h1>See how your DNA lines up with ETFs</h1>
-  <p>We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</p>
+  <h1><span className="desktop-match-title">See how your DNA lines up with ETFs</span><span className="mobile-match-title">Your ETF matches</span></h1>
+  <p><span className="desktop-match-copy">We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</span><span className="mobile-match-copy">See which ETFs align more closely with your DNA and the context for this money.</span></p>
   <p className="fine muted">A higher score means closer research compatibility with the inputs shown on this page — not a better investment, a return forecast, or a recommendation to buy.</p>
  </div>;
 }
 
 function LoadingState(){
- return <div className="card">
-  <h2>Building your matches…</h2>
-  <p className="muted">Comparing your Investor DNA with the current verified ETF research universe.</p>
+ return <div className="card mobile-match-loading" role="status">
+  <div className="mobile-loading-line wide"/><div className="mobile-loading-line"/><div className="mobile-loading-line short"/>
+  <span>Building your matches…</span>
  </div>;
 }
 
