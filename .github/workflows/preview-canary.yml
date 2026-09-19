@@ -20,7 +20,11 @@ jobs:
       (
         github.event_name == 'deployment_status' &&
         github.event.deployment_status.state == 'success' &&
-        github.event.deployment.ref == 'codex/integration-product-risk-platform-v1'
+        (
+          github.event.deployment.ref == 'codex/integration-product-risk-platform-v1' ||
+          github.event.deployment.ref == 'codex/maturity-sprint-2-retention' ||
+          github.event.deployment.ref == 'codex/maturity-sprint-3-auth-canary'
+        )
       )
     runs-on: ubuntu-latest
     timeout-minutes: 10
