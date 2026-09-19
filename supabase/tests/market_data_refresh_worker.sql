@@ -34,6 +34,8 @@ begin
      or has_table_privilege('authenticated','public.market_data_worker_runs','SELECT')
      or has_table_privilege('anon','public.investor_workspace_state','SELECT')
      or has_table_privilege('authenticated','public.investor_workspace_state','SELECT')
+     or has_table_privilege('anon','public.investor_workspace_item_state','SELECT')
+     or has_table_privilege('authenticated','public.investor_workspace_item_state','SELECT')
   then
     raise exception 'market refresh operational tables must remain service-only';
   end if;
