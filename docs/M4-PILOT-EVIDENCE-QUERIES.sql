@@ -37,6 +37,10 @@ group by c.code,c.questionnaire_version,c.model_version,c.target_n,c.status;
 -- Cohort membership is anchored through an assessment linked to the selected
 -- pilot cohort. Once a visitor is anchored, later product events from that same
 -- visitor_id are included so the post-assessment research journey is visible.
+--
+-- "Returning visit" requires both a new browser-session ID and at least six
+-- hours between the visitor's first and latest recorded event. This avoids
+-- counting a refresh/new tab during one sitting as retention.
 -- ---------------------------------------------------------------------------
 with params as (
   select 'REPLACE_WITH_FROZEN_PRODUCT_PILOT_COHORT'::text as cohort_code
@@ -64,7 +68,8 @@ visitor_flags as (
     bool_or(e.event_name in ('match_viewed','fund_viewed')) as match_or_fund_reached,
     bool_or(e.event_name in ('screener_viewed','compare_viewed')) as screener_or_compare_reached,
     bool_or(e.event_name in ('watchlist_saved','signup_requested','dna_claimed')) as claim_or_watchlist_save,
-    count(distinct e.browser_session_id)>1 as returning_visit
+    count(distinct e.browser_session_id)>1
+      and max(e.created_at)-min(e.created_at)>=interval '6 hours' as returning_visit
   from public.pilot_product_events e
   join cohort_visitors v using(visitor_id)
   group by e.visitor_id
@@ -154,3 +159,66 @@ order by e.event_name;
 -- The visitor-level funnel query was executed against DEV_V1_10 on 2026-09-19
 -- to verify SQL shape only. DEV traffic is engineering evidence, not pilot
 -- evidence, and must never be copied into the product-pilot scorecard.
+
+
+-- ---------------------------------------------------------------------------
+-- 5. Returning-workspace loop
+--
+-- This measures whether returning pilot visitors actually reach the persisted
+-- workspace and where they choose to resume. It remains aggregate and excludes
+-- email, answer content and other direct identifiers.
+-- ---------------------------------------------------------------------------
+with params as (
+  select 'REPLACE_WITH_FROZEN_PRODUCT_PILOT_COHORT'::text as cohort_code
+),
+cohort_assessments as (
+  select a.id as assessment_id
+  from public.assessments a
+  join public.pilot_participants p on p.id=a.pilot_participant_id
+  join public.pilot_cohorts c on c.id=p.cohort_id
+  join params x on x.cohort_code=c.code
+  where p.withdrawn_at is null
+),
+cohort_visitors as (
+  select distinct e.visitor_id
+  from public.pilot_product_events e
+  join cohort_assessments a on a.assessment_id=e.assessment_id
+  where e.visitor_id is not null
+)
+select
+  count(distinct e.visitor_id) filter(where e.event_name='workspace_viewed') as workspace_viewers,
+  count(distinct e.visitor_id) filter(
+    where e.event_name='workspace_viewed'
+      and coalesce((e.metadata->>'returning')::boolean,false)
+  ) as returning_workspace_viewers,
+  count(*) filter(where e.event_name='workspace_resume_clicked') as resume_clicks,
+  count(distinct e.visitor_id) filter(where e.event_name='workspace_resume_clicked') as visitors_resuming
+from public.pilot_product_events e
+join cohort_visitors v using(visitor_id);
+
+with params as (
+  select 'REPLACE_WITH_FROZEN_PRODUCT_PILOT_COHORT'::text as cohort_code
+),
+cohort_assessments as (
+  select a.id as assessment_id
+  from public.assessments a
+  join public.pilot_participants p on p.id=a.pilot_participant_id
+  join public.pilot_cohorts c on c.id=p.cohort_id
+  join params x on x.cohort_code=c.code
+  where p.withdrawn_at is null
+),
+cohort_visitors as (
+  select distinct e.visitor_id
+  from public.pilot_product_events e
+  join cohort_assessments a on a.assessment_id=e.assessment_id
+  where e.visitor_id is not null
+)
+select
+  coalesce(e.metadata->>'target','unknown') as resume_target,
+  count(*) as clicks,
+  count(distinct e.visitor_id) as unique_visitors
+from public.pilot_product_events e
+join cohort_visitors v using(visitor_id)
+where e.event_name='workspace_resume_clicked'
+group by 1
+order by clicks desc,resume_target;
