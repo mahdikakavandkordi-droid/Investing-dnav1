@@ -120,6 +120,20 @@ The Profile email flow now explicitly tells the user to keep the current tab ope
 
 Do not change the two deferred authenticated ownership helpers until Canary A/B prove the intended hosted path.
 
+## Daily market-data refresh workstream — 2026-09-19
+
+A new branch `codex/daily-market-refresh-v1` adds the V1 post-close refresh infrastructure:
+
+- live migrations `20260919162529_market_data_refresh_policy_v1` and `20260919162631_market_data_worker_audit_v1`;
+- service-only asset/data cadence matrix;
+- due-plan and automated-source-resolution RPCs;
+- live `market-data-refresh` Edge Function v1 with service-role enforcement;
+- canonical ingestion through the existing source-priority-aware `ingest_price_history_batch` contract;
+- gated GitHub schedule at 01:30 UTC Tue-Sat;
+- backend regression and operational documentation.
+
+Important: this is **not yet an operational Canadian daily feed**. The current 40 ETF catalog entries are Canadian/TSX and deliberately return `no_automated_provider`. The existing Massive adapter is U.S.-market only. Do not enable the scheduled workflow until a Canadian provider is approved/configured and the controlled dry-run/write canary passes.
+
 ## Immediate follow-ups
 
 1. Let the next successful Vercel deployment exercise the new deployment-status Preview canary.
