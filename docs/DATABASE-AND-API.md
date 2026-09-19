@@ -298,3 +298,17 @@ Before calling backend work complete, answer:
 - What version/source/as-of metadata matters?
 - Which DB/browser regression proves the changed boundary?
 - Which canonical document changed with it?
+
+
+## Returning-user retention boundary
+
+Signed-in return continuity is server-owned rather than inferred from browser identity.
+
+- `public.investor_workspace_state` stores the previous workspace snapshot for one profile.
+- `public.investor_workspace_item_state` stores the last seen price date per saved investment.
+- both tables are RLS-enabled, have no browser policies and are not directly readable by anon/authenticated clients;
+- `public.app_open_returning_workspace()` is authenticated-only and resolves ownership from `auth.uid()`;
+- the RPC returns only continuity facts required by Home: prior visit time, current Watchlist count, number/list of saved items with newer sourced market data and whether DNA/Match inputs changed;
+- the browser caches that one summary for the current session so navigating away and back does not redefine the baseline.
+
+Market-price browser reads follow the same split-boundary pattern as the rest of the app: `public.app_market_data_status(...)` is SECURITY INVOKER and delegates to the private SECURITY DEFINER implementation. This keeps the exposed wrapper narrow while operational price-history tables remain inaccessible.
