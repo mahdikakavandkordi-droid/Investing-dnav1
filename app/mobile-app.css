@@ -1022,3 +1022,95 @@
   text-align:left;
  }
 }
+
+
+/* Final mobile product polish — compact task surfaces and clearer gestures */
+@media(max-width:760px){
+ /* DNA entry: keep the decision above the fold; details are secondary. */
+ .dna-entry-hero{padding:16px 15px!important}
+ .dna-entry-hero h1{font-size:28px!important;margin:6px 0 8px!important}
+ .dna-entry-hero>p{font-size:13px!important;line-height:1.45!important;margin-bottom:12px!important}
+ .dna-entry-hero .assessment-meta{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  overflow-x:auto;
+  margin:0 0 12px!important;
+  scrollbar-width:none;
+ }
+ .dna-entry-hero .assessment-meta::-webkit-scrollbar{display:none}
+ .dna-entry-hero .assessment-meta span{flex:0 0 auto;white-space:nowrap;font-size:9px!important;padding:5px 7px!important}
+ .dna-entry-hero .actions{margin-top:11px!important}
+ .dna-entry-hero .actions .btn{min-height:43px!important}
+ .dna-pillar-grid{margin-top:9px!important}
+ .dna-pillar-card{flex-basis:68vw!important;min-height:124px!important;padding:14px!important}
+ .dna-pillar-card h3{margin:0 0 5px!important;font-size:15px!important}
+ .dna-pillar-card p{margin:0!important;font-size:11px!important;line-height:1.43!important}
+ .dna-entry-belief{display:none!important}
+
+ /* Explore: search and scan, with less repeated prose in every result. */
+ .explore-hero-v2{padding:14px 0 9px!important}
+ .explore-hero-row h1{font-size:29px!important;margin:4px 0 5px!important}
+ .explore-hero-row p{font-size:12px!important;line-height:1.42!important}
+ .explore-search-v2{margin-top:9px!important}
+ .explore-tabs-v2{margin-top:9px!important}
+ .explore-catalog-v2{padding-top:9px!important}
+ .investment-card-v2{padding:13px!important}
+ .investment-card-copy h2{margin:8px 0 2px!important;font-size:16px!important}
+ .investment-card-copy>p:last-child{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  margin:5px 0 0!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+ }
+ .investment-card-metrics{margin-top:9px!important}
+ .investment-card-footer{margin-top:9px!important}
+ .investment-card-footer a{min-height:39px!important;font-size:11px!important}
+
+ /* Watchlist: saved research should scan like a native utility list. */
+ .watchlist-hero-v2{margin-bottom:9px!important}
+ .watchlist-hero-v2 h1{font-size:28px!important}
+ .watchlist-hero-v2 p{margin:3px 0 0!important;font-size:12px!important}
+ .watchlist-card-v2{padding:12px 13px!important}
+ .watchlist-card-v2 h2{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  margin:5px 0 1px!important;
+  font-size:14px!important;
+ }
+ .watchlist-card-v2 p{display:none}
+ .watchlist-card-actions-v2 a{font-weight:800}
+ .watchlist-card-actions-v2 button{min-height:30px;padding:4px 7px}
+
+ /* Compare: communicate that results are a horizontal swipe surface. */
+ .mobile-compare-rail{
+  padding-right:48px!important;
+  scroll-padding-left:12px;
+ }
+ .mobile-compare-rail .compare-card{flex-basis:82vw!important}
+ .compare-page-v2:has(.mobile-compare-rail) .mobile-compare-rail:after{
+  content:"Swipe";
+  flex:0 0 34px;
+  align-self:center;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  color:#81949c;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+ }
+
+ /* Bottom nav should feel stable on small phones without label crowding. */
+ .mobile-app-nav-item{font-size:9px!important}
+}
+
+@media(max-width:390px){
+ .dna-pillar-card{flex-basis:73vw!important}
+ .mobile-compare-rail .compare-card{flex-basis:84vw!important}
+}
