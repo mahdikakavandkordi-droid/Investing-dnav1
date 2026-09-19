@@ -51,6 +51,13 @@ export type Instrument=Investment&{
  profile_key_risks?:string[]|null;
  profile_model_version?:string|null;
 
+ // Latest market-price layer. These values come from audited price history,
+ // not the slower research-metrics snapshot.
+ market_price_date?:string|null;
+ market_price_source_key?:string|null;
+ market_price_source_name?:string|null;
+ market_price_ingested_at?:string|null;
+
  // Shared cross-asset Investment DNA structure layer.
  structure_model_version?:string|null;
  capital_protection?:string|null;
@@ -106,21 +113,67 @@ export type SavedInstrument={
  created_at?:string;
 };
 
+export type MarketDataStatus={
+ investment_id:string;
+ latest_price:number|null;
+ previous_price:number|null;
+ daily_change_pct:number|null;
+ volume:number|null;
+ currency:string|null;
+ price_date:string|null;
+ source_key:string|null;
+ source_name:string|null;
+ ingested_at:string|null;
+};
+
+export async function marketDataStatus(ids:string[]){
+ const unique=[...new Set(ids.filter(Boolean))];
+ if(unique.length===0)return [] as MarketDataStatus[];
+ return rpc<MarketDataStatus[]>('app_market_data_status',{p_investment_ids:unique});
+}
+
+function mergeMarketData(items:Instrument[],statuses:MarketDataStatus[]){
+ if(statuses.length===0)return items;
+ const byId=new Map(statuses.map(status=>[status.investment_id,status]));
+ return items.map(item=>{
+  const status=byId.get(item.id);
+  if(!status)return item;
+  return {
+   ...item,
+   price:status.latest_price??item.price,
+   daily_change_pct:status.daily_change_pct??item.daily_change_pct,
+   volume:status.volume??item.volume,
+   currency:status.currency??item.currency,
+   market_price_date:status.price_date,
+   market_price_source_key:status.source_key,
+   market_price_source_name:status.source_name,
+   market_price_ingested_at:status.ingested_at,
+  };
+ });
+}
+
 /** Search the public cross-asset research universe. */
-export function searchInstruments(args:{assetType?:string|null;search?:string|null;limit?:number}={}){
- return rpc<Instrument[]>('app_search_instruments',{
+export async function searchInstruments(args:{assetType?:string|null;search?:string|null;limit?:number}={}){
+ const items=await rpc<Instrument[]>('app_search_instruments',{
   p_asset_type:args.assetType??null,
   p_search:args.search??null,
   p_limit:args.limit??100,
  });
+ const statuses=await marketDataStatus(items.map(item=>item.id)).catch(()=>[]);
+ return mergeMarketData(items,statuses);
 }
 
-export function getInstrument(id:string){
- return rpc<Instrument|null>('app_get_instrument',{p_investment_id:id});
+export async function getInstrument(id:string){
+ const item=await rpc<Instrument|null>('app_get_instrument',{p_investment_id:id});
+ if(!item)return null;
+ const statuses=await marketDataStatus([item.id]).catch(()=>[]);
+ return mergeMarketData([item],statuses)[0]??item;
 }
 
-export function compareInstruments(ids:string[]){
- return rpc<Instrument[]>('app_compare_instruments',{p_investment_ids:ids});
+export async function compareInstruments(ids:string[]){
+ const items=await rpc<Instrument[]>('app_compare_instruments',{p_investment_ids:ids});
+ const statuses=await marketDataStatus(items.map(item=>item.id)).catch(()=>[]);
+ return mergeMarketData(items,statuses);
 }
 
 /** Account-scoped Watchlist adapter; storage is instrument-neutral. */
