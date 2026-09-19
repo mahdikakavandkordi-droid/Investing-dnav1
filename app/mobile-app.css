@@ -496,3 +496,331 @@
  .mobile-home-snapshot{grid-template-columns:1fr}
  .dna-pillar-card{flex-basis:82vw}
 }
+
+
+/* Milestone 3 — interaction polish, Match, Compare and Screener */
+.mobile-match-title,
+.mobile-match-copy,
+.mobile-compare-title,
+.mobile-compare-copy,
+.mobile-screener-title,
+.mobile-screener-copy{display:none}
+
+@keyframes mobile-skeleton-pulse{
+ 0%,100%{opacity:.52}
+ 50%{opacity:1}
+}
+
+@media(max-width:760px){
+ /* Touch feedback shared across the app. */
+ .mobile-app-nav-item,
+ .mobile-dna-summary,
+ .mobile-home-snapshot>a,
+ .mobile-action-list>a,
+ .mobile-saved-list>a,
+ .investment-card-v2,
+ .watchlist-card-v2,
+ .compare-card,
+ .match-dna-card{
+  -webkit-tap-highlight-color:transparent;
+ }
+ .mobile-dna-summary:active,
+ .mobile-home-snapshot>a:active,
+ .mobile-action-list>a:active,
+ .mobile-saved-list>a:active,
+ .investment-card-v2:active,
+ .watchlist-card-v2:active{
+  transform:scale(.992);
+ }
+ .mobile-dna-summary,
+ .mobile-home-snapshot>a,
+ .mobile-action-list>a,
+ .mobile-saved-list>a,
+ .investment-card-v2,
+ .watchlist-card-v2{
+  transition:transform .12s ease,box-shadow .16s ease,border-color .16s ease;
+ }
+
+ /* Match becomes a swipeable decision surface instead of a long desktop stack. */
+ .desktop-match-title,.desktop-match-copy{display:none}
+ .mobile-match-title,.mobile-match-copy{display:inline}
+ .match-dna-page{padding:17px 0 26px!important;background:#f5f8f8!important}
+ .match-dna-page>.container{padding:0 12px!important}
+ .match-dna-hero{margin:0 2px 13px!important}
+ .match-dna-hero h1{font-size:31px!important;line-height:1.04!important;margin:6px 0 7px!important}
+ .match-dna-hero>p{font-size:13px!important;line-height:1.48!important;margin-bottom:6px!important}
+ .match-dna-hero>.fine{font-size:10px!important;line-height:1.4!important}
+ .match-status-card,.match-context-nudge,.match-dna-page>.container>.card{
+  border-radius:17px!important;
+  padding:16px!important;
+  margin:10px 0!important;
+  box-shadow:0 6px 20px rgba(16,42,67,.035)!important;
+ }
+ .match-status-card h2{font-size:20px!important;margin:5px 0 7px!important}
+ .match-status-card p,.match-context-nudge p{font-size:12px!important;line-height:1.48!important}
+ .match-status-card .actions{display:grid!important;grid-template-columns:1fr!important;margin-top:12px!important}
+ .match-status-card .btn,.match-context-nudge .btn{width:100%!important}
+ .match-context-nudge{gap:12px!important}
+ .match-dna-page .card>.grid2{
+  grid-template-columns:1fr 1fr!important;
+  gap:0!important;
+  padding:5px 0!important;
+ }
+ .match-dna-page .fingerprint{display:grid!important;gap:2px!important;padding:10px 8px!important}
+ .match-dna-page .fingerprint span{font-size:9px!important}
+ .match-dna-page .fingerprint strong{font-size:11px!important}
+
+ .match-section{margin-top:18px!important}
+ .match-section>h2{font-size:21px!important;margin:5px 0 10px!important}
+ .match-dna-grid{
+  display:flex!important;
+  overflow-x:auto;
+  gap:10px!important;
+  margin:0 -12px!important;
+  padding:0 12px 7px!important;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+ }
+ .match-dna-grid::-webkit-scrollbar{display:none}
+ .match-dna-card{
+  flex:0 0 86vw;
+  max-width:350px;
+  min-height:0!important;
+  padding:17px!important;
+  border-radius:18px!important;
+  scroll-snap-align:start;
+  box-shadow:0 7px 22px rgba(16,42,67,.04)!important;
+ }
+ .match-dna-card h3{font-size:18px!important;margin:12px 0 8px!important}
+ .match-score strong{font-size:26px!important}
+ .match-breakdown{gap:5px!important;padding:10px 0!important}
+ .match-why,.match-watch{padding:10px!important}
+ .match-why p,.match-watch p,.match-change{font-size:11px!important}
+ .match-dna-card>.btn{width:100%!important}
+ .match-more-grid{gap:8px!important}
+ .match-mini-card{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:9px!important;
+  padding:13px!important;
+  border-radius:14px!important;
+ }
+ .match-mini-card h3{font-size:14px!important;margin:5px 0 2px!important}
+ .match-mini-card p{font-size:10px!important}
+ .match-mini-card>a{grid-column:1/-1!important;padding-top:4px}
+ .match-footer-actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;margin-top:18px!important}
+ .match-footer-actions .btn{width:100%!important}
+
+ .mobile-match-loading{display:grid!important;gap:8px!important}
+ .mobile-match-loading span{margin-top:4px;color:#71838d;font-size:11px}
+ .mobile-loading-line{
+  height:12px;
+  width:72%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#e5efee,#f3f8f7,#e5efee);
+  animation:mobile-skeleton-pulse 1.15s ease-in-out infinite;
+ }
+ .mobile-loading-line.wide{height:19px;width:92%}
+ .mobile-loading-line.short{width:48%}
+
+ /* Compare: selection first, results as a horizontal snap rail. */
+ .compare-page-v2{padding:17px 0 26px!important;background:#f5f8f8!important}
+ .compare-page-v2>.container{padding:0 12px!important}
+ .desktop-compare-title,.desktop-compare-copy{display:none}
+ .mobile-compare-title,.mobile-compare-copy{display:inline}
+ .compare-page-v2 h1{font-size:31px;line-height:1.04;letter-spacing:-.045em;margin:6px 0 7px}
+ .compare-page-v2>div>p.muted{font-size:13px;line-height:1.48;margin-top:0}
+ .compare-picker{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;margin:14px 0 0!important}
+ .compare-picker label{
+  gap:5px!important;
+  padding:11px 12px;
+  border:1px solid #e0eaea;
+  border-radius:14px;
+  background:#fff;
+  font-size:10px!important;
+ }
+ .compare-picker .field{min-height:42px;border-radius:10px}
+ .compare-picker+.actions{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+  margin:9px 0 13px!important;
+ }
+ .compare-picker+.actions .btn{width:100%}
+ .compare-picker+.actions .btn:not(.primary){display:none}
+ .mobile-compare-rail{
+  display:flex!important;
+  grid-template-columns:none!important;
+  overflow-x:auto;
+  gap:10px!important;
+  margin:15px -12px 0!important;
+  padding:0 12px 9px!important;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+ }
+ .mobile-compare-rail::-webkit-scrollbar{display:none}
+ .mobile-compare-rail .compare-card{
+  flex:0 0 86vw;
+  max-width:355px;
+  scroll-snap-align:start;
+  border-radius:18px!important;
+  padding:17px!important;
+  box-shadow:0 7px 22px rgba(16,42,67,.04)!important;
+ }
+ .compare-card h2{font-size:18px!important;margin:9px 0 12px!important}
+ .compare-card h3{font-size:10px!important;margin:18px 0 6px!important}
+ .compare-metric{padding:8px 0!important;font-size:11px!important}
+ .compare-score{font-size:25px!important;margin:9px 0 2px!important}
+ .compare-fit-list{font-size:11px!important;line-height:1.42!important}
+ .compare-card>.btn{width:100%!important}
+ .compare-page-v2 .fine.muted{font-size:9px!important;line-height:1.45!important}
+
+ /* Screener: desktop table becomes readable card rows on phones. */
+ .screener-page-v2{padding:17px 0 26px!important;background:#f5f8f8!important}
+ .screener-page-v2>.container{padding:0 12px!important}
+ .desktop-screener-title,.desktop-screener-copy{display:none}
+ .mobile-screener-title,.mobile-screener-copy{display:inline}
+ .screener-page-v2 h1{font-size:31px;line-height:1.04;letter-spacing:-.045em;margin:6px 0 7px}
+ .screener-page-v2>div>p.muted{font-size:13px;line-height:1.48;margin:0 0 12px}
+ .screener-page-v2 .match-status-card,.screener-page-v2>.container>.notice{
+  border-radius:15px!important;
+  padding:13px!important;
+  margin:10px 0!important;
+ }
+ .screener-page-v2 .match-status-card p,.screener-page-v2>.container>.notice p{font-size:11px!important;line-height:1.45!important;margin:5px 0 0!important}
+
+ .screener-page-v2 .dna-toolbar{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:7px!important;
+  margin:11px 0!important;
+  padding:11px;
+  border:1px solid #e0eaea;
+  border-radius:16px;
+  background:#fff;
+ }
+ .screener-page-v2 .dna-toolbar label{gap:4px!important;font-size:9px!important}
+ .screener-page-v2 .dna-toolbar label:first-child{grid-column:1/-1}
+ .screener-page-v2 .dna-toolbar .field{min-height:40px;padding:9px 10px;border-radius:10px;font-size:12px}
+ .screener-page-v2 .dna-toolbar>button.primary{grid-column:1/-1;width:100%}
+ .screener-page-v2 .dna-toolbar>label:last-child{grid-column:1/-1}
+ .screener-page-v2 .dna-toolbar>label:last-child .btn{width:100%;min-height:40px;font-size:11px}
+ .screener-summary{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;margin:10px 2px!important}
+ .screener-summary p{margin:0!important;font-size:10px!important}
+ .screener-summary p:last-child{display:none}
+
+ .screener-page-v2 .table{
+  display:block!important;
+  border:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+  white-space:normal!important;
+ }
+ .screener-page-v2 .table thead{display:none!important}
+ .screener-page-v2 .table tbody{display:grid!important;gap:8px!important}
+ .screener-page-v2 .table tr{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:0 12px;
+  padding:13px 14px!important;
+  border:1px solid #e0eaea!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 5px 17px rgba(16,42,67,.03)!important;
+ }
+ .screener-page-v2 .table td{
+  min-width:0;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:3px;
+  padding:8px 0!important;
+  border-bottom:1px solid #edf2f1!important;
+  text-align:left!important;
+  font-size:11px!important;
+ }
+ .screener-page-v2 .table td:before{
+  content:attr(data-label);
+  color:#7b8d96;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+ }
+ .screener-page-v2 .table td[data-label="ETF"]{
+  grid-column:1/-1;
+  font-size:13px!important;
+  color:#17394d;
+  order:-3;
+ }
+ .screener-page-v2 .table td[data-label="Compare"]{
+  grid-column:1/-1;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  border-bottom:0!important;
+  order:-4;
+  padding:0 0 3px!important;
+ }
+ .screener-page-v2 .table td[data-label="Compare"]:before{margin-right:auto}
+ .screener-page-v2 .table td[data-label="Details"]{
+  grid-column:1/-1;
+  border-bottom:0!important;
+  padding:9px 0 0!important;
+ }
+ .screener-page-v2 .table td[data-label="Details"] .btn{width:100%;min-height:40px}
+ .screener-page-v2 .table td:nth-last-child(2){border-bottom:0!important}
+ .dna-fit-cell{display:grid!important;gap:2px!important}
+ .dna-fit-cell strong{font-size:13px!important}
+ .dna-fit-cell small{font-size:9px!important;color:#71838d}
+
+ .selection-bar{
+  position:fixed!important;
+  left:10px;right:10px;
+  bottom:calc(var(--mobile-nav-h) + var(--mobile-safe) + 8px)!important;
+  z-index:70!important;
+  margin:0!important;
+  padding:9px 10px!important;
+  border-radius:16px!important;
+  box-shadow:0 12px 32px rgba(16,42,67,.16)!important;
+  background:rgba(255,255,255,.96)!important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+ }
+ .selection-bar>span{font-size:10px}
+ .selection-bar .actions{display:flex!important;flex-direction:row!important;width:auto!important;gap:5px!important}
+ .selection-bar .btn{min-height:37px!important;padding:8px 10px!important;font-size:10px!important}
+
+ /* Empty and loading states should feel intentional rather than like desktop text. */
+ .watchlist-loading-v2,
+ .screener-page-v2>div>p:not(.muted),
+ .compare-page-v2>div>p:not(.muted){
+  padding:17px;
+  border:1px solid #e0eaea;
+  border-radius:15px;
+  background:#fff;
+  color:#71838d;
+  font-size:12px;
+ }
+ .watchlist-empty-v2{border-radius:18px!important;padding:28px 20px!important}
+ .watchlist-empty-v2 .actions{display:grid!important;grid-template-columns:1fr!important}
+ .watchlist-empty-v2 .btn{width:100%}
+
+ /* Keep tap animation accessible. */
+ @media(prefers-reduced-motion:reduce){
+  .mobile-dna-summary,
+  .mobile-home-snapshot>a,
+  .mobile-action-list>a,
+  .mobile-saved-list>a,
+  .investment-card-v2,
+  .watchlist-card-v2,
+  .mobile-app-nav-item{transition:none!important}
+  .mobile-loading-line{animation:none!important}
+ }
+}
+
+@media(max-width:390px){
+ .match-dna-card,.mobile-compare-rail .compare-card{flex-basis:89vw}
+ .screener-page-v2 .dna-toolbar{grid-template-columns:1fr!important}
+ .screener-page-v2 .dna-toolbar>*{grid-column:1!important}
+ .selection-bar{left:7px;right:7px}
+}
