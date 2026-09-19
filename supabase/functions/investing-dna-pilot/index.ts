@@ -177,6 +177,11 @@ Deno.serve(async (req) => {
       const consentVersion = body?.consent_version ?? `platform-${language_code}`;
       const { data: cohort, error: ce } = await admin.from('pilot_cohorts').select('id,code,questionnaire_version,model_version,status,access_code_hash').eq('code', cohortCode).single();
       if (ce || !cohort || !['planned','collecting'].includes(cohort.status)) return json({ error: 'Pilot cohort unavailable' }, 400);
+
+      const { data: gate, error: gateError } = await admin.rpc('service_pilot_cohort_gate', { p_cohort_id: cohort.id });
+      if (gateError) throw gateError;
+      if (gate?.gated && gate?.allowed !== true) return json({ error: 'Pilot cohort is not open yet.' }, 409);
+
       if (cohort.access_code_hash) {
         const accessCode = typeof body?.cohort_access_code === 'string' ? body.cohort_access_code.trim() : '';
         if (!accessCode || accessCode.length > 100 || await sha256(accessCode) !== cohort.access_code_hash) return json({ error: 'Invalid research invite code' }, 403);
