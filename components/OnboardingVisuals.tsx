@@ -1,39 +1,77 @@
 export function PersonalizationVisual(){
- return <svg className="approved-onboarding-svg" viewBox="0 0 460 610" role="img" aria-label="Personalized Investor DNA report illustration">
+ return <svg className="approved-onboarding-svg" viewBox="0 0 600 768" role="img" aria-label="Personalized Investor DNA report illustration">
   <defs>
-   <linearGradient id="pv-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#dff6f6"/><stop offset=".62" stopColor="#eff9f7"/><stop offset="1" stopColor="#d7efea"/></linearGradient>
-   <linearGradient id="pv-teal" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#15b7ad"/><stop offset="1" stopColor="#087f76"/></linearGradient>
-   <linearGradient id="pv-mountain1" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#9bd6de"/><stop offset="1" stopColor="#67b8c0"/></linearGradient>
-   <linearGradient id="pv-mountain2" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#66b9be"/><stop offset="1" stopColor="#176c77"/></linearGradient>
-   <filter id="pv-shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#123e50" floodOpacity=".12"/></filter>
+   <linearGradient id="pv-bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#dff7f7"/><stop offset=".63" stopColor="#f3fbf8"/><stop offset="1" stopColor="#d9efea"/></linearGradient>
+   <linearGradient id="pv-teal2" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#19b7ad"/><stop offset="1" stopColor="#087f76"/></linearGradient>
+   <linearGradient id="pv-m1b" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#a8dce2"/><stop offset="1" stopColor="#72bec6"/></linearGradient>
+   <linearGradient id="pv-m2b" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#64b6bd"/><stop offset="1" stopColor="#176b76"/></linearGradient>
+   <filter id="pv-shadow2" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="13" floodColor="#123e50" floodOpacity=".11"/></filter>
   </defs>
-  <rect width="460" height="610" fill="url(#pv-bg)"/>
-  <g opacity=".9"><circle cx="58" cy="84" r="32" fill="#fff"/><circle cx="95" cy="92" r="24" fill="#fff"/><circle cx="401" cy="87" r="34" fill="#fff"/><circle cx="430" cy="99" r="20" fill="#fff"/></g>
-  <circle cx="230" cy="236" r="158" fill="none" stroke="#2fb8c6" strokeWidth="2.5"/>
-  <circle cx="230" cy="78" r="11" fill="#ff5a4f"/><circle cx="72" cy="236" r="10" fill="#087f76"/><circle cx="388" cy="236" r="10" fill="#087f76"/><circle cx="230" cy="394" r="10" fill="#087f76"/>
-  <g filter="url(#pv-shadow)">
-   <rect x="72" y="98" width="82" height="82" rx="18" fill="#e8fff9" stroke="#fff" strokeWidth="3"/>
-   <g transform="translate(95 118)" fill="url(#pv-teal)"><rect x="0" y="27" width="11" height="20" rx="2"/><rect x="17" y="15" width="11" height="32" rx="2"/><rect x="34" y="2" width="11" height="45" rx="2"/></g>
-   <rect x="306" y="98" width="82" height="82" rx="18" fill="#fff7df" stroke="#fff" strokeWidth="3"/>
-   <path d="M347 118l24 10v18c0 16-10 27-24 34-14-7-24-18-24-34v-18l24-10z" fill="#f5a623"/><path d="M335 145l8 8 17-18" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/>
-   <rect x="54" y="292" width="86" height="82" rx="18" fill="#eee5ff" stroke="#fff" strokeWidth="3"/>
-   <g transform="translate(76 311)" fill="#785fd2"><ellipse cx="16" cy="11" rx="16" ry="6"/><rect x="0" y="11" width="32" height="10" rx="5"/><ellipse cx="16" cy="21" rx="16" ry="6"/><rect x="0" y="21" width="32" height="10" rx="5"/><ellipse cx="16" cy="31" rx="16" ry="6"/><circle cx="40" cy="31" r="15"/><path d="M40 20v22M35 24h7a5 5 0 010 10h-4a5 5 0 000 10h7" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"/></g>
-   <rect x="321" y="292" width="86" height="82" rx="18" fill="#ddfff3" stroke="#fff" strokeWidth="3"/>
-   <g transform="translate(342 313)"><path d="M21 38v20" stroke="#087f76" strokeWidth="5" strokeLinecap="round"/><path d="M21 38C9 37 3 30 2 19c11-1 19 5 21 17" fill="#29b66d"/><path d="M22 37c2-13 10-20 22-18-1 12-7 19-22 18" fill="#15a85a"/><path d="M8 58h28" stroke="#087f76" strokeWidth="6" strokeLinecap="round"/></g>
-   <rect x="139" y="119" width="182" height="252" rx="24" fill="#fff"/>
+
+  <rect width="600" height="768" fill="url(#pv-bg2)"/>
+
+  <g opacity=".88" fill="#fff">
+   <circle cx="52" cy="92" r="36"/><circle cx="93" cy="102" r="28"/>
+   <circle cx="521" cy="90" r="38"/><circle cx="558" cy="105" r="24"/>
+   <circle cx="42" cy="500" r="38"/><circle cx="82" cy="513" r="27"/>
   </g>
-  <circle cx="230" cy="176" r="42" fill="#ccf6ef"/>
-  <circle cx="230" cy="160" r="18" fill="url(#pv-teal)"/><path d="M198 205c2-23 14-35 32-35s30 12 32 35z" fill="url(#pv-teal)"/>
-  <text x="230" y="237" textAnchor="middle" fontSize="22" fontWeight="800" fill="#102A43">Your name</text>
-  <rect x="185" y="250" width="90" height="34" rx="17" fill="#cdf7ee"/><text x="230" y="273" textAnchor="middle" fontSize="18" fontWeight="800" fill="#087f76">Your age</text>
-  <line x1="173" y1="299" x2="287" y2="299" stroke="#d9e9e6" strokeWidth="2"/>
-  <circle cx="189" cy="327" r="20" fill="#d9f8f1"/><path d="M180 336c12-19 6-32 18-38-3 9 5 18-2 30-5 8-10 9-16 8z" fill="none" stroke="#087f76" strokeWidth="3" strokeLinecap="round"/>
-  <text x="217" y="324" fontSize="11" fill="#637A86">Your personalized</text><text x="217" y="342" fontSize="13" fontWeight="800" fill="#102A43">Investor DNA report</text>
+
+  <circle cx="300" cy="265" r="214" fill="none" stroke="#2ebac6" strokeWidth="3"/>
+  <circle cx="300" cy="51" r="13" fill="#ff5b50"/>
+  <circle cx="86" cy="265" r="12" fill="#087f76"/>
+  <circle cx="514" cy="265" r="12" fill="#087f76"/>
+  <circle cx="300" cy="479" r="12" fill="#087f76"/>
+
+  <g filter="url(#pv-shadow2)">
+   <rect x="74" y="94" width="112" height="112" rx="23" fill="#e7fff9" stroke="#fff" strokeWidth="4"/>
+   <g transform="translate(108 121)" fill="url(#pv-teal2)">
+    <rect x="0" y="36" width="14" height="29" rx="3"/>
+    <rect x="23" y="18" width="14" height="47" rx="3"/>
+    <rect x="46" y="0" width="14" height="65" rx="3"/>
+   </g>
+
+   <rect x="414" y="94" width="112" height="112" rx="23" fill="#fff7df" stroke="#fff" strokeWidth="4"/>
+   <path d="M470 119l31 13v23c0 21-13 36-31 45-18-9-31-24-31-45v-23l31-13z" fill="#f5a623"/>
+   <path d="M454 153l10 10 23-25" fill="none" stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"/>
+
+   <rect x="54" y="332" width="116" height="112" rx="23" fill="#eee5ff" stroke="#fff" strokeWidth="4"/>
+   <g transform="translate(83 355)" fill="#785fd2">
+    <ellipse cx="21" cy="13" rx="21" ry="8"/><rect x="0" y="13" width="42" height="12" rx="6"/><ellipse cx="21" cy="25" rx="21" ry="8"/>
+    <rect x="0" y="25" width="42" height="12" rx="6"/><ellipse cx="21" cy="37" rx="21" ry="8"/>
+    <circle cx="53" cy="39" r="19"/>
+    <path d="M53 25v28M47 31h9a6 6 0 010 12h-5a6 6 0 000 12h9" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"/>
+   </g>
+
+   <rect x="430" y="332" width="116" height="112" rx="23" fill="#dcfff3" stroke="#fff" strokeWidth="4"/>
+   <g transform="translate(459 355)">
+    <path d="M28 45v29" stroke="#087f76" strokeWidth="6" strokeLinecap="round"/>
+    <path d="M28 45C12 44 4 35 3 20c15-1 26 7 28 23" fill="#2fba71"/>
+    <path d="M29 44c3-17 14-26 30-24-2 16-10 25-30 24" fill="#12a65b"/>
+    <path d="M10 75h37" stroke="#087f76" strokeWidth="7" strokeLinecap="round"/>
+   </g>
+
+   <rect x="184" y="116" width="232" height="338" rx="30" fill="#fff"/>
+  </g>
+
+  <circle cx="300" cy="187" r="55" fill="#cef7ef"/>
+  <circle cx="300" cy="165" r="22" fill="url(#pv-teal2)"/>
+  <path d="M259 225c3-29 18-44 41-44s38 15 41 44z" fill="url(#pv-teal2)"/>
+
+  <text x="300" y="272" textAnchor="middle" fontSize="29" fontWeight="800" fill="#102A43">Your name</text>
+  <rect x="242" y="289" width="116" height="42" rx="21" fill="#cdf7ee"/>
+  <text x="300" y="317" textAnchor="middle" fontSize="23" fontWeight="800" fill="#087f76">Your age</text>
+
+  <line x1="228" y1="353" x2="372" y2="353" stroke="#d9e9e6" strokeWidth="3"/>
+  <circle cx="248" cy="391" r="24" fill="#d9f8f1"/>
+  <path d="M238 402c14-24 8-39 21-47-3 11 7 21-2 36-5 9-11 11-19 11z" fill="none" stroke="#087f76" strokeWidth="3.5" strokeLinecap="round"/>
+  <text x="281" y="388" fontSize="14" fill="#637A86">Your personalized</text>
+  <text x="281" y="410" fontSize="16" fontWeight="800" fill="#102A43">Investor DNA report</text>
+
   <g>
-   <path d="M0 506L58 455 112 489 180 428 235 476 305 445 363 493 460 430V610H0z" fill="url(#pv-mountain1)"/>
-   <path d="M0 551L72 495 139 541 205 487 267 546 345 486 408 536 460 500V610H0z" fill="url(#pv-mountain2)"/>
-   <path d="M254 610c-6-38 3-67 31-86 24-16 20-35 1-48" fill="none" stroke="#f7fffd" strokeWidth="12" strokeLinecap="round"/>
-   <circle cx="356" cy="484" r="24" fill="#f7d77c" opacity=".82"/>
+   <circle cx="462" cy="575" r="31" fill="#f7d87b" opacity=".78"/>
+   <path d="M0 611L78 551 145 592 226 525 298 584 377 548 454 596 600 520V768H0z" fill="url(#pv-m1b)"/>
+   <path d="M0 680L93 612 174 669 260 605 337 674 429 607 510 660 600 615V768H0z" fill="url(#pv-m2b)"/>
+   <path d="M328 768c-9-51 1-89 38-115 30-21 27-47 5-65" fill="none" stroke="#f7fffd" strokeWidth="16" strokeLinecap="round"/>
   </g>
  </svg>;
 }
