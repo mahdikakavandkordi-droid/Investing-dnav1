@@ -67,6 +67,23 @@ begin
   if jsonb_typeof(v_resolution) <> 'object' then
     raise exception 'automated source resolution must return a JSON object';
   end if;
+  if v_resolution->>'source_key' <> 'yahoo_free'
+     or v_resolution->>'provider_type' <> 'yahoo_finance_unofficial'
+  then
+    raise exception 'Canadian TSX ETF should resolve to temporary yahoo_free route, got %',v_resolution;
+  end if;
+
+  select count(*) into v_count
+  from public.investments i
+  where i.is_active
+    and i.asset_type='ETF'
+    and i.country_code='CA'
+    and i.exchange='TSX'
+    and public.resolve_automated_market_data_source(i.id,'price_history')->>'source_key'='yahoo_free';
+
+  if v_count <> 40 then
+    raise exception 'expected 40 current Canadian ETFs to resolve to yahoo_free, got %',v_count;
+  end if;
 end $$;
 
 begin;
