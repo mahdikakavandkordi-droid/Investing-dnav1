@@ -1114,3 +1114,99 @@
  .dna-pillar-card{flex-basis:73vw!important}
  .mobile-compare-rail .compare-card{flex-basis:84vw!important}
 }
+
+
+/* Milestone 4 — resilient mobile states and edge-case consistency */
+@media(max-width:760px){
+ /* Loading / error / empty states share one calm mobile treatment. */
+ .detail-state-card,
+ .watchlist-loading-v2,
+ .watchlist-empty-v2,
+ .explore-empty-v2,
+ .match-dna-page .match-status-card,
+ .match-dna-page .notice{
+  border:1px solid #dfeae9!important;
+  border-radius:17px!important;
+  background:#fff!important;
+  box-shadow:0 7px 22px rgba(16,42,67,.035)!important;
+ }
+ .detail-state-card{padding:18px!important;margin:5px 0!important}
+ .detail-state-card h1{margin:0 0 7px!important;font-size:21px!important;line-height:1.12!important}
+ .detail-state-card p{margin:0 0 13px!important;font-size:12px!important;line-height:1.5!important;color:#6f838d}
+ .detail-state-card .btn,.detail-state-card>a{width:100%;min-height:43px;display:flex;align-items:center;justify-content:center}
+
+ .watchlist-loading-v2{
+  min-height:116px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px!important;
+  color:#70838d;
+  font-size:12px;
+ }
+ .watchlist-empty-v2{padding:24px 18px!important;text-align:center}
+ .watchlist-empty-v2 h2{font-size:20px!important;margin:7px 0!important}
+ .watchlist-empty-v2 p{font-size:12px!important;line-height:1.5!important;margin:0 auto 14px!important;max-width:290px}
+ .watchlist-empty-v2 .actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .watchlist-empty-v2 .btn{width:100%}
+ .watchlist-empty-mark{font-size:28px!important}
+
+ .explore-empty-v2{padding:22px 17px!important;text-align:left}
+ .explore-empty-v2 h2{font-size:18px!important;margin:0 0 6px!important}
+ .explore-empty-v2 p{font-size:12px!important;line-height:1.5!important;margin:0!important}
+ .explore-loading-grid{grid-template-columns:1fr!important;gap:8px!important}
+ .explore-skeleton{min-height:168px!important;border-radius:16px!important}
+
+ /* Signed-out profile is an app entry point, not a desktop auth card squeezed down. */
+ .profile-page:not(.dashboard-page){
+  min-height:calc(100svh - var(--mobile-nav-h) - var(--mobile-safe));
+  padding:20px 0 28px!important;
+  background:#f5f8f8!important;
+ }
+ .profile-page:not(.dashboard-page)>.container{max-width:520px!important;padding:0 14px!important}
+ .profile-page:not(.dashboard-page) .card{
+  padding:19px 17px!important;
+  border-radius:19px!important;
+  border:1px solid #dce8e7!important;
+  box-shadow:0 8px 25px rgba(16,42,67,.04)!important;
+ }
+ .profile-page:not(.dashboard-page) .card h1,
+ .profile-page:not(.dashboard-page) .card h2{font-size:25px!important;line-height:1.08!important;letter-spacing:-.035em}
+ .profile-page:not(.dashboard-page) .card p{font-size:12px!important;line-height:1.5!important}
+ .profile-page:not(.dashboard-page) .field{min-height:45px!important;border-radius:11px!important}
+ .profile-page:not(.dashboard-page) .actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .profile-page:not(.dashboard-page) .btn{width:100%!important}
+
+ /* Account states should not jump in size while auth resolves. */
+ .mobile-account-page{min-height:calc(100svh - var(--mobile-nav-h) - var(--mobile-safe))}
+ .mobile-account-page .notice{margin-top:10px;border-radius:14px;font-size:11px;line-height:1.45}
+ .mobile-account-signout:disabled{opacity:.62}
+ .mobile-account-card>.actions{display:grid!important}
+ .mobile-account-card>.actions .btn{width:100%}
+
+ /* Match states: clear primary recovery action, less dead vertical space. */
+ .match-dna-page{padding-bottom:26px!important;background:#f5f8f8}
+ .match-dna-page>.container{padding-left:12px!important;padding-right:12px!important}
+ .match-dna-page .match-status-card{padding:16px!important}
+ .match-dna-page .match-status-card h2{font-size:19px!important;line-height:1.15!important;margin:5px 0 7px!important}
+ .match-dna-page .match-status-card p{font-size:11px!important;line-height:1.48!important}
+ .match-dna-page .match-status-card .actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .match-dna-page .match-status-card .btn{width:100%}
+ .match-dna-page .match-dna-grid{grid-template-columns:1fr!important;gap:9px!important}
+ .match-dna-page .match-dna-card{border-radius:17px!important;padding:15px!important}
+ .match-dna-page .match-dna-card>.btn{width:100%}
+
+ /* Retry notices should be easy to act on with one thumb. */
+ .watchlist-page-v2>.watchlist-container-v2>.notice,
+ .explore-page-v2 .notice{
+  padding:13px!important;
+  border-radius:14px!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+ }
+ .watchlist-page-v2 .notice .btn,
+ .explore-page-v2 .notice .btn{width:100%;margin-top:7px}
+
+ /* Preserve a predictable safe bottom on every app state. */
+ body:has(.mobile-app-nav) main{padding-bottom:max(22px,var(--mobile-safe))}
+}
