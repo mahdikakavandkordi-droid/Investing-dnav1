@@ -17,7 +17,7 @@ const APP_ROUTES=["/profile","/dashboard","/dna","/explore","/investment","/matc
 export function MobileAppNav(){
  const pathname=usePathname()||"/";
  const inApp=APP_ROUTES.some(route=>pathname===route||pathname.startsWith(route+"/"));
- if(!inApp)return null;
+ if(!inApp||pathname.startsWith("/dna/assessment"))return null;
 
  return <nav className="mobile-app-nav" aria-label="Mobile app navigation">
   <div className="mobile-app-nav-inner">
