@@ -49,6 +49,32 @@ export async function rpc<T=any>(name:string,args?:Record<string,unknown>):Promi
  * analytics. The Edge Function remains authoritative for action/session/owner
  * validation and may use service-role access only after those checks.
  */
+
+
+/** Call the dedicated report/PDF Edge Function. Guest callers must provide the
+ * assessment capability token; signed-in callers are ownership-checked server-side. */
+export async function reportService<T>(action:string, body:Record<string,unknown>={}):Promise<T> {
+  const {data:{session},error} = await supabase.auth.getSession();
+  if(error) throw error;
+  const headers:Record<string,string> = {"Content-Type":"application/json",apikey:key};
+  if(session) headers.Authorization = `Bearer ${session.access_token}`;
+  let response:Response;
+  try {
+    response = await fetch(`${url}/functions/v1/investor-dna-report`, {
+      method:"POST",
+      headers,
+      body:JSON.stringify({action,...body}),
+      signal:AbortSignal.timeout(45000)
+    });
+  } catch {
+    throw new Error("Connection interrupted. Try the report action again.");
+  }
+  const data = await response.json().catch(()=>null);
+  if(!response.ok || data?.error) throw new Error(data?.error || "The report request could not be completed.");
+  if(!data) throw new Error("The report service returned an empty response.");
+  return data as T;
+}
+
 export async function pilot<T>(action:string, body:Record<string,unknown>={}):Promise<T> {
   const {data:{session},error} = await supabase.auth.getSession();
   if(error) throw error;
