@@ -335,6 +335,22 @@ async function runViewport(browser,label,viewport){
   await assertMobileShell(page,'Watchlist');
   await shot(page,label+'-14-watchlist');
 
+  // Exercise signed-out edge states without changing product data contracts.
+  await page.evaluate(key=>localStorage.removeItem(key),'sb-bxjjannguzzzqsamnhem-auth-token');
+  await page.goto(ORIGIN+'/watchlist',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your watchlist',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'A place to come back to',exact:true}).waitFor();
+  await assertMobileShell(page,'Watchlist');
+  await shot(page,label+'-14b-watchlist-signed-out');
+
+  await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'Save your DNA when it becomes useful.',exact:true}).waitFor();
+  await assertMobileShell(page,'Profile');
+  await shot(page,label+'-14c-account-signed-out');
+
+  // Restore the authenticated session for the account-state visual.
+  await page.evaluate(({key,value})=>localStorage.setItem(key,JSON.stringify(value)),{key:'sb-bxjjannguzzzqsamnhem-auth-token',value:session});
   await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
   await assertMobileShell(page,'Profile');
