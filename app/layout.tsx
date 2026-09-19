@@ -18,12 +18,14 @@ import "./reference-experience.css";
 import "./home-approved.css";
 import "./archetype-characters.css";
 import "./report-assessment-breakdown.css";
+import "./mobile-app.css";
 import {Nav} from "@/components/Nav";
 import {Footer} from "@/components/Footer";
 import {ProductAnalytics} from "@/components/ProductAnalytics";
+import {MobileAppNav} from "@/components/MobileAppNav";
 
 export const metadata={title:"Investor DNA",description:"Know yourself. Understand your investments."};
 
 export default function RootLayout({children}:{children:ReactNode}){
- return <html lang="en"><body><Nav/><ProductAnalytics/><main>{children}</main><Footer/></body></html>;
+ return <html lang="en"><body><Nav/><ProductAnalytics/><main>{children}</main><Footer/><MobileAppNav/></body></html>;
 }
