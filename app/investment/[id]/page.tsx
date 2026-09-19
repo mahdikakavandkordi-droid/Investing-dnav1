@@ -116,6 +116,8 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
 
   <ResearchFreshness item={item} freshness={freshness}/>
 
+  <div className="mobile-detail-actions" aria-label="Investment actions"><Link className="btn" href={`/compare?ids=${item.id}`}>Compare</Link><Link className="btn primary" href={`/profile?investment=${item.id}`}>Save</Link></div>
+
   <div className="detail-flow-v2">
    {isFund&&facts&&<OfficialFundFactsCard facts={facts}/>} 
    {isFund&&dna?<InvestmentDnaCard dna={dna}/>:!isFund?<InstrumentStructureCard instrument={item}/>:null}
