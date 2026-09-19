@@ -22,7 +22,7 @@ Current action family includes start/questionnaire/save/submit/context/claim plu
 
 ### `functions/market-data-refresh/`
 
-Service-only post-close market-data worker. It asks the database for due work, calls only implemented/approved provider adapters, normalizes provider rows and writes through the canonical ingestion RPC. Current U.S. Massive support does not make the Canadian/TSX catalog operational; Canadian provider selection remains an activation gate.
+Service-only post-close market-data worker. It asks the database for due work, calls only implemented/approved provider adapters, normalizes provider rows and writes through the canonical ingestion RPC. The current TSX MVP route is a temporary zero-cost Yahoo Finance bridge with deliberately low source priority. Supabase Cron invokes the worker using a Vault-held random token; the browser cannot invoke ingestion.
 
 See `docs/MARKET-DATA-REFRESH.md`.
 
