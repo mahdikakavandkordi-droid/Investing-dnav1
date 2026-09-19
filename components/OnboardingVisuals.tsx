@@ -50,22 +50,22 @@ export function PersonalizationVisual(){
     <path d="M10 75h37" stroke="#087f76" strokeWidth="7" strokeLinecap="round"/>
    </g>
 
-   <rect x="184" y="116" width="232" height="338" rx="30" fill="#fff"/>
   </g>
 
-  <circle cx="300" cy="187" r="55" fill="#cef7ef"/>
-  <circle cx="300" cy="165" r="22" fill="url(#pv-teal2)"/>
-  <path d="M259 225c3-29 18-44 41-44s38 15 41 44z" fill="url(#pv-teal2)"/>
+  <circle cx="300" cy="176" r="63" fill="#d8f8f2" opacity=".96"/>
+  <circle cx="300" cy="154" r="24" fill="url(#pv-teal2)"/>
+  <path d="M252 225c3-33 21-51 48-51s45 18 48 51z" fill="url(#pv-teal2)"/>
 
-  <text x="300" y="272" textAnchor="middle" fontSize="29" fontWeight="800" fill="#102A43">Your name</text>
-  <rect x="242" y="289" width="116" height="42" rx="21" fill="#cdf7ee"/>
-  <text x="300" y="317" textAnchor="middle" fontSize="23" fontWeight="800" fill="#087f76">Your age</text>
+  <text x="300" y="277" textAnchor="middle" fontSize="32" fontWeight="800" fill="#102A43">Your name</text>
+  <rect x="238" y="293" width="124" height="44" rx="22" fill="#c8f5eb"/>
+  <text x="300" y="322" textAnchor="middle" fontSize="23" fontWeight="800" fill="#087f76">Your age</text>
 
-  <line x1="228" y1="353" x2="372" y2="353" stroke="#d9e9e6" strokeWidth="3"/>
-  <circle cx="248" cy="391" r="24" fill="#d9f8f1"/>
-  <path d="M238 402c14-24 8-39 21-47-3 11 7 21-2 36-5 9-11 11-19 11z" fill="none" stroke="#087f76" strokeWidth="3.5" strokeLinecap="round"/>
-  <text x="281" y="388" fontSize="14" fill="#637A86">Your personalized</text>
-  <text x="281" y="410" fontSize="16" fontWeight="800" fill="#102A43">Investor DNA report</text>
+  <g transform="translate(220 363)">
+   <circle cx="24" cy="24" r="24" fill="#d8f8f1"/>
+   <path d="M14 35c14-24 8-39 21-47-3 11 7 21-2 36-5 9-11 11-19 11z" fill="none" stroke="#087f76" strokeWidth="3.5" strokeLinecap="round"/>
+   <text x="59" y="19" fontSize="14" fill="#637A86">Your personalized</text>
+   <text x="59" y="41" fontSize="16" fontWeight="800" fill="#102A43">Investor DNA report</text>
+  </g>
 
   <g>
    <circle cx="462" cy="575" r="31" fill="#f7d87b" opacity=".78"/>
