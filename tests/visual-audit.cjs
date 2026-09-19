@@ -352,6 +352,10 @@ async function runViewport(browser,label,viewport){
   await page.goto(ORIGIN+'/profile',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:/Save your Investor DNA|Create your free account or sign in/}).waitFor();
   assert.ok(await page.locator('.auth-card').isVisible());
+  const viewportContent=await page.locator('meta[name="viewport"]').getAttribute('content');
+  assert.match(viewportContent||'',/viewport-fit=cover/);
+  const emailInput=page.getByLabel('Email address');
+  assert.ok(parseFloat(await emailInput.evaluate(el=>getComputedStyle(el).fontSize))>=16);
   await assertMobileShell(page,'Home');
   await shot(page,label+'-14d-profile-signed-out');
 
