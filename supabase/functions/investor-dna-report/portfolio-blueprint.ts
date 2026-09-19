@@ -89,8 +89,8 @@ function cashFloor(context:BlueprintContextInput){
   if(context.liquidity_need==='high')floor=Math.max(floor,15);
   else if(context.liquidity_need==='medium')floor=Math.max(floor,5);
 
-  if(context.goal==='emergency_reserve')floor=Math.max(floor,60);
-  if(context.principal_required==='yes')floor=Math.max(floor,35);
+  if(context.goal==='emergency_reserve')floor=100;
+  if(context.principal_required==='yes')floor=100;
   else if(context.principal_required==='unsure')floor=Math.max(floor,15);
   return round5(clamp(floor,5,80));
 }
@@ -155,6 +155,10 @@ export function buildPortfolioBlueprint(dna:BlueprintDNAInput,context?:Blueprint
   const defensiveEquity=round5(Math.max(0,core.equity-15));
   const defensiveCash=round5(Math.min(100-defensiveEquity,Math.max(minimumCash,core.cash+5)));
   const defensive=allocation(defensiveEquity,defensiveCash);
+  const defensiveConstrained=
+    defensive.equity===core.equity &&
+    defensive.fixedIncome===core.fixedIncome &&
+    defensive.cash===core.cash;
 
   const growthBlocked=isGrowthBlocked(context);
   const growthEquity=round5(Math.min(core.equity+15,equityCeiling,100-minimumCash));
@@ -170,7 +174,8 @@ export function buildPortfolioBlueprint(dna:BlueprintDNAInput,context?:Blueprint
         title:'More Defensive',
         subtitle:'Less market exposure and a larger stability buffer.',
         allocation:defensive,
-        constrained:false,
+        constrained:defensiveConstrained,
+        ...(defensiveConstrained?{constraintNote:'The current protection/liquidity constraints already place the Core Blueprint at the most defensive boundary used by this model.'}:{}),
       },
       {
         key:'core',
