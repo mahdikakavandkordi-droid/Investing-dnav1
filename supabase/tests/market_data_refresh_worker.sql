@@ -42,8 +42,31 @@ begin
      or has_function_privilege('authenticated','public.resolve_automated_market_data_source(uuid,text)','EXECUTE')
      or has_function_privilege('anon','public.start_market_data_worker_run(text)','EXECUTE')
      or has_function_privilege('authenticated','public.start_market_data_worker_run(text)','EXECUTE')
+     or has_function_privilege('anon','public.verify_market_data_worker_token(text)','EXECUTE')
+     or has_function_privilege('authenticated','public.verify_market_data_worker_token(text)','EXECUTE')
   then
     raise exception 'market refresh service functions must not be browser executable';
+  end if;
+
+
+  select count(*) into v_count
+  from cron.job
+  where jobname='investor-dna-market-data-refresh'
+    and schedule='30 1 * * 2-6'
+    and active;
+
+  if v_count <> 1 then
+    raise exception 'expected active Supabase Cron market refresh job, got %',v_count;
+  end if;
+
+  select count(*) into v_count
+  from vault.decrypted_secrets
+  where name='market_data_worker_token'
+    and decrypted_secret is not null
+    and length(decrypted_secret) >= 32;
+
+  if v_count < 1 then
+    raise exception 'expected market-data worker token in Supabase Vault';
   end if;
 
   v_plan:=public.get_due_price_history_ingestion_plan(
