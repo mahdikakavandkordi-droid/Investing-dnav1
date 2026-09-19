@@ -32,6 +32,7 @@ const riskFor=id=>id===ids.gic?{
  await ctx.route('https://dna-test.supabase.co/**',async route=>{const req=route.request(),url=req.url(),body=req.postDataJSON()||{};const send=(d,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(d)});
   if(url.includes('/functions/v1/investing-dna-pilot')&&body.action==='track_event'){tracked.push(body.event_name);return send({tracked:true});}
   if(url.includes('/rpc/app_search_instruments'))return send(catalog);
+  if(url.includes('/rpc/app_market_data_status'))return send([]);
   if(url.includes('/rpc/app_get_instrument'))return send(catalog.find(x=>x.id===body.p_investment_id)||null);
   if(url.includes('/rpc/app_compare_instruments'))return send((body.p_investment_ids||[]).map(id=>catalog.find(x=>x.id===id)).filter(Boolean));
   if(url.includes('/rpc/app_get_product_risk'))return send(riskFor(body.p_investment_id));
