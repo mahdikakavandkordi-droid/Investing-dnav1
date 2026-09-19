@@ -350,7 +350,8 @@ async function runViewport(browser,label,viewport){
   await shot(page,label+'-14c-account-signed-out');
 
   await page.goto(ORIGIN+'/profile',{waitUntil:'networkidle'});
-  await page.getByRole('heading',{name:'Create your free account or sign in',exact:true}).waitFor();
+  await page.getByRole('heading',{name:/Save your Investor DNA|Create your free account or sign in/}).waitFor();
+  assert.ok(await page.locator('.auth-card').isVisible());
   await assertMobileShell(page,'Home');
   await shot(page,label+'-14d-profile-signed-out');
 
