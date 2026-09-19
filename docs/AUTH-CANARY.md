@@ -32,6 +32,12 @@ The Profile page uses one email path rather than asking the user to decide betwe
 
 This UX hardening does not weaken the ownership boundary. Browser state and URL parameters still do not establish ownership; authenticated server-side paths remain authoritative.
 
+## Automated continuity regression
+
+The Funds browser flow now also exercises a signed-in returning Home state. It verifies that authenticated server-owned DNA, complete investment context, Watchlist count and current Match reappear after a full page reload.
+
+This closes an automated UI continuity gap, but it does **not** change the hosted canary status. The real Canary A/B still requires an external email link, a deployed browser session, sign-out and a genuinely fresh sign-in.
+
 ## Preconditions
 
 - GitHub CI is green for the exact application head being tested.

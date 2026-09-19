@@ -166,10 +166,34 @@ function ResearchDisclosure({title,children}:{title:string;children:React.ReactN
 }
 
 function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|null}){
- const copy=item.data_status==='identity_only'
+ const marketDate=item.market_price_date;
+ const clearlyDelayed=marketDate?marketDataClearlyDelayed(marketDate):false;
+ const sourceLabel=item.market_price_source_key==='yahoo_free'
+  ? 'Temporary market feed'
+  : item.market_price_source_name||item.market_price_source_key||null;
+ const researchCopy=item.data_status==='identity_only'
   ? 'Identity and structure profile only; unverified market figures are intentionally omitted.'
-  : freshness?`Latest displayed research input as of ${freshness}.`:'Research source date is not reported for every optional field.';
- return <p className="muted fine detail-freshness-v2">{copy} Missing figures are never shown as zero.</p>;
+  : freshness?`Other research inputs are reported as of ${formatResearchDate(freshness)}.`:'A source date is not reported for every optional research field.';
+
+ return <div className="detail-freshness-panel">
+  {marketDate&&<span className={clearlyDelayed?"detail-freshness-chip delayed":"detail-freshness-chip"}>
+   {clearlyDelayed?'Market data may be delayed':'Market data after close'} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
+  </span>}
+  {!marketDate&&item.asset_type==='ETF'&&<span className="detail-freshness-chip delayed">Latest market-price date is not available</span>}
+  <p className="muted fine detail-freshness-note">{researchCopy} Missing figures are never shown as zero.</p>
+ </div>;
+}
+
+function formatResearchDate(value:string){
+ const parsed=new Date(value+'T12:00:00Z');
+ if(Number.isNaN(parsed.getTime()))return value;
+ return new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(parsed);
+}
+
+function marketDataClearlyDelayed(value:string){
+ const parsed=new Date(value+'T23:59:59Z');
+ if(Number.isNaN(parsed.getTime()))return false;
+ return Date.now()-parsed.getTime()>4*24*60*60*1000;
 }
 
 function FundResearchDetails({item,facts}:{item:Instrument;facts:OfficialFundFacts|null}){

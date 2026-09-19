@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {HomeAssetRail} from "@/components/HomeAssetRail";
+import {HomeWorkspaceReturn} from "@/components/HomeWorkspaceReturn";
 
 const CAPABILITIES=[
  {icon:"◉",title:"Behavioral profile",body:"Understand the decision patterns that shape how you invest."},
@@ -73,6 +74,8 @@ export default function Home(){
     </div>
    </div>
   </section>
+
+  <HomeWorkspaceReturn/>
 
   <section className="platform-how" id="how-it-works">
    <div className="container">

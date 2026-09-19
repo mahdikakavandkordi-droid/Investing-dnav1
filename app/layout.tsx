@@ -20,6 +20,7 @@ import "./home-approved.css";
 import "./archetype-characters.css";
 import "./report-assessment-breakdown.css";
 import "./mobile-app.css";
+import "./maturity-sprint.css";
 import {Nav} from "@/components/Nav";
 import {Footer} from "@/components/Footer";
 import {ProductAnalytics} from "@/components/ProductAnalytics";

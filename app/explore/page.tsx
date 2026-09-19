@@ -143,6 +143,10 @@ function InvestmentCard({item}:{item:Instrument}){
    </div>)}
   </div>}
 
+  {item.market_price_date&&item.asset_type==='ETF'&&<p className="investment-card-market-date">
+   Price updated after close · {formatMarketDate(item.market_price_date)}
+  </p>}
+
   <div className="investment-card-footer">
    <span>{canMatch?'DNA Match available':'Structural research'}</span>
    <Link aria-label="Open research" href={'/investment/'+item.id}>Open research →</Link>
@@ -171,6 +175,12 @@ function metricValue(item:Instrument,key:string,suffix='',digits=2):string|null{
  if(raw===null||raw===undefined||raw==='')return null;
  if(typeof raw==='number')return formatMetric(raw,suffix,digits);
  return pretty(raw);
+}
+
+function formatMarketDate(value:string){
+ const parsed=new Date(value+'T12:00:00Z');
+ if(Number.isNaN(parsed.getTime()))return value;
+ return new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(parsed);
 }
 
 function pretty(value:unknown){
