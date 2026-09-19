@@ -71,8 +71,13 @@ export function MoneyContextVisual(){
   </g>
   <g filter="url(#mc-shadow)">
    <circle cx="230" cy="266" r="75" fill="#d8fff2" stroke="#fff" strokeWidth="6"/>
-   <g transform="translate(208 216)" fill="none" stroke="#087f76" strokeWidth="4" strokeLinecap="round"><path d="M22 0c-7 7-8 14-1 21s7 14 0 21-7 14 0 21"/><path d="M10 10h24M10 31h24M10 52h24"/></g>
-   <text x="230" y="283" textAnchor="middle" fontSize="22" fontWeight="800" fill="#102A43">Your Money</text><text x="230" y="308" textAnchor="middle" fontSize="22" fontWeight="800" fill="#102A43">Context</text>
+   <g transform="translate(230 220)" fill="none" stroke="#087f76" strokeWidth="3.6" strokeLinecap="round">
+    <path d="M-10 0c20 8 20 20 0 28s-20 20 0 28"/>
+    <path d="M10 0c-20 8-20 20 0 28s20 20 0 28"/>
+    <path d="M-7 8h14M-8 20h16M-8 36h16M-7 48h14"/>
+   </g>
+   <text x="230" y="290" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Your Money</text>
+   <text x="230" y="314" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Context</text>
   </g>
   <circle cx="196" cy="228" r="6" fill="#ff7067" stroke="#fff" strokeWidth="3"/><circle cx="264" cy="228" r="6" fill="#f3b321" stroke="#fff" strokeWidth="3"/><circle cx="196" cy="304" r="6" fill="#22b9ad" stroke="#fff" strokeWidth="3"/><circle cx="264" cy="304" r="6" fill="#8c6de2" stroke="#fff" strokeWidth="3"/>
   <g>
