@@ -71,6 +71,41 @@ assert.equal(buildPortfolioBlueprint({risk_tolerance:60,risk_capacity:60},{goal:
 assert.equal(buildPortfolioBlueprint({risk_tolerance:60},blueprintContext()),null);
 assert.equal(buildPortfolioBlueprint({risk_capacity:60},blueprintContext()),null);
 
+const blueprintSignatures=new Set();
+for(const risk_tolerance of [10,30,50,70,90]){
+ for(const risk_capacity of [10,30,50,70,90]){
+  for(const goal of ['growth','retirement','house_purchase','wealth_preservation','emergency_reserve']){
+   for(const time_horizon of ['lt_1y','1_3y','3_5y','5_10y','gt_10y']){
+    for(const liquidity_need of ['high','medium','low']){
+     for(const principal_required of ['yes','no','unsure']){
+      const bp=buildPortfolioBlueprint(
+       {risk_tolerance,risk_capacity},
+       {goal,time_horizon,liquidity_need,principal_required}
+      );
+      assert.ok(bp,'complete context must produce a blueprint when both risk scores exist');
+      const [defensive,core,growth]=bp.scenarios;
+      for(const scenario of bp.scenarios){
+       const a=scenario.allocation;
+       assert.equal(a.equity+a.fixedIncome+a.cash,100);
+       assert.ok(a.equity>=0&&a.fixedIncome>=0&&a.cash>=0);
+       assert.ok(a.equity<=100&&a.fixedIncome<=100&&a.cash<=100);
+       assert.equal(a.equity%5,0);assert.equal(a.fixedIncome%5,0);assert.equal(a.cash%5,0);
+      }
+      assert.ok(defensive.allocation.equity<=core.allocation.equity);
+      assert.ok(growth.allocation.equity>=core.allocation.equity);
+      assert.ok(defensive.allocation.cash>=core.allocation.cash);
+      if(principal_required==='yes'||goal==='emergency_reserve'){
+       for(const scenario of bp.scenarios)assert.deepEqual(scenario.allocation,{equity:0,fixedIncome:0,cash:100});
+      }
+      blueprintSignatures.add(bp.scenarios.map(x=>`${x.allocation.equity}/${x.allocation.fixedIncome}/${x.allocation.cash}`).join('|'));
+     }
+    }
+   }
+  }
+ }
+}
+assert.ok(blueprintSignatures.size>=20,'blueprint engine should produce materially different scenario sets across personas and goals');
+
 const draft={version:1,createdAt:Date.now(),ownerId:null,session:{assessment_id:'id',session_token:'token'},answers:{RC01:'A'},index:0};
 d.writeDraft(draft);
 assert.equal(d.readDraft('user').session.assessment_id,'id');
