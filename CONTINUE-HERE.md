@@ -171,6 +171,8 @@ Implemented:
 - live pilot analytics now allow `workspace_viewed` and `workspace_resume_clicked` with narrow non-PII metadata;
 - `investing-dna-pilot` is ACTIVE at version 21;
 - pilot evidence query defines an actual return as a distinct browser session at least six hours later and adds workspace-resume metrics;
+- pilot data dictionary promoted to v1.2 with explicit operational/non-psychometric classification for analytics and returning-workspace state;
+- pilot privacy page now explains the signed-in continuity snapshot and same-session browser cache;
 - public market-status RPC hardened to SECURITY INVOKER wrapper + private implementation;
 - retention FK now has a covering index.
 
