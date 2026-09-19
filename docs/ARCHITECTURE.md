@@ -197,6 +197,28 @@ Keep asset-specific facts in specialized models:
 
 Do not broaden DNA Match to another asset class by merely inserting it into the ETF view.
 
+## 7. Market-data refresh boundary
+
+Market-data refresh is a service-side ingestion concern, not a browser concern.
+
+Current V1 path:
+
+```text
+post-close scheduler
+  -> market-data-refresh Edge Function
+  -> get_due_price_history_ingestion_plan()
+  -> approved provider adapter
+  -> ingest_price_history_batch()
+  -> investment_price_history + ingestion audit
+  -> refresh_investment_data_quality()
+```
+
+Refresh cadence is asset/data aware through `market_data_refresh_policies`. Only daily ETF price history is automation-enabled in V1; slower or unsupported domains remain explicitly disabled until an appropriate source adapter exists.
+
+The Edge worker requires service-role authorization. A scheduled run that has stale instruments but no approved automated provider must report `blocked`; it must not stamp existing research rows with today's date.
+
+Operational detail and activation gates live in `MARKET-DATA-REFRESH.md`.
+
 ## 7. Data/source-of-truth hierarchy
 
 Prefer, in order:
@@ -210,7 +232,7 @@ Never invent a market value or replace an older real source date with today just
 
 `public.v_investment_dna_v2` is deliberately ETF-only and service-side. Cross-asset Explore/Detail/Compare use their own research read model instead.
 
-## 8. Trust boundaries
+## 9. Trust boundaries
 
 Browser may:
 
@@ -231,7 +253,7 @@ Browser must not:
 
 Privileged service/Edge code must validate session/action/ownership/payload shape before privileged writes.
 
-## 9. Versioning and reproducibility
+## 10. Versioning and reproducibility
 
 Current research baseline:
 
@@ -245,7 +267,7 @@ Historical Match v6 remains server-side for reproducibility/A-B evidence but is 
 
 Never silently mutate a historical questionnaire/scoring/Match version after evidence has been collected.
 
-## 10. Security model
+## 11. Security model
 
 - RLS remains enabled on user/account data.
 - Browser-facing account writes derive ownership from authenticated identity, not caller-supplied profile IDs.
@@ -256,7 +278,7 @@ Never silently mutate a historical questionnaire/scoring/Match version after evi
 
 Current M4 hardening has zero `SECURITY DEFINER` views; two authenticated account helper warnings remain intentionally pending real Magic Link canary verification.
 
-## 11. Architecture change rule
+## 12. Architecture change rule
 
 A change that alters a domain boundary must update this document and the nearest relevant README/doc in the same change. Examples:
 
