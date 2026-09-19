@@ -113,6 +113,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
   }
   if(url.includes('/rest/v1/rpc/app_search_investments'))return send([etf1,etf2]);
   if(url.includes('/rest/v1/rpc/app_search_instruments'))return send([etf1,etf2]);
+  if(url.includes('/rest/v1/rpc/app_market_data_status'))return send([]);
   if(url.includes('/rest/v1/rpc/app_compare_instruments')){
    const ids=body.p_investment_ids||[];
    return send(ids.map(id=>id===ETF1?etf1:id===ETF2?etf2:null).filter(Boolean));
