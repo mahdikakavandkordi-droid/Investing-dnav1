@@ -15,7 +15,7 @@ export type ProductEvent=
  'dna_result_viewed'|'secure_link_requested'|'signup_requested'|'dna_claimed'|
  'investment_context_saved'|'match_viewed'|'fund_viewed'|'screener_viewed'|
  'compare_viewed'|'watchlist_saved'|'watchlist_removed'|'watchlist_viewed'|
- 'profile_viewed'|'feedback_submitted';
+ 'profile_viewed'|'workspace_viewed'|'workspace_resume_clicked'|'feedback_submitted';
 
 type EventOptions={
  route?:string;

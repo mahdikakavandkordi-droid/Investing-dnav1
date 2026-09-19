@@ -4,6 +4,16 @@
 .home-returning-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
 .home-returning-head h2{margin:.25rem 0 .4rem;font-size:clamp(1.45rem,3vw,2rem)}
 .home-returning-head p{margin:0;max-width:720px;color:var(--muted,#64716f)}
+.home-returning-update{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:16px;margin-top:18px;padding:15px 16px;border:1px solid rgba(29,70,66,.14);border-radius:16px;background:rgba(241,248,246,.8)}
+.home-returning-update.quiet{grid-template-columns:1fr;background:rgba(247,249,249,.82)}
+.home-returning-update-copy{min-width:0}
+.home-returning-update-kicker{display:block;margin-bottom:4px;font-size:.73rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#64716f)}
+.home-returning-update-copy strong{display:block;font-size:.98rem}
+.home-returning-update-copy p{margin:4px 0 0;color:var(--muted,#64716f);font-size:.86rem;line-height:1.45}
+.home-returning-update-items{display:flex;gap:8px;flex-wrap:wrap}
+.home-returning-update-items>span{display:flex;flex-direction:column;gap:2px;min-width:72px;padding:8px 10px;border:1px solid rgba(29,70,66,.1);border-radius:12px;background:#fff}
+.home-returning-update-items b{font-size:.88rem}
+.home-returning-update-items small{font-size:.72rem;color:var(--muted,#64716f)}
 .home-returning-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
 .home-returning-tile{display:flex;min-width:0;flex-direction:column;gap:6px;padding:16px;border:1px solid rgba(29,70,66,.1);border-radius:16px;background:#fff;color:inherit;text-decoration:none;transition:transform .16s ease,border-color .16s ease}
 .home-returning-tile:hover{transform:translateY(-2px);border-color:rgba(29,70,66,.28)}
@@ -20,6 +30,8 @@
  .home-returning-card{border-radius:18px;padding:18px}
  .home-returning-head{flex-direction:column;gap:14px}
  .home-returning-head .btn{width:100%;justify-content:center}
+ .home-returning-update{grid-template-columns:1fr}
+ .home-returning-update .text-link{justify-self:start}
  .home-returning-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:520px){

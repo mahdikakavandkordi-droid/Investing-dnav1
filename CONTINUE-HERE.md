@@ -87,10 +87,11 @@ The live `investing-dna-pilot` Edge Function is ACTIVE at version 20, and its li
 
 Current Advisor snapshot:
 
-- Security: 35 `rls_enabled_no_policy` INFO findings. The market refresh policy/audit/auth tables are intentionally service-only with RLS and no browser policy. Existing service/internal findings still must be classified, not blindly opened.
+- Security: 37 `rls_enabled_no_policy` INFO findings. The market refresh and returning-workspace state tables are intentionally service-only with RLS and no browser policy. Existing service/internal findings still must be classified, not blindly opened.
 - Security: leaked-password protection WARN is present. The current product is passwordless Magic Link, so this is not an active password-flow blocker; revisit if password auth is introduced.
 - Security also reports one `extension_in_public` WARN for `pg_net`; the extension is non-relocatable in the current install, so it is classified as a scheduler-extension warning rather than worked around by weakening permissions.
-- Performance: 40 `unused_index` INFO findings. The new refresh indexes are young operational indexes; do not drop young/pilot indexes solely because the Advisor has not observed usage yet.
+- Performance: 41 `unused_index` INFO findings. The new refresh/retention indexes are young operational indexes; do not drop young/pilot indexes solely because the Advisor has not observed usage yet. The retention foreign-key coverage warning was fixed with `investor_workspace_item_state_investment_idx`.
+- The browser-safe market status RPC was moved behind a SECURITY INVOKER public wrapper plus a private SECURITY DEFINER implementation; the Advisor no longer reports the public security-definer warnings for that endpoint.
 
 No ownership/RLS semantics should be changed merely to make Advisor counts smaller.
 
@@ -153,6 +154,33 @@ Implemented so far:
 Live VFV market status currently resolves to 2026-09-18, CAD 190.070007..., source `yahoo_free`.
 
 The real hosted Magic Link canary is still partial. Mocked browser continuity is stronger now, but it is not a substitute for proving sign-out/fresh-sign-in persistence against the deployed app.
+
+## Maturity Sprint 2 — 2026-09-19
+
+Branch `codex/maturity-sprint-2-retention` / Draft PR #10 is stacked on Maturity Sprint 1.
+
+Implemented:
+
+- authenticated **Since your last visit** return loop on Home;
+- server-owned `investor_workspace_state` and per-saved-investment `investor_workspace_item_state`;
+- authenticated `app_open_returning_workspace()` ownership boundary using `auth.uid()`;
+- per-item price-date baselines so a lagging ETF that catches up is not missed by a global max-date shortcut;
+- Match change detection uses the canonical input fingerprint, not a regenerated run ID;
+- current-session browser caching prevents repeated Home visits in one sitting from advancing the baseline;
+- sign-out clears the cache;
+- live pilot analytics now allow `workspace_viewed` and `workspace_resume_clicked` with narrow non-PII metadata;
+- `investing-dna-pilot` is ACTIVE at version 21;
+- pilot evidence query defines an actual return as a distinct browser session at least six hours later and adds workspace-resume metrics;
+- pilot data dictionary promoted to v1.2 with explicit operational/non-psychometric classification for analytics and returning-workspace state;
+- pilot privacy page now explains the signed-in continuity snapshot and same-session browser cache;
+- public market-status RPC hardened to SECURITY INVOKER wrapper + private implementation;
+- retention FK now has a covering index.
+
+Live controlled retention regression (transaction rolled back) proved:
+- first workspace open => returning=false, 1 saved item, 0 new market updates;
+- after a newer VFV price row => returning=true, 1 new market update, VFV returned in updated_saved_items.
+
+Backend regression remains PASS.
 
 ## Immediate follow-ups
 

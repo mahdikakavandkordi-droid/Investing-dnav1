@@ -4,6 +4,7 @@ import Link from "next/link";
 import {useState} from "react";
 import {useAccount} from "@/lib/use-account";
 import {supabase} from "@/lib/supabase";
+import {clearReturningWorkspaceCache} from "@/lib/returning-workspace";
 
 export default function AccountPage(){
  const {user,loading}=useAccount();
@@ -14,8 +15,10 @@ export default function AccountPage(){
   if(!supabase||busy)return;
   setBusy(true);setError("");
   try{
+   const currentUserId=user?.id;
    const {error:authError}=await supabase.auth.signOut({scope:"local"});
    if(authError)throw authError;
+   clearReturningWorkspaceCache(currentUserId);
   }catch(e){setError(e instanceof Error?e.message:"Unable to sign out.");}
   finally{setBusy(false);}
  }

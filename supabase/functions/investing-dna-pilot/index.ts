@@ -9,7 +9,8 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const EVENT_NAMES = new Set([
   'app_session_started','explore_viewed','assessment_started','assessment_completed','dna_result_viewed',
   'secure_link_requested','signup_requested','dna_claimed','investment_context_saved','match_viewed','fund_viewed',
-  'screener_viewed','compare_viewed','watchlist_saved','watchlist_removed','watchlist_viewed','profile_viewed','feedback_submitted'
+  'screener_viewed','compare_viewed','watchlist_saved','watchlist_removed','watchlist_viewed','profile_viewed',
+  'workspace_viewed','workspace_resume_clicked','feedback_submitted'
 ]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -34,7 +35,7 @@ const langOf = (value: unknown) => value === 'fr' || value === 'fa' ? value : 'e
 const uuidOrNull = (value: unknown) => typeof value === 'string' && UUID_RE.test(value) ? value : null;
 function cleanMetadata(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-  const allowed = new Set(['source','status','cohort_code','questionnaire_version','model_version','fit_status','selected_count','mode','returning']);
+  const allowed = new Set(['source','status','cohort_code','questionnaire_version','model_version','fit_status','selected_count','mode','returning','target','new_market_data_count','match_updated']);
   const out: Record<string,string|number|boolean|null> = {};
   for (const [key,raw] of Object.entries(value as Record<string,unknown>)) {
     if (!allowed.has(key)) continue;

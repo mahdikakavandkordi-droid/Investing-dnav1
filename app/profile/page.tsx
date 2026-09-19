@@ -11,6 +11,7 @@ import {useAccount} from '@/lib/use-account';
 import {validId} from '@/lib/investments';
 import {getInstrument,instrumentWatchlist,saveInstrument} from '@/lib/instruments';
 import {trackProductEvent} from '@/lib/analytics';
+import {clearReturningWorkspaceCache} from '@/lib/returning-workspace';
 import type {Instrument,SavedInstrument} from '@/lib/instruments';
 
 export default function Profile(){
@@ -42,7 +43,7 @@ export default function Profile(){
  function changeEmail(){setSentTo('');setMessage('');setError('')}
  async function claimAssessment(){if(!pending||!user||busy)return;setBusy(true);setError('');setMessage('');try{if(pending.personalization&&supabase){const {error:metaError}=await supabase.auth.updateUser({data:pending.personalization});if(metaError)throw metaError}const result=await pilot<{claimed:boolean}>('claim_assessment',pending.session);if(!result.claimed)throw new Error('The service has not confirmed saving your DNA.');clearDraft();setPending(null);setMessage('Your Investor DNA is saved to your dashboard.');setRetry(v=>v+1)}catch(e){setError(e instanceof Error?e.message:'Unable to save this DNA right now.')}finally{setBusy(false)}}
  async function saveIncomingInvestment(){if(!intent||!user||busy)return;setBusy(true);setError('');try{const result=await saveInstrument(intent.id);if(!result.item)throw new Error('Saving was not confirmed.');setMessage(`${intent.symbol||intent.name} is saved to your watchlist.`);void trackProductEvent('watchlist_saved',{investment_id:intent.id,metadata:{source:'profile_intent'}});setRetry(v=>v+1)}catch(e){setError(e instanceof Error?e.message:'Unable to save this investment.')}finally{setBusy(false)}}
- async function signOut(){if(!supabase||busy)return;setBusy(true);try{const {error:authError}=await supabase.auth.signOut({scope:'local'});if(authError)throw authError;clearDraft();setPending(null);setState(null);setItems([]);setMessage('You have signed out.')}catch(e){setError(e instanceof Error?e.message:'Unable to sign out.')}finally{setBusy(false)}}
+ async function signOut(){if(!supabase||busy)return;setBusy(true);try{const currentUserId=user?.id;const {error:authError}=await supabase.auth.signOut({scope:'local'});if(authError)throw authError;clearReturningWorkspaceCache(currentUserId);clearDraft();setPending(null);setState(null);setItems([]);setMessage('You have signed out.')}catch(e){setError(e instanceof Error?e.message:'Unable to sign out.')}finally{setBusy(false)}}
 
  const intentSaved=items.some(item=>item.investment_id===intent?.id);
  const closest:MatchItem|undefined=state?.matches?.top_matches?.[0]||state?.matches?.alternatives?.[0]||state?.matches?.results?.find(item=>item.eligibility==='eligible')||state?.matches?.results?.[0];

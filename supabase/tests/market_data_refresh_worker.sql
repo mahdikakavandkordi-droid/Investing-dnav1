@@ -32,6 +32,10 @@ begin
      or has_table_privilege('authenticated','public.market_data_refresh_policies','SELECT')
      or has_table_privilege('anon','public.market_data_worker_runs','SELECT')
      or has_table_privilege('authenticated','public.market_data_worker_runs','SELECT')
+     or has_table_privilege('anon','public.investor_workspace_state','SELECT')
+     or has_table_privilege('authenticated','public.investor_workspace_state','SELECT')
+     or has_table_privilege('anon','public.investor_workspace_item_state','SELECT')
+     or has_table_privilege('authenticated','public.investor_workspace_item_state','SELECT')
   then
     raise exception 'market refresh operational tables must remain service-only';
   end if;
@@ -40,6 +44,12 @@ begin
      or not has_function_privilege('authenticated','public.app_market_data_status(uuid[])','EXECUTE')
   then
     raise exception 'browser-safe market status function must be executable by anon and authenticated clients';
+  end if;
+
+  if has_function_privilege('anon','public.app_open_returning_workspace()','EXECUTE')
+     or not has_function_privilege('authenticated','public.app_open_returning_workspace()','EXECUTE')
+  then
+    raise exception 'returning workspace RPC must be authenticated-only';
   end if;
 
   if has_function_privilege('anon','public.get_due_price_history_ingestion_plan(timestamp with time zone)','EXECUTE')
@@ -142,4 +152,4 @@ begin
 end $audit$;
 rollback;
 
-select 'PASS: market-data refresh policy, browser read model, due-plan and service boundary' as result;
+select 'PASS: market-data refresh policy, browser read model, retention boundary, due-plan and service boundary' as result;

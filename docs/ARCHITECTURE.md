@@ -291,3 +291,25 @@ A change that alters a domain boundary must update this document and the nearest
 - deployment topology.
 
 If a future engineer cannot answer “where does this rule belong?” from this document, the architecture documentation is incomplete.
+
+
+### Returning-user continuity state
+
+The signed-in Home return loop is account-owned server state, not browser identity.
+
+```text
+auth.uid()
+  -> profiles
+  -> app_open_returning_workspace()
+  -> private continuity snapshot
+       - previous workspace visit
+       - per-saved-investment last-seen price date
+       - last Match input fingerprint
+  -> factual "Since your last visit" summary
+```
+
+The state tables are RLS-enabled and have no browser policy. The authenticated public RPC resolves the profile from `auth.uid()`; visitor/session analytics identifiers never establish ownership.
+
+The returned summary is cached only in sessionStorage for the current signed-in tab/session. That cache is presentation continuity, not authorization, and is cleared on sign-out.
+
+Product analytics for this loop remain separate from psychometric validation data. The pilot data dictionary v1.2 classifies the workspace and analytics fields as operational and not allowed for psychometric validation.
