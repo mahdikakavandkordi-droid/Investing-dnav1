@@ -23,9 +23,10 @@ import {Nav} from "@/components/Nav";
 import {Footer} from "@/components/Footer";
 import {ProductAnalytics} from "@/components/ProductAnalytics";
 import {MobileAppNav} from "@/components/MobileAppNav";
+import {MobileAppHeader} from "@/components/MobileAppHeader";
 
 export const metadata={title:"Investor DNA",description:"Know yourself. Understand your investments."};
 
 export default function RootLayout({children}:{children:ReactNode}){
- return <html lang="en"><body><Nav/><ProductAnalytics/><main>{children}</main><Footer/><MobileAppNav/></body></html>;
+ return <html lang="en"><body><Nav/><MobileAppHeader/><ProductAnalytics/><main>{children}</main><Footer/><MobileAppNav/></body></html>;
 }
