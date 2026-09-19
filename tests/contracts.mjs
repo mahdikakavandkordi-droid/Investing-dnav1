@@ -64,6 +64,8 @@ for(const bp of [balancedBlueprint,growthBlueprint,capacityGuardBlueprint,protec
   }
 }
 assert.equal(buildPortfolioBlueprint({risk_tolerance:60,risk_capacity:60},{goal:'growth'}),null);
+assert.equal(buildPortfolioBlueprint({risk_tolerance:60},blueprintContext()),null);
+assert.equal(buildPortfolioBlueprint({risk_capacity:60},blueprintContext()),null);
 
 const draft={version:1,createdAt:Date.now(),ownerId:null,session:{assessment_id:'id',session_token:'token'},answers:{RC01:'A'},index:0};
 d.writeDraft(draft);
@@ -207,6 +209,14 @@ assert.match(homeAssetRailSource,/GIC/);
 assert.match(homeAssetRailSource,/BOND/);
 assert.match(homeAssetRailSource,/T_BILL/);
 assert.match(homeAssetRailSource,/COMMERCIAL_PAPER/);
+const sharedBlueprintSource=readFileSync(new URL('../supabase/functions/_shared/portfolio-blueprint.ts',import.meta.url),'utf8');
+const reportBlueprintSource=readFileSync(new URL('../supabase/functions/investor-dna-report/portfolio-blueprint.ts',import.meta.url),'utf8');
+assert.equal(reportBlueprintSource,sharedBlueprintSource,'PDF report service must use the exact same blueprint engine as the app');
+const reportEdgeSource=readFileSync(new URL('../supabase/functions/investor-dna-report/index.ts',import.meta.url),'utf8');
+assert.match(reportEdgeSource,/Guest report capability is required/);
+assert.match(reportEdgeSource,/This report is not owned by the signed-in account/);
+assert.match(reportEdgeSource,/report_delivery_events/);
+assert.doesNotMatch(reportEdgeSource,/insert\([\s\S]*email:/,'report delivery audit must not store raw email');
 const brandMarkSource=readFileSync(new URL('../components/BrandMark.tsx',import.meta.url),'utf8');
 assert.match(brandMarkSource,/investing-dna-lockup\.png/);
 
