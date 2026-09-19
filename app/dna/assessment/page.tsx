@@ -17,6 +17,7 @@ import type {Draft,Question,Submission} from "@/lib/dna";
 import {ASSESSMENT_COPY} from "@/lib/assessment-copy";
 import type {AssessmentCohort,AssessmentLocale} from "@/lib/assessment-copy";
 import {DnaJourneyVisual} from "@/components/DnaJourneyVisual";
+import {PersonalizationVisual} from "@/components/OnboardingVisuals";
 
 const COGNITIVE_ACCESS_KEY='investing-dna:cognitive-access:v1';
 const LANGUAGE_KEY='investing-dna:language';
@@ -258,7 +259,7 @@ function PersonalizationStep({draft,total,busy,error,onPersist,onBack,onFinish}:
    <div className="question-actions"><button className="btn" disabled={busy} onClick={onBack}>Back</button><button className="btn primary" disabled={busy||!ready} onClick={onFinish}>{busy?'Building your DNA…':'See my Investor DNA'} <span aria-hidden="true">→</span></button></div>
    {error&&<p role="alert" className="notice">{error}</p>}
   </section>
-  <aside className="personalization-scenery approved-illustration-panel" aria-hidden="true"><img src="/illustrations/personalized-investor-dna-report.webp" alt="" className="approved-side-illustration"/></aside>
+  <aside className="personalization-scenery approved-illustration-panel" aria-hidden="true"><PersonalizationVisual/></aside>
  </div>;
 }
 
