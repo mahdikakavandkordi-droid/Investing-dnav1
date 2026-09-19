@@ -92,7 +92,7 @@ function cashFloor(context:BlueprintContextInput){
   if(context.goal==='emergency_reserve')floor=100;
   if(context.principal_required==='yes')floor=100;
   else if(context.principal_required==='unsure')floor=Math.max(floor,15);
-  return round5(clamp(floor,5,80));
+  return round5(clamp(floor,5,100));
 }
 
 function allocation(equity:number,cash:number):Allocation{
