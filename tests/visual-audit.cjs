@@ -214,6 +214,17 @@ async function runViewport(browser,label,viewport){
 
  await page.goto(ORIGIN+'/investment/'+matchItem.investment_id,{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'Vanguard Balanced ETF Portfolio',exact:true}).waitFor();
+ if(mobile){
+  assert.ok((await page.locator('.mobile-research-summary').count())>=5);
+  assert.equal(await page.locator('.mobile-research-disclosure-body').first().isVisible(),false);
+  await page.locator('.mobile-research-summary').first().click();
+  assert.equal(await page.locator('.mobile-research-disclosure-body').first().isVisible(),true);
+  await page.locator('.mobile-research-summary').first().click();
+ }else{
+  await page.getByRole('heading',{name:'How this ETF is allocated',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'How this investment behaves under risk',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'What we actually know about this fund',exact:true}).waitFor();
+ }
  await shot(page,label+'-01c-investment-detail');
 
  await page.goto(ORIGIN+'/investment/'+gicInstrument.id,{waitUntil:'networkidle'});
