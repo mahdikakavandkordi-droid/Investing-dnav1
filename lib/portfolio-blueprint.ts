@@ -51,8 +51,8 @@ function horizonCap(value:string|null|undefined){
 }
 
 function liquidityCap(value:string|null|undefined){
-  if(value==='high')return 30;
-  if(value==='medium')return 65;
+  if(value==='high')return 40;
+  if(value==='medium')return 75;
   if(value==='low')return 90;
   return 50;
 }
@@ -76,8 +76,8 @@ function cashFloor(context:InvestmentContextProfile){
   else if(context.time_horizon==='1_3y')floor=Math.max(floor,20);
   else if(context.time_horizon==='3_5y')floor=Math.max(floor,10);
 
-  if(context.liquidity_need==='high')floor=Math.max(floor,20);
-  else if(context.liquidity_need==='medium')floor=Math.max(floor,10);
+  if(context.liquidity_need==='high')floor=Math.max(floor,15);
+  else if(context.liquidity_need==='medium')floor=Math.max(floor,5);
 
   if(context.goal==='emergency_reserve')floor=Math.max(floor,60);
   if(context.principal_required==='yes')floor=Math.max(floor,35);
@@ -143,7 +143,7 @@ export function buildPortfolioBlueprint(dna:DNA,context?:InvestmentContextProfil
   const core=allocation(coreEquity,minimumCash);
 
   const defensiveEquity=round5(Math.max(0,core.equity-15));
-  const defensiveCash=round5(Math.min(100-defensiveEquity,Math.max(minimumCash,core.cash+10)));
+  const defensiveCash=round5(Math.min(100-defensiveEquity,Math.max(minimumCash,core.cash+5)));
   const defensive=allocation(defensiveEquity,defensiveCash);
 
   const growthBlocked=isGrowthBlocked(context);
