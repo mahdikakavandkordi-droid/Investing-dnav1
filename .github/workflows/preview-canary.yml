@@ -23,7 +23,8 @@ jobs:
         (
           github.event.deployment.ref == 'codex/integration-product-risk-platform-v1' ||
           github.event.deployment.ref == 'codex/maturity-sprint-2-retention' ||
-          github.event.deployment.ref == 'codex/maturity-sprint-3-auth-canary'
+          github.event.deployment.ref == 'codex/maturity-sprint-3-auth-canary' ||
+          github.event.deployment.ref == 'codex/maturity-sprint-4-pilot-readiness'
         )
       )
     runs-on: ubuntu-latest
