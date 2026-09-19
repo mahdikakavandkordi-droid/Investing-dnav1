@@ -87,9 +87,10 @@ The live `investing-dna-pilot` Edge Function is ACTIVE at version 20, and its li
 
 Current Advisor snapshot:
 
-- Security: 34 `rls_enabled_no_policy` INFO findings. The two new entries are the service-only market refresh policy/audit tables; these intentionally have RLS with no browser policy. Existing service/internal findings still must be classified, not blindly opened.
+- Security: 35 `rls_enabled_no_policy` INFO findings. The market refresh policy/audit/auth tables are intentionally service-only with RLS and no browser policy. Existing service/internal findings still must be classified, not blindly opened.
 - Security: leaked-password protection WARN is present. The current product is passwordless Magic Link, so this is not an active password-flow blocker; revisit if password auth is introduced.
-- Performance: 40 `unused_index` INFO findings. The two new refresh indexes are brand-new operational indexes; do not drop young/pilot indexes solely because the Advisor has not observed usage yet.
+- Security also reports one `extension_in_public` WARN for `pg_net`; the extension is non-relocatable in the current install, so it is classified as a scheduler-extension warning rather than worked around by weakening permissions.
+- Performance: 40 `unused_index` INFO findings. The new refresh indexes are young operational indexes; do not drop young/pilot indexes solely because the Advisor has not observed usage yet.
 
 No ownership/RLS semantics should be changed merely to make Advisor counts smaller.
 
