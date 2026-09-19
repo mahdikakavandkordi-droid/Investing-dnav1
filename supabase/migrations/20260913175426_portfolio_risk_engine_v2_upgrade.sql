@@ -1,0 +1,10 @@
+alter table public.portfolio_risk_analysis add column if not exists observation_count integer not null default 0;
+alter table public.portfolio_risk_analysis add column if not exists data_coverage_pct numeric(6,2) not null default 0;
+alter table public.portfolio_risk_analysis add column if not exists correlation_confidence text not null default 'limited';
+alter table public.portfolio_risk_analysis add column if not exists portfolio_volatility_pct numeric(10,4);
+alter table public.portfolio_risk_analysis add column if not exists portfolio_max_drawdown_pct numeric(10,4);
+alter table public.portfolio_risk_analysis add column if not exists average_pair_correlation numeric(10,6);
+alter table public.portfolio_risk_analysis add column if not exists weighted_overlap_pct numeric(10,4);
+alter table public.portfolio_risk_analysis add column if not exists top_holding_concentration_pct numeric(10,4);
+alter table public.portfolio_risk_analysis add column if not exists risk_score numeric(6,2);
+create or replace view public.v_portfolio_risk_analysis as select p.*,b.assessment_id,b.blueprint_type,b.title,b.target_equity_pct,b.target_fixed_income_pct from public.portfolio_risk_analysis p join public.investment_portfolio_blueprints b on b.id=p.blueprint_id;

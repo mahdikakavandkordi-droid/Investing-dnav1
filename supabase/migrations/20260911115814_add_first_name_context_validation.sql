@@ -1,0 +1,1 @@
+alter table public.investment_context add constraint investment_context_first_name_len check (first_name is null or char_length(trim(first_name)) between 2 and 40);

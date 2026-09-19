@@ -1,0 +1,1 @@
+comment on column public.investment_context.age is 'Participant age for context/personalization; excluded from DNA scoring'; comment on column public.investment_context.amount_to_invest is 'Planned investment amount in CAD for context/reporting; excluded from DNA scoring';

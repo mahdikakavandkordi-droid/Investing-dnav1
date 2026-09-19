@@ -1,0 +1,1 @@
+UPDATE public.investment_holdings h SET as_of_date='2026-07-31' WHERE h.investment_id=(SELECT id FROM public.investments WHERE symbol='VUN') AND h.holding_symbol='VTI' AND h.as_of_date='2026-05-31'; SELECT public.refresh_investment_data_quality();

@@ -1,0 +1,51 @@
+name: Investing DNA CI
+
+on:
+  push:
+    branches:
+      - codex/platform-v4-account-continuity
+      - codex/visual-redesign-v1
+      - codex/product-risk-dna-research
+      - codex/integration-product-risk-platform-v1
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:risk
+      - run: npm run test:hygiene
+      - run: npm run typecheck
+      - run: npm run typecheck:hygiene
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://dna-test.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: test-publishable-key
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: test-publishable-key
+      - run: test -x /usr/bin/google-chrome
+      - run: npm run test:flow
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:assessment
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:funds
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:m4
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:assets
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+      - run: npm run test:hard
+        env:
+          CHROME_BIN: /usr/bin/google-chrome

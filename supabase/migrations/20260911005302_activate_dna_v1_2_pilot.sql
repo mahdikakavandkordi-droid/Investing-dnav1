@@ -1,0 +1,2 @@
+UPDATE public.pilot_cohorts SET status='archived' WHERE code='PILOT_V1_1' AND status IN ('planned','collecting');
+UPDATE public.pilot_cohorts SET status='collecting' WHERE code='PILOT_V1_2' AND status='planned';

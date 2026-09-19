@@ -1,0 +1,137 @@
+import {rpc} from '@/lib/supabase';
+import type {Investment} from '@/lib/types';
+
+/**
+ * Generic cross-asset browser read/write adapter.
+ *
+ * Use this module for Explore, generic Detail, Compare and asset-neutral
+ * Watchlist operations. ETF-only facts/holdings/Match compatibility remain in
+ * `lib/investments.ts`.
+ *
+ * The field groups mirror the generic research read model exposed by
+ * `app_search_instruments`, `app_get_instrument` and
+ * `app_compare_instruments`. See `docs/ARCHITECTURE.md` and
+ * `docs/DATABASE-AND-API.md`.
+ */
+export type Instrument=Investment&{
+ // Identity / generic research fields.
+ legal_name?:string|null;
+ subcategory?:string|null;
+ strategy?:string|null;
+ sector?:string|null;
+ region?:string|null;
+ country_code?:string|null;
+ currency?:string|null;
+ exchange?:string|null;
+ description?:string|null;
+ inception_date?:string|null;
+ is_featured?:boolean|null;
+ data_status?:string|null;
+ issuer_name?:string|null;
+ issuer_website?:string|null;
+ metrics_as_of_date?:string|null;
+ daily_change_pct?:number|null;
+ return_1m_pct?:number|null;
+ return_3m_pct?:number|null;
+ distribution_frequency?:string|null;
+ volume?:number|null;
+ data_quality_status?:string|null;
+ data_quality_score?:number|null;
+ profile_objective?:string|null;
+ profile_benchmark?:string|null;
+ profile_methodology?:string|null;
+ profile_portfolio_construction?:string|null;
+ profile_target_allocation?:Record<string,number>|null;
+ profile_geographic_exposure?:string|null;
+ profile_currency_hedging?:string|null;
+ profile_distribution_policy?:string|null;
+ profile_management_style?:string|null;
+ profile_replication_method?:string|null;
+ profile_ideal_for?:string|null;
+ profile_key_risks?:string[]|null;
+ profile_model_version?:string|null;
+
+ // Shared cross-asset Investment DNA structure layer.
+ structure_model_version?:string|null;
+ capital_protection?:string|null;
+ liquidity_level?:string|null;
+ price_volatility?:string|null;
+ income_predictability?:string|null;
+ growth_participation?:string|null;
+ interest_rate_sensitivity?:string|null;
+ credit_exposure?:string|null;
+ diversification_level?:string|null;
+ complexity_level?:string|null;
+ time_structure?:string|null;
+ principal_protection_basis?:string|null;
+ structure_as_of_date?:string|null;
+
+ // Fixed-income / money-market fields. Null for unrelated asset classes.
+ instrument_subtype?:string|null;
+ coupon_pct?:number|null;
+ yield_to_maturity_pct?:number|null;
+ issue_date?:string|null;
+ maturity_date?:string|null;
+ remaining_term_months?:number|null;
+ duration_years?:number|null;
+ face_value?:number|null;
+ credit_rating?:string|null;
+ credit_rating_agency?:string|null;
+ discount_instrument?:boolean|null;
+ market_access_note?:string|null;
+ fixed_income_source_name?:string|null;
+ fixed_income_source_url?:string|null;
+ fixed_income_as_of_date?:string|null;
+
+ // GIC/deposit fields. Null for unrelated asset classes.
+ deposit_rate_pct?:number|null;
+ term_months?:number|null;
+ redeemability?:string|null;
+ minimum_deposit?:number|null;
+ interest_payment_frequency?:string|null;
+ registered_account_eligibility?:string[]|null;
+ deposit_insurance_scheme?:string|null;
+ deposit_insurance_eligible?:boolean|null;
+ lockup_note?:string|null;
+ deposit_source_name?:string|null;
+ deposit_source_url?:string|null;
+ deposit_as_of_date?:string|null;
+};
+
+export type SavedInstrument={
+ investment_id:string;
+ symbol:string;
+ name:string;
+ note?:string;
+ created_at?:string;
+};
+
+/** Search the public cross-asset research universe. */
+export function searchInstruments(args:{assetType?:string|null;search?:string|null;limit?:number}={}){
+ return rpc<Instrument[]>('app_search_instruments',{
+  p_asset_type:args.assetType??null,
+  p_search:args.search??null,
+  p_limit:args.limit??100,
+ });
+}
+
+export function getInstrument(id:string){
+ return rpc<Instrument|null>('app_get_instrument',{p_investment_id:id});
+}
+
+export function compareInstruments(ids:string[]){
+ return rpc<Instrument[]>('app_compare_instruments',{p_investment_ids:ids});
+}
+
+/** Account-scoped Watchlist adapter; storage is instrument-neutral. */
+export function instrumentWatchlist(){
+ return rpc<{items:SavedInstrument[]}>('app_watchlist',{p_action:'list'});
+}
+
+export function saveInstrument(id:string){
+ return rpc<{item?:{investment_id:string}}>('app_watchlist',{p_action:'add',p_investment_id:id});
+}
+
+export function removeInstrument(id:string){
+ return rpc<{removed:boolean}>('app_watchlist',{p_action:'remove',p_investment_id:id});
+}

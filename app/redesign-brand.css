@@ -1,0 +1,69 @@
+/* --------------------------------------------------------------------------
+ * Approved visual system — presentation only.
+ * Keeps product flows/domain rules unchanged while giving each surface its own
+ * hierarchy. Result/report intentionally remains on its existing design until
+ * its separate review is complete.
+ * -------------------------------------------------------------------------- */
+
+:root{
+ --dna-ink:#071a34;
+ --dna-ink-2:#153452;
+ --dna-teal:#139d8f;
+ --dna-teal-dark:#0a7e75;
+ --dna-teal-soft:#eaf7f4;
+ --dna-sky:#eef8fb;
+ --dna-line:#dbe6e8;
+ --dna-muted:#667585;
+ --dna-surface:#fff;
+ --dna-canvas:#f6f8f8;
+ --dna-shadow:0 16px 45px rgba(7,26,52,.075);
+}
+
+/* App shell */
+.nav{min-height:76px;border-bottom:1px solid #e7eeee;background:rgba(255,255,255,.94);backdrop-filter:blur(18px)}
+.navin{max-width:1240px;padding:0 30px}
+.brand-lockup{display:inline-flex;align-items:center;flex:0 0 auto}
+.brand-lockup img{display:block;width:190px;height:auto;max-height:48px;object-fit:contain}
+.links{gap:28px;color:#31485d;font-weight:650}
+.links a{position:relative;padding:27px 0}
+.links a:after{content:"";position:absolute;left:0;right:100%;bottom:20px;height:2px;background:var(--dna-teal);transition:right .18s ease}
+.links a:hover:after{right:0}
+.account-links{gap:14px}
+.profile-link{color:var(--dna-teal-dark)}
+.profile-link-muted{color:#5f7080;font-weight:650}
+
+.site-footer{border-top:1px solid #e5ecec;background:#fbfcfc;padding:34px 0 40px}
+.site-footer-grid{display:flex;align-items:flex-start;justify-content:space-between;gap:34px}
+.site-footer-brand{max-width:660px}.site-footer-brand .brand-lockup img{width:150px}.site-footer-brand p{margin:12px 0 0}
+.site-footer-links{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;font-weight:650;color:#536474;padding-top:8px}
+
+/* Home — brand-forward, DNA first, Explore visible as a true second pillar. */
+.home-hero-v3{position:relative;overflow:hidden;background:linear-gradient(180deg,#fbfefe 0,#f5faf9 100%);border-bottom:1px solid #e7eeee}
+.home-hero-v3:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 77% 20%,rgba(20,157,143,.12),transparent 30%),radial-gradient(circle at 12% 86%,rgba(109,179,205,.1),transparent 29%);pointer-events:none}
+.home-hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.02fr) minmax(440px,.98fr);align-items:center;gap:56px;min-height:650px;padding-top:72px;padding-bottom:72px}
+.home-hero-copy h1{font-size:64px;line-height:1.01;letter-spacing:-.058em;color:var(--dna-ink);margin:14px 0 22px;max-width:720px}
+.home-hero-lede{font-size:19px;line-height:1.65;color:#536879;max-width:650px;margin:0}
+.home-hero-actions{margin-top:30px}.home-hero-actions .btn{padding:14px 22px;border-radius:13px}.home-explore-cta{border-color:#9bcac5;color:#0a736c;background:rgba(255,255,255,.76)}
+.home-preview{position:relative;min-height:490px;display:flex;align-items:flex-end;justify-content:center}
+.home-preview-landscape{position:absolute;inset:0 0 125px;opacity:.9}
+.home-preview-landscape svg{width:100%;height:100%}.mountain-back{fill:#dfeef0}.mountain-front{fill:#c9e3df}.pine-row{fill:#7aa7a2;opacity:.55}.home-dna-strand{fill:none;stroke:#17998b;stroke-width:5;opacity:.22}.home-dna-rung{stroke:#17998b;stroke-width:4;stroke-linecap:round;opacity:.22}
+.home-preview-card{position:relative;width:min(480px,94%);background:rgba(255,255,255,.96);border:1px solid #d9e7e6;border-radius:26px;padding:25px;box-shadow:0 24px 60px rgba(7,26,52,.12)}
+.home-preview-label{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:#81909c;font-weight:800}
+.home-preview-main{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:13px}.home-preview-main>div:first-child{display:grid;gap:4px}.home-preview-main span{color:#657482;font-size:13px}.home-preview-main strong{font-size:27px;color:var(--dna-ink);letter-spacing:-.035em}
+.home-dna-orbit{width:68px;height:68px;border:1px solid #bde1dc;border-radius:50%;position:relative;display:grid;place-items:center}.home-dna-orbit:before,.home-dna-orbit:after{content:"";position:absolute;width:48px;height:1px;background:#66b9af;transform:rotate(48deg)}.home-dna-orbit:after{transform:rotate(-48deg)}.home-dna-orbit span{width:7px;height:7px;background:#15998c;border-radius:50%;position:absolute}.home-dna-orbit span:nth-child(1){top:10px;left:29px}.home-dna-orbit span:nth-child(2){right:10px;bottom:18px}.home-dna-orbit span:nth-child(3){left:9px;bottom:18px}
+.home-preview-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px}.home-preview-stats div{background:#f5f9f8;border-radius:13px;padding:12px;display:grid;gap:4px}.home-preview-stats span{font-size:11px;color:#788690}.home-preview-stats strong{font-size:14px;color:#18354d}
+.home-match-strip{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:15px;border-top:1px solid #e8eeee;padding-top:15px;color:#0a776f}.home-match-strip div{display:grid;gap:3px}.home-match-strip span{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.home-match-strip strong{font-size:13px;line-height:1.4;color:#31505f}
+.home-pillars{padding:62px 0 72px;background:#fff}.home-pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.home-pillar{min-height:280px;border:1px solid #e0e8e8;border-radius:24px;padding:26px;background:#fff;display:flex;flex-direction:column;box-shadow:0 8px 25px rgba(10,34,51,.035)}.home-pillar h2{font-size:28px;color:var(--dna-ink);letter-spacing:-.035em;margin:12px 0 10px}.home-pillar p{line-height:1.62;color:#5d6e7d;margin:0 0 20px}.home-pillar>a{margin-top:auto;color:#0a7b73;font-weight:800}.home-pillar-explore{background:linear-gradient(145deg,#f4fbf9,#fff)}.home-pillar-match{background:linear-gradient(145deg,#f7fafc,#fff)}.home-asset-chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 18px}.home-asset-chips span{font-size:11px;font-weight:800;color:#35645e;background:#eaf6f3;border-radius:999px;padding:6px 9px}
+
+/* Assessment — question first. Decorative background is intentionally faint. */
+.assessment-page-v2{position:relative;min-height:calc(100vh - 76px);padding:40px 0 62px;background:linear-gradient(180deg,#f7fbfb,#f7f8f8)}
+.assessment-page-v2:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 23%,rgba(95,170,184,.12),transparent 24%),radial-gradient(circle at 88% 75%,rgba(19,157,143,.09),transparent 26%);pointer-events:none}
+.assessment-page-v2 .assessment-container{position:relative;z-index:1;max-width:1180px}
+.assessment-intro-v2,.assessment-recovery,.assessment-loading{max-width:770px;margin-inline:auto}
+.assessment-question-layout{display:grid;grid-template-columns:minmax(0,760px) minmax(230px,1fr);gap:44px;align-items:center}
+.question-shell-v2{padding:32px 38px 30px;border-radius:26px;border-color:#dce8e7;box-shadow:0 18px 48px rgba(7,26,52,.065)}
+.question-header-v2{align-items:center}.question-header-v2 .question-count{font-size:14px;color:#263d52;font-weight:800;margin:0}.question-percent{background:none;padding:0;color:#34506a;font-size:13px}
+.question-shell-v2 progress{height:7px;margin-top:2px;border-radius:99px;overflow:hidden}.question-shell-v2 .question-title{font-size:38px;line-height:1.15;letter-spacing:-.045em;color:var(--dna-ink);margin:32px 0 24px;max-width:650px}.question-hint-top{margin:-12px 0 18px;color:#71808d}
+.question-shell-v2 .question-options{gap:11px}.question-shell-v2 .option{position:relative;padding:16px 18px;gap:14px;border-radius:14px;color:#243b51;border-color:#dce4e8;background:rgba(255,255,255,.95)}.question-shell-v2 .option:hover{border-color:#80c4bc;background:#f8fcfb}.question-shell-v2 .option.active{border-color:#15a091;background:#eef9f7;box-shadow:0 0 0 1px rgba(21,160,145,.12) inset}.option-indicator{width:20px;height:20px;flex:0 0 20px;border-radius:50%;border:2px solid #aab9c5;position:relative}.option.active .option-indicator{border-color:#12978a}.option.active .option-indicator:after{content:"";position:absolute;inset:4px;border-radius:50%;background:#12978a}
+.question-shell-v2 .question-actions{margin-top:27px;padding-top:20px;border-top:1px solid #e9eeee}.question-shell-v2 .question-actions .btn{min-height:48px}.question-shell-v2 .question-actions .btn.primary{min-width:170px;gap:12px}.question-research-code{margin-top:4px}
+.dna-journey{min-height:570px;display:grid;place-items:center;opacity:.96}.dna-journey-inner{width:100%;max-width:270px;text-align:center}.dna-journey svg{display:block;width:100%;height:auto;filter:drop-shadow(0 10px 24px rgba(12,112,104,.05))}.dna-strand{fill:none;stroke:url(#dnaFadeA);stroke-width:10;stroke-linecap:round}.dna-rung{stroke:#8abeb9;stroke-width:8;stroke-linecap:round;opacity:.18;transition:all .42s cubic-bezier(.2,.8,.2,1)}.dna-rung-active{stroke:#18b6a6;stroke-width:10;opacity:1}.dna-marker-halo{fill:#42d6c7;opacity:.14;transition:all .42s cubic-bezier(.2,.8,.2,1)}.dna-marker{fill:#12a092;stroke:#fff;stroke-width:3;transition:all .42s cubic-bezier(.2,.8,.2,1)}.dna-journey p{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#82929d;font-weight:800;margin:2px 0 0}

@@ -1,0 +1,100 @@
+name: Deployed Preview Canary
+
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: Exact deployed Vercel URL to test
+        required: true
+        type: string
+      commit_sha:
+        description: Git commit SHA deployed at that URL
+        required: true
+        type: string
+
+jobs:
+  preview-canary:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'deployment_status' &&
+        github.event.deployment_status.state == 'success' &&
+        github.event.deployment.ref == 'codex/integration-product-risk-platform-v1'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || inputs.commit_sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: npm
+      - run: npm ci
+      - name: Confirm Chrome
+        run: test -x /usr/bin/google-chrome
+      - name: Run deployed flow on exact successful preview
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          DEPLOYMENT_STATUS_URL: ${{ github.event.deployment_status.target_url }}
+          MANUAL_PREVIEW_URL: ${{ inputs.preview_url }}
+          EXPECTED_DEPLOYED_SHA: ${{ github.event_name == 'deployment_status' && github.event.deployment.sha || inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${VERCEL_AUTOMATION_BYPASS_SECRET}" ]; then
+            echo "Missing VERCEL_AUTOMATION_BYPASS_SECRET GitHub Actions secret"
+            exit 2
+          fi
+
+          if [ "${GITHUB_EVENT_NAME}" = "deployment_status" ]; then
+            TEST_ORIGIN="${DEPLOYMENT_STATUS_URL}"
+          else
+            TEST_ORIGIN="${MANUAL_PREVIEW_URL}"
+          fi
+
+          TEST_ORIGIN="${TEST_ORIGIN%/}"
+          if [ -z "${TEST_ORIGIN}" ]; then
+            echo "No exact deployment URL was supplied by the successful deployment event."
+            exit 2
+          fi
+          case "${TEST_ORIGIN}" in
+            https://*.vercel.app) ;;
+            *)
+              echo "Refusing to run protected-preview canary against a non-Vercel origin."
+              exit 2
+              ;;
+          esac
+          export TEST_ORIGIN
+
+          checked_out_sha=$(git rev-parse HEAD)
+          if [ "${checked_out_sha}" != "${EXPECTED_DEPLOYED_SHA}" ]; then
+            echo "Checked-out SHA does not match the deployment SHA."
+            echo "expected=${EXPECTED_DEPLOYED_SHA} actual=${checked_out_sha}"
+            exit 1
+          fi
+
+          echo "Testing successful deployment for commit: ${EXPECTED_DEPLOYED_SHA}"
+          echo "Deployment origin: ${TEST_ORIGIN}"
+
+          header_code=$(curl -sSL             -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}"             -H "x-vercel-set-bypass-cookie: true"             -o /tmp/header-preview.html             -w '%{http_code}'             "${TEST_ORIGIN}/dna/assessment" || true)
+
+          query_code=$(curl -sSL             --get             --data-urlencode "x-vercel-protection-bypass=${VERCEL_AUTOMATION_BYPASS_SECRET}"             -o /tmp/query-preview.html             -w '%{http_code}'             "${TEST_ORIGIN}/dna/assessment" || true)
+
+          echo "Automation bypass diagnostics: header=${header_code}, query=${query_code}"
+
+          if [ "${header_code}" != "200" ] && [ "${query_code}" != "200" ]; then
+            echo "Automation bypass was not accepted by Vercel"
+            exit 1
+          fi
+
+          export VERCEL_BYPASS_MODE="header"
+          if [ "${header_code}" != "200" ] && [ "${query_code}" = "200" ]; then
+            export VERCEL_BYPASS_MODE="query"
+          fi
+
+          node tests/run-deployed-preview-canary.cjs

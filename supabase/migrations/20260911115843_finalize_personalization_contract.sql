@@ -1,0 +1,1 @@
+comment on table public.investment_context is 'Current investment context and optional personal display fields for the Investor DNA report. These fields do not change DNA scoring.';

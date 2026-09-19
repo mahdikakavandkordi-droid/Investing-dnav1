@@ -1,0 +1,137 @@
+"use client";
+
+import {useEffect,useState} from 'react';
+import type {FormEvent} from 'react';
+import Link from 'next/link';
+import {supabase,rpc,pilot} from '@/lib/supabase';
+import {clearDraft,hasCompleteInvestmentContext,normalizePersonalization,readClaimTicket,readDraft} from '@/lib/dna';
+import type {AppState,ClaimTicket,MatchItem,PersonalizationProfile} from '@/lib/dna';
+import {displayArchetype} from '@/lib/dna-presentation';
+import {useAccount} from '@/lib/use-account';
+import {validId} from '@/lib/investments';
+import {getInstrument,instrumentWatchlist,saveInstrument} from '@/lib/instruments';
+import {trackProductEvent} from '@/lib/analytics';
+import type {Instrument,SavedInstrument} from '@/lib/instruments';
+
+export default function Profile(){
+ const {user,loading:authLoading}=useAccount();
+ const [state,setState]=useState<AppState|null>(null);
+ const [pending,setPending]=useState<ClaimTicket|null>(null);
+ const [items,setItems]=useState<SavedInstrument[]>([]);
+ const [intent,setIntent]=useState<Instrument|null>(null);
+ const [intentId,setIntentId]=useState<string|null>(null);
+ const [loading,setLoading]=useState(true);
+ const [busy,setBusy]=useState(false);
+ const [email,setEmail]=useState('');
+ const [sentTo,setSentTo]=useState('');
+ const [cooldown,setCooldown]=useState(0);
+ const [message,setMessage]=useState('');
+ const [error,setError]=useState('');
+ const [listError,setListError]=useState('');
+ const [retry,setRetry]=useState(0);
+ const [autoSave,setAutoSave]=useState(false);
+
+ useEffect(()=>{const url=new URL(location.href);setAutoSave(url.searchParams.get('save')==='dna');const fragment=new URLSearchParams(location.hash.slice(1));const authError=fragment.get('error_description')||url.searchParams.get('error_description');if(authError){setError(friendlyAuthError(authError));const clean=new URL(location.href);clean.searchParams.delete('error');clean.searchParams.delete('error_code');clean.searchParams.delete('error_description');clean.hash='';history.replaceState(history.state,'',clean.pathname+clean.search)}const id=url.searchParams.get('investment');if(!validId(id))return;setIntentId(id);let active=true;getInstrument(id).then(data=>{if(active)setIntent(data)}).catch(()=>{if(active)setError('Could not load the investment you wanted to save.')});return()=>{active=false}},[]);
+ useEffect(()=>{if(!user||!location.hash)return;const fragment=new URLSearchParams(location.hash.slice(1));const authKeys=['access_token','refresh_token','expires_in','expires_at','token_type','type','error','error_code','error_description'];if(!authKeys.some(key=>fragment.has(key)))return;const url=new URL(location.href);history.replaceState(history.state,'',url.pathname+url.search)},[user?.id]);
+ useEffect(()=>{if(cooldown<=0)return;const timer=window.setInterval(()=>setCooldown(v=>Math.max(0,v-1)),1000);return()=>window.clearInterval(timer)},[cooldown]);
+ useEffect(()=>{let active=true;setState(null);setItems([]);setListError('');setLoading(true);const draft=readDraft(user?.id||null);const claim=readClaimTicket()||(draft?.result&&!draft.result.account_linked?{version:1 as const,createdAt:draft.createdAt,session:draft.session,personalization:draft.personalization}:null);setPending(claim);if(authLoading)return;if(!user){setLoading(false);return}rpc<AppState>('get_current_investor_app_state').then(data=>{if(active)setState(data)}).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});instrumentWatchlist().then(data=>{if(active)setItems(data.items)}).catch(e=>{if(active)setListError(e.message)});return()=>{active=false}},[user?.id,authLoading,retry]);
+ useEffect(()=>{if(autoSave&&user&&pending&&!busy){setAutoSave(false);void claimAssessment()}},[autoSave,user?.id,pending?.session.assessment_id]);
+
+ async function requestMagicLink(){if(!supabase||busy||cooldown>0)return;const address=email.trim();if(!address)return;setBusy(true);setError('');setMessage('');try{const redirect=new URL('/profile',location.origin);if(intentId)redirect.searchParams.set('investment',intentId);if(pending)redirect.searchParams.set('save','dna');const {error:authError}=await supabase.auth.signInWithOtp({email:address,options:{shouldCreateUser:true,emailRedirectTo:redirect.toString(),data:pending?.personalization||undefined}});if(authError)throw authError;setSentTo(address);setCooldown(60);setMessage('Use the newest email link only. Keep this tab open while you check your inbox.');void trackProductEvent('secure_link_requested',{metadata:{source:intentId?'investment_intent':pending?'dna_claim':'profile'}})}catch(e){const raw=e instanceof Error?e.message:'Unable to send an email link.';setError(friendlyAuthError(raw));if(/rate limit|too many/i.test(raw))setCooldown(60)}finally{setBusy(false)}}
+ async function sendMagicLink(event:FormEvent){event.preventDefault();await requestMagicLink()}
+ function changeEmail(){setSentTo('');setMessage('');setError('')}
+ async function claimAssessment(){if(!pending||!user||busy)return;setBusy(true);setError('');setMessage('');try{if(pending.personalization&&supabase){const {error:metaError}=await supabase.auth.updateUser({data:pending.personalization});if(metaError)throw metaError}const result=await pilot<{claimed:boolean}>('claim_assessment',pending.session);if(!result.claimed)throw new Error('The service has not confirmed saving your DNA.');clearDraft();setPending(null);setMessage('Your Investor DNA is saved to your dashboard.');setRetry(v=>v+1)}catch(e){setError(e instanceof Error?e.message:'Unable to save this DNA right now.')}finally{setBusy(false)}}
+ async function saveIncomingInvestment(){if(!intent||!user||busy)return;setBusy(true);setError('');try{const result=await saveInstrument(intent.id);if(!result.item)throw new Error('Saving was not confirmed.');setMessage(`${intent.symbol||intent.name} is saved to your watchlist.`);void trackProductEvent('watchlist_saved',{investment_id:intent.id,metadata:{source:'profile_intent'}});setRetry(v=>v+1)}catch(e){setError(e instanceof Error?e.message:'Unable to save this investment.')}finally{setBusy(false)}}
+ async function signOut(){if(!supabase||busy)return;setBusy(true);try{const {error:authError}=await supabase.auth.signOut({scope:'local'});if(authError)throw authError;clearDraft();setPending(null);setState(null);setItems([]);setMessage('You have signed out.')}catch(e){setError(e instanceof Error?e.message:'Unable to sign out.')}finally{setBusy(false)}}
+
+ const intentSaved=items.some(item=>item.investment_id===intent?.id);
+ const closest:MatchItem|undefined=state?.matches?.top_matches?.[0]||state?.matches?.alternatives?.[0]||state?.matches?.results?.find(item=>item.eligibility==='eligible')||state?.matches?.results?.[0];
+ const personal=normalizePersonalization(user?.user_metadata)||personalFromState(state);
+ return <section className={user?'profile-page dashboard-page':'profile-page'}><div className={user?'container dashboard-container':'container narrow'}>{error&&<div className="notice dashboard-alert" role="alert"><p>{error}</p>{user&&<button className="btn" onClick={()=>{setError('');setRetry(v=>v+1)}}>Retry</button>}</div>}{authLoading||loading?<div className="card"><p role="status">Loading your Investor DNA…</p></div>:user?<SignedInDashboard email={user.email||''} personal={personal} intent={intent} intentSaved={intentSaved} pending={pending} state={state} items={items} listError={listError} closest={closest} busy={busy} onSaveIntent={()=>void saveIncomingInvestment()} onClaim={()=>void claimAssessment()} onRetryList={()=>setRetry(v=>v+1)} onSignOut={()=>void signOut()}/>:<SignedOutCard email={email} sentTo={sentTo} cooldown={cooldown} busy={busy} message={message} pending={pending} onEmail={setEmail} onSubmit={sendMagicLink} onResend={()=>void requestMagicLink()} onChangeEmail={changeEmail}/>} {user&&message&&<p className="notice dashboard-message" role="status">{message}</p>}</div></section>;
+}
+
+function SignedInDashboard({email,personal,intent,intentSaved,pending,state,items,listError,closest,busy,onSaveIntent,onClaim,onRetryList,onSignOut}:{email:string;personal:PersonalizationProfile|null;intent:Instrument|null;intentSaved:boolean;pending:ClaimTicket|null;state:AppState|null;items:SavedInstrument[];listError:string;closest?:MatchItem;busy:boolean;onSaveIntent:()=>void;onClaim:()=>void;onRetryList:()=>void;onSignOut:()=>void}){
+ const dna=state?.dna;const context=state?.report?.investment_context||dna?.investment_context;const contextComplete=hasCompleteInvestmentContext(context);const archetype=dna?.archetype?displayArchetype(dna.archetype):'Investor DNA';const matchStatus=state?.matches?.status;const numericMatch=matchStatus==='available'&&closest?.match_score!=null;const firstName=personal?.first_name;
+ return <><MobileDashboardHome personal={personal} state={state} items={items} closest={closest} intent={intent} intentSaved={intentSaved} busy={busy} onSaveIntent={onSaveIntent}/><div className="dashboard-reference-shell"><aside className="dashboard-reference-rail" aria-label="Dashboard navigation"><span className="rail-title">My workspace</span><Link className="active" href="/profile">⌂ Dashboard</Link><Link href="/dna/result">⌬ My DNA</Link><Link href="/dna/context?returnTo=/profile">◎ My goal</Link><Link href="/watchlist">♡ Watchlist</Link><Link href="/compare">⇄ Compare</Link></aside><div className="dashboard-reference-main"><header className="dashboard-hero"><div><div className="eyebrow">My Investor DNA</div><h1>{firstName?`Welcome back, ${firstName}`:'Your research workspace'}</h1><p>Same discipline. A brighter tomorrow. Your DNA stays steady while goals and research evolve around it.</p></div><div className="dashboard-account"><span>Signed in as</span><strong>{email}</strong><button className="dashboard-signout" disabled={busy} onClick={onSignOut}>Sign out</button></div></header>
+ {intent&&<div className="dashboard-intent"><div><span className="dashboard-kicker">Save intent</span><strong>{intent.symbol||intent.name}</strong><p>{intentSaved?'Already in your watchlist.':'Your research intent is still intact.'}</p></div><div className="actions compact">{!intentSaved&&<button className="btn primary" disabled={busy} onClick={onSaveIntent}>Save to watchlist</button>}<Link className="btn" href={'/investment/'+intent.id}>Open research</Link></div></div>}
+ {pending&&<div className="dashboard-intent dashboard-claim"><div><span className="dashboard-kicker">DNA ready</span><strong>Save your completed report</strong><p>Attach this assessment to your account so it remains available in your dashboard.</p></div><button className="btn primary" disabled={busy} onClick={onClaim}>{busy?'Saving…':'Save my DNA'}</button></div>}
+ <div className="dashboard-grid"><section className="dashboard-card dashboard-dna"><div className="dashboard-card-head"><div><span className="dashboard-kicker">My Investor DNA</span><h2>{dna?archetype:'Not connected yet'}</h2></div><span className={dna?'status-dot complete':'status-dot'}>{dna?'Saved':'Start'}</span></div>{dna?<><p>{personal?.age?`Age ${personal.age} · `:''}Your personal research profile is saved and does not change just because you add a different investment goal.</p><div className="dashboard-stats"><div><span>Risk tolerance</span><strong>{formatScore(dna.risk_tolerance)}</strong></div><div><span>Risk capacity</span><strong>{formatScore(dna.risk_capacity)}</strong></div></div><div className="dashboard-card-actions"><Link className="btn primary" href="/dna/result">View full report</Link><Link className="text-link" href="/dna/assessment?fresh=1">Retake assessment →</Link></div></>:<><p>Complete the assessment to create your personal Investor DNA report.</p><Link className="btn primary" href="/dna/assessment">Start Investing DNA</Link></>}</section>
+ <section className="dashboard-card dashboard-context"><div className="dashboard-card-head"><div><span className="dashboard-kicker">Current investment goal</span><h2>{contextComplete?contextLabel(context?.goal):'Put your DNA into action'}</h2></div><span className={contextComplete?'status-dot complete':'status-dot'}>{contextComplete?'Connected':'Add goal'}</span></div>{contextComplete?<><p>{horizonLabel(context?.time_horizon)}{context?.amount_to_invest!=null?` · CAD ${Number(context.amount_to_invest).toLocaleString()}`:''}</p><div className="context-chips">{context?.liquidity_need&&<span>{context.liquidity_need.replaceAll('_',' ')} liquidity</span>}</div><div className="dashboard-card-actions"><Link className="btn" href="/dna/context?returnTo=/profile">Edit goal</Link><Link className="text-link" href="/dna/result">View applied report →</Link></div></>:<><p>Add a goal, horizon, access need and principal-protection choice. Your name, age and personal DNA stay with the report.</p><Link className="btn primary" href="/dna/context?returnTo=/profile">Add investment goal</Link></>}</section>
+ <section className="dashboard-card dashboard-match"><div className="dashboard-card-head"><div><span className="dashboard-kicker">DNA Match</span><h2>{numericMatch?`${closest?.symbol} · ${Math.round(closest!.match_score!)}/100`:matchStatus==='context_required'?'Goal context needed':matchStatus==='review_required'?'Review required':dna?'Compatibility workspace':'Connect DNA first'}</h2></div></div><MatchDashboardCopy matchStatus={matchStatus} closest={closest} hasDna={!!dna}/></section>
+ <section className="dashboard-card dashboard-watchlist"><div className="dashboard-card-head"><div><span className="dashboard-kicker">Saved research</span><h2>{items.length} saved investment{items.length===1?'':'s'}</h2></div><Link className="text-link" href="/watchlist">View all →</Link></div><SavedInvestments items={items} listError={listError} onRetry={onRetryList}/></section></div>
+ <section className="dashboard-continue"><div><span className="dashboard-kicker">Your journey continues</span><h2>Explore more opportunities.</h2><p>Explore investments, compare options and build your watchlist around the research that matters to you.</p></div><div className="dashboard-quick-links"><Link href="/explore">Explore <span>Cross-asset research</span></Link><Link href="/screener">ETF Screener <span>Filter the ETF universe</span></Link><Link href="/compare">Compare <span>Side-by-side research</span></Link><Link href="/match">DNA Match <span>Compatibility, not a recommendation</span></Link></div></section></div></div></>;
+}
+
+function MobileDashboardHome({personal,state,items,closest,intent,intentSaved,busy,onSaveIntent}:{personal:PersonalizationProfile|null;state:AppState|null;items:SavedInstrument[];closest?:MatchItem;intent:Instrument|null;intentSaved:boolean;busy:boolean;onSaveIntent:()=>void}){
+ const dna=state?.dna;
+ const context=state?.report?.investment_context||dna?.investment_context;
+ const contextComplete=hasCompleteInvestmentContext(context);
+ const archetype=dna?.archetype?displayArchetype(dna.archetype):'Your Investor DNA';
+ const matchAvailable=state?.matches?.status==='available'&&closest?.match_score!=null;
+ const firstName=personal?.first_name;
+ return <div className="mobile-dashboard-home">
+  <header className="mobile-home-greeting">
+   <div className="eyebrow">Investing DNA</div>
+   <h1>{firstName?`Good to see you, ${firstName}`:'Your investing workspace'}</h1>
+   <p>Know yourself. Research with context.</p>
+  </header>
+
+  {intent&&<section className="mobile-home-intent">
+   <div>
+    <span className="mobile-card-kicker">Save research</span>
+    <strong>{intent.symbol||intent.name}</strong>
+    <small>{intentSaved?'Already saved to your watchlist.':'Keep this research connected to your account.'}</small>
+   </div>
+   <div className="mobile-home-intent-actions">
+    {!intentSaved&&<button className="btn primary" disabled={busy} onClick={onSaveIntent}>{busy?'Saving…':'Save to watchlist'}</button>}
+    <Link className="btn" href={'/investment/'+intent.id}>Open research</Link>
+   </div>
+  </section>}
+
+  <Link className="mobile-dna-summary" href={dna?'/dna/result':'/dna/assessment'}>
+   <div className="mobile-dna-summary-copy">
+    <span className="mobile-card-kicker">Your Investor DNA</span>
+    <h2>{dna?archetype:'Build your profile'}</h2>
+    <p>{dna?'Your personal risk and decision profile is ready to use across the platform.':'Complete 28 questions to create your personal Investor DNA.'}</p>
+   </div>
+   <div className="mobile-dna-orbit" aria-hidden="true"><span>{dna?formatScore(dna.risk_tolerance).replace('/100',''):'DNA'}</span><small>{dna?'risk':'start'}</small></div>
+   <span className="mobile-card-arrow" aria-hidden="true">→</span>
+  </Link>
+
+  <div className="mobile-home-snapshot">
+   <Link href={contextComplete?'/dna/context?returnTo=/profile':'/dna/context?returnTo=/profile'}>
+    <span>Current goal</span>
+    <strong>{contextComplete?contextLabel(context?.goal):'Add context'}</strong>
+    <small>{contextComplete?horizonLabel(context?.time_horizon):'Goal · horizon · access need'}</small>
+   </Link>
+   <Link href="/match">
+    <span>DNA Match</span>
+    <strong>{matchAvailable?`${Math.round(closest!.match_score!)}%`:state?.matches?.status==='review_required'?'Review':'Open'}</strong>
+    <small>{matchAvailable?(closest?.symbol||closest?.name||'Closest fit'):'Compatibility research'}</small>
+   </Link>
+  </div>
+
+  <section className="mobile-home-section">
+   <div className="mobile-home-section-head"><div><span className="mobile-card-kicker">Quick actions</span><h2>Pick up where you left off</h2></div></div>
+   <div className="mobile-action-list">
+    <Link href={dna?'/dna/result':'/dna/assessment'}><span className="mobile-action-icon">⌁</span><span><strong>{dna?'View my DNA':'Start my DNA'}</strong><small>{dna?'Your report and key signals':'28 focused questions'}</small></span><b>›</b></Link>
+    <Link href="/explore"><span className="mobile-action-icon">⌕</span><span><strong>Explore investments</strong><small>ETFs, GICs, T-Bills and bonds</small></span><b>›</b></Link>
+    <Link href="/watchlist"><span className="mobile-action-icon">♡</span><span><strong>Saved research</strong><small>{items.length?`${items.length} saved investment${items.length===1?'':'s'}`:'Nothing saved yet'}</small></span><b>›</b></Link>
+   </div>
+  </section>
+
+  {items.length>0&&<section className="mobile-home-section mobile-saved-preview">
+   <div className="mobile-home-section-head"><div><span className="mobile-card-kicker">Watchlist</span><h2>Saved for later</h2></div><Link href="/watchlist">View all</Link></div>
+   <div className="mobile-saved-list">{items.slice(0,3).map(item=><Link key={item.investment_id} href={'/investment/'+item.investment_id}><span className="mobile-saved-symbol">{item.symbol||'Fund'}</span><span><strong>{item.name}</strong><small>Saved research</small></span><b>›</b></Link>)}</div>
+  </section>}
+ </div>;
+}
+
+function MatchDashboardCopy({matchStatus,closest,hasDna}:{matchStatus?:string;closest?:MatchItem;hasDna:boolean}){if(!hasDna)return <><p>Complete Investor DNA before using personal ETF compatibility.</p><Link className="btn primary" href="/dna/assessment">Start assessment</Link></>;if(matchStatus==='available'&&closest)return <><p>{closest.name||closest.symbol} is currently the closest research compatibility in your eligible ETF set. This is not a recommendation.</p><Link className="btn primary" href="/match">Open DNA Match</Link></>;if(matchStatus==='context_required')return <><p>Numeric scores stay hidden until this money has a goal, horizon, access need and principal-protection choice.</p><Link className="btn primary" href="/dna/context?returnTo=/profile">Add goal context</Link></>;if(matchStatus==='review_required')return <><p>A safety or data-review gate is active, so ranked numeric results are paused.</p><Link className="btn primary" href="/match">Review Match status</Link></>;return <><p>Your DNA is connected. Open Match to continue compatibility research.</p><Link className="btn primary" href="/match">Open DNA Match</Link></>}
+function SavedInvestments({items,listError,onRetry}:{items:SavedInstrument[];listError:string;onRetry:()=>void}){if(listError)return <div className="dashboard-inline-error"><p>{listError}</p><button className="btn" onClick={onRetry}>Retry watchlist</button></div>;if(!items.length)return <><p>No saved investments yet. Save from any investment page and it will stay here.</p><Link className="btn" href="/explore">Explore investments</Link></>;return <div className="dashboard-saved-list">{items.slice(0,3).map(item=><Link key={item.investment_id} href={'/investment/'+item.investment_id}><strong>{item.symbol||item.name}</strong><span>{item.name}</span></Link>)}</div>}
+function SignedOutCard({email,sentTo,cooldown,busy,message,pending,onEmail,onSubmit,onResend,onChangeEmail}:{email:string;sentTo:string;cooldown:number;busy:boolean;message:string;pending:ClaimTicket|null;onEmail:(value:string)=>void;onSubmit:(event:FormEvent)=>void;onResend:()=>void;onChangeEmail:()=>void}){return <div className="card auth-card"><div className="eyebrow">My Investor DNA</div><h1>{pending?'Save your Investor DNA':'Create your free account or sign in'}</h1>{sentTo?<div className="auth-sent"><h2>Check your email</h2><p>We sent a secure sign-in link to <strong>{sentTo}</strong>.</p><div className="auth-browser-note"><strong>Keep this tab open.</strong><p>Open the newest sign-in link on this same device and browser. If your mail app opens it somewhere else, copy the link and paste it into this browser.</p></div><div className="auth-sent-actions"><button type="button" className="btn primary" disabled={busy||cooldown>0} onClick={onResend}>{busy?'Sending…':cooldown>0?`Send again in ${cooldown}s`:'Send a new link'}</button><button type="button" className="btn" disabled={busy} onClick={onChangeEmail}>Use a different email</button></div></div>:<form onSubmit={onSubmit}><p>{pending?'Use your email to attach the completed report to your dashboard.':'Use a secure email link — no password required.'}</p><label className="context-field"><span>Email address</span><input type="email" autoComplete="email" required value={email} onChange={e=>onEmail(e.target.value)} placeholder="you@example.com"/></label><button className="btn primary" disabled={busy||cooldown>0}>{busy?'Sending…':cooldown>0?`Try again in ${cooldown}s`:'Email me a secure link'}</button></form>}{message&&<p className="notice" role="status">{message}</p>}</div>}
+function formatScore(value?:number){return typeof value==='number'?`${Math.round(value)}/100`:'—'}
+function contextLabel(value:string|null|undefined){const map:Record<string,string>={growth:'Long-term growth',retirement:'Retirement',house_purchase:'Home purchase',major_purchase:'Major purchase',education:'Education',income:'Investment income',wealth_preservation:'Wealth preservation',emergency_reserve:'Emergency reserve'};return value?map[value]||value.replaceAll('_',' '):'Investment goal'}
+function horizonLabel(value:string|null|undefined){const map:Record<string,string>={lt_1y:'Less than 1 year','1_3y':'1–3 years','3_5y':'3–5 years','5_10y':'5–10 years',gt_10y:'10+ years'};return value?map[value]||value.replaceAll('_',' '):'Horizon not set'}
+function friendlyAuthError(value:string){if(/expired|otp/i.test(value))return 'That sign-in link has expired. Request a new secure link.';if(/rate limit|too many/i.test(value))return 'Too many email attempts. Wait a minute and try again.';return value}
+function personalFromState(state:AppState|null):PersonalizationProfile|null{const context=state?.report?.investment_context||state?.dna?.investment_context;return normalizePersonalization({first_name:context?.first_name,age:context?.age})}

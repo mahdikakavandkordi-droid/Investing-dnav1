@@ -1,0 +1,2 @@
+alter table public.report_snapshots drop constraint if exists report_snapshots_assessment_id_report_version_model_version_key;
+alter table public.report_snapshots add constraint report_snapshots_assessment_id_report_version_model_version_key unique (assessment_id, report_version, model_version);

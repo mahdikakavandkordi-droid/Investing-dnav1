@@ -1,0 +1,1 @@
+comment on column public.investment_context.first_name is 'Optional first name used only to personalize the user-facing Investor DNA report';

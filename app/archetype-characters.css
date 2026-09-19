@@ -1,0 +1,47 @@
+/* Approved nine-zone Investor DNA character illustrations.
+   This file only sizes the matched character shown by the existing report hero. */
+
+.dna-hero-v2 .dna-character{
+  width:356px!important;
+  height:210px!important;
+  right:28px!important;
+  bottom:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  border-radius:18px!important;
+  box-shadow:0 14px 30px rgba(16,42,67,.10)!important;
+  background:#edf6f7!important;
+}
+.dna-hero-v2 .dna-character img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  object-fit:cover!important;
+  border-radius:18px!important;
+  opacity:1!important;
+  position:static!important;
+  filter:none!important;
+}
+
+@media(max-width:760px){
+  .dna-hero-v2 .dna-character{
+    width:250px!important;
+    height:148px!important;
+    right:12px!important;
+    bottom:14px!important;
+    border-radius:15px!important;
+  }
+  .dna-hero-v2 .dna-character img{border-radius:15px!important}
+}
+
+@media(max-width:480px){
+  .dna-hero-v2 .dna-character{
+    width:220px!important;
+    height:130px!important;
+    right:8px!important;
+    bottom:10px!important;
+  }
+}

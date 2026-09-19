@@ -1,0 +1,1 @@
+alter table public.investment_context add column if not exists first_name text;
