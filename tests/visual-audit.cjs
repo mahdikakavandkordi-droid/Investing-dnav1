@@ -163,6 +163,7 @@ async function installMocks(ctx){
    if(body.action==='claim_assessment')return send({claimed:true});
    if(body.action==='submit_feedback')return send({saved:true});
   }
+  if(url.includes('/rest/v1/rpc/app_search_investments'))return send([vbalInstrument]);
   if(url.includes('/rest/v1/rpc/app_search_instruments'))return send([
    {id:'a414ecb2-e63f-4127-8009-ea9471723cb9',symbol:'VGRO',name:'Vanguard Growth ETF Portfolio',asset_type:'ETF',issuer_name:'Vanguard Canada',currency:'CAD',mer_pct:.22,equity_pct:80,fixed_income_pct:20,liquidity_level:'high',price_volatility:'low',profile_management_style:'passive',diversification_level:'high',profile_summary:'A growth-oriented one-ticket portfolio with broad global equity exposure and a smaller bond allocation.'},
    {id:'34ebca65-b84e-4e2d-9395-072abb447fcc',symbol:'RBC-GIC-1Y-CASH',name:'RBC 1-Year Cashable GIC',asset_type:'GIC',issuer_name:'Royal Bank of Canada',currency:'CAD',deposit_rate_pct:1.95,term_months:12,redeemability:'redeemable',deposit_insurance_eligible:true,deposit_insurance_scheme:'CDIC',capital_protection:'insured_deposit',liquidity_level:'medium',price_volatility:'none',description:'A one-year cashable GIC reference product designed to preserve principal while allowing earlier access subject to product terms.'},
@@ -186,8 +187,17 @@ async function shot(page,name){
  await page.screenshot({path:path.join(OUT,name+'.png'),fullPage:true});
 }
 
+async function assertMobileShell(page,activeLabel){
+ assert.equal(await page.locator('.mobile-app-nav-item').count(),5);
+ assert.ok(await page.locator('.mobile-app-nav').isVisible());
+ assert.ok(await page.locator('.mobile-app-header').isVisible());
+ assert.equal(await page.getByRole('link',{name:activeLabel,exact:true}).getAttribute('aria-current'),'page');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+}
+
 async function runViewport(browser,label,viewport){
  contextReady=false;
+ const mobile=label==='mobile';
  const ctx=await browser.newContext({viewport,deviceScaleFactor:1});
  await installMocks(ctx);
  const page=await ctx.newPage();
@@ -199,11 +209,29 @@ async function runViewport(browser,label,viewport){
  await shot(page,label+'-01-home');
 
  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
- await page.getByRole('heading',{name:/Research different structures without the jargon\./}).waitFor();
+ await page.getByRole('heading',{name:mobile?'Explore':/Research different structures without the jargon\./}).waitFor();
+ if(mobile){
+  const exploreCard=page.locator('.investment-card-v2').first();
+  await exploreCard.waitFor();
+  const box=await exploreCard.boundingBox();
+  assert.ok(box&&box.height<360);
+  assert.ok(await page.locator('.explore-tabs-v2').isVisible());
+ }
  await shot(page,label+'-01b-explore');
 
  await page.goto(ORIGIN+'/investment/'+matchItem.investment_id,{waitUntil:'networkidle'});
  await page.getByRole('heading',{name:'Vanguard Balanced ETF Portfolio',exact:true}).waitFor();
+ if(mobile){
+  assert.ok((await page.locator('.mobile-research-summary').count())>=5);
+  assert.equal(await page.locator('.mobile-research-disclosure-body').first().isVisible(),false);
+  await page.locator('.mobile-research-summary').first().click();
+  assert.equal(await page.locator('.mobile-research-disclosure-body').first().isVisible(),true);
+  await page.locator('.mobile-research-summary').first().click();
+ }else{
+  await page.getByRole('heading',{name:'How this ETF is allocated',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'How this investment behaves under risk',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'What we actually know about this fund',exact:true}).waitFor();
+ }
  await shot(page,label+'-01c-investment-detail');
 
  await page.goto(ORIGIN+'/investment/'+gicInstrument.id,{waitUntil:'networkidle'});
@@ -230,6 +258,12 @@ async function runViewport(browser,label,viewport){
  await page.getByRole('button',{name:'Start as guest'}).click();
 
  await page.getByText('Question 1 of 4',{exact:true}).waitFor();
+ if(mobile){
+  assert.equal(await page.locator('.mobile-app-nav').count(),0);
+  assert.ok(await page.locator('.mobile-app-header').isVisible());
+  assert.equal(await page.locator('.platform-nav:visible').count(),0);
+  assert.equal(await page.locator('footer.section:visible').count(),0);
+ }
  await shot(page,label+'-03-question-1-step-1');
  await page.getByRole('button',{name:'Moderate ups and downs',exact:true}).click();
  await page.getByRole('button',{name:'Next',exact:true}).click();
@@ -274,8 +308,71 @@ async function runViewport(browser,label,viewport){
  await page.goto(ORIGIN+'/',{waitUntil:'domcontentloaded'});
  await page.evaluate(({key,value})=>localStorage.setItem(key,JSON.stringify(value)),{key:'sb-bxjjannguzzzqsamnhem-auth-token',value:session});
  await page.goto(ORIGIN+'/profile',{waitUntil:'domcontentloaded'});
- await page.getByRole('heading',{name:/Welcome back, Mahdi/}).waitFor();
+ await page.getByRole('heading',{name:mobile?/Good to see you, Mahdi/:/Welcome back, Mahdi/}).waitFor();
  await shot(page,label+'-10-dashboard');
+
+ if(mobile){
+  await assertMobileShell(page,'Home');
+
+  await page.goto(ORIGIN+'/match',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your ETF matches',exact:true}).waitFor();
+  await assertMobileShell(page,'DNA');
+  await shot(page,label+'-11-match');
+
+  await page.goto(ORIGIN+'/compare',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Compare investments',exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-12-compare');
+
+  await page.goto(ORIGIN+'/screener',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'ETF Screener',exact:true}).waitFor();
+  await page.getByText('1 ETF shown',{exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-13-screener');
+
+  await page.goto(ORIGIN+'/watchlist',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your watchlist',exact:true}).waitFor();
+  await assertMobileShell(page,'Watchlist');
+  await shot(page,label+'-14-watchlist');
+
+  // Exercise signed-out edge states without changing product data contracts.
+  await page.evaluate(key=>localStorage.removeItem(key),'sb-bxjjannguzzzqsamnhem-auth-token');
+  await page.goto(ORIGIN+'/watchlist',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your watchlist',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'A place to come back to',exact:true}).waitFor();
+  await assertMobileShell(page,'Watchlist');
+  await shot(page,label+'-14b-watchlist-signed-out');
+
+  await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
+  await page.getByRole('heading',{name:'Save your DNA when it becomes useful.',exact:true}).waitFor();
+  await assertMobileShell(page,'Profile');
+  await shot(page,label+'-14c-account-signed-out');
+
+  await page.goto(ORIGIN+'/profile',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:/Save your Investor DNA|Create your free account or sign in/}).waitFor();
+  assert.ok(await page.locator('.auth-card').isVisible());
+  await assertMobileShell(page,'Home');
+  await shot(page,label+'-14d-profile-signed-out');
+
+  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
+  await page.getByLabel('Search investments').fill('zz-no-such-investment');
+  await page.getByRole('heading',{name:'No investments match that search',exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-14e-explore-empty');
+
+  await page.goto(ORIGIN+'/investment/not-a-valid-id',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Could not load this investment',exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-14f-investment-invalid');
+
+  // Restore the authenticated session for the account-state visual.
+  await page.evaluate(({key,value})=>localStorage.setItem(key,JSON.stringify(value)),{key:'sb-bxjjannguzzzqsamnhem-auth-token',value:session});
+  await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
+  await assertMobileShell(page,'Profile');
+  await shot(page,label+'-15-account');
+ }
 
  assert.deepEqual(errors,[]);
  await ctx.close();

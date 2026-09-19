@@ -9,9 +9,9 @@ const PILLARS:[string,string][]=[
 
 /** Investing DNA assessment overview. Keep this page neutral so it does not prime assessment answers. */
 export default function DNA(){
- return <section className="section">
-  <div className="container">
-   <div className="eyebrow">Investing DNA</div>
+ return <section className="section dna-entry-page">
+  <div className="container dna-entry-shell">
+   <div className="dna-entry-hero"><div className="eyebrow">Investing DNA</div>
    <h1>See how you handle risk before choosing what to invest in.</h1>
    <p className="muted" style={{maxWidth:760,fontSize:18}}>
     The assessment looks at four different parts of your investing profile. There is no “best” result and no score you should try to maximize.
@@ -21,16 +21,16 @@ export default function DNA(){
     <span>No account required</span>
     <span>Save your result only if you want</span>
    </div>
-   <DnaEntryActions/>
+   <DnaEntryActions/></div>
 
-   <div className="grid2" style={{marginTop:38}}>
-    {PILLARS.map(([title,copy])=><div className="card" key={title}>
+   <div className="grid2 dna-pillar-grid" style={{marginTop:38}}>
+    {PILLARS.map(([title,copy])=><div className="card dna-pillar-card" key={title}>
      <h3>{title}</h3>
      <p className="muted">{copy}</p>
     </div>)}
    </div>
 
-   <div className="home-belief">
+   <div className="home-belief dna-entry-belief">
     <div className="home-belief-mark">✦</div>
     <div>
      <strong>Your archetype is a summary, not a verdict.</strong>

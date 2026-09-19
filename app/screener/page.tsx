@@ -110,13 +110,11 @@ export default function Screener(){
   });
  }
 
- return <section className="section">
+ return <section className="section screener-page-v2">
   <div className="container">
    <div className="eyebrow">ETF Screener · DNA-powered</div>
-   <h1>Find ETFs, then see how they relate to you</h1>
-   <p className="muted">
-    This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.
-   </p>
+   <h1><span className="desktop-screener-title">Find ETFs, then see how they relate to you</span><span className="mobile-screener-title">ETF Screener</span></h1>
+   <p className="muted"><span className="desktop-screener-copy">This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.</span><span className="mobile-screener-copy">Filter ETFs by the facts that matter, then add your DNA compatibility when it is available.</span></p>
 
    <MatchStatus
     matchReady={matchReady}
@@ -280,19 +278,19 @@ function ScreenerTable({
   <tbody>{rows.map(fund=>{
    const match=matches.get(fund.symbol);
    return <tr key={fund.id}>
-    <td><input
+    <td data-label="Compare"><input
      aria-label={`Select ${fund.symbol} for comparison`}
      type="checkbox"
      checked={selected.includes(fund.id)}
      disabled={!selected.includes(fund.id)&&selected.length>=3}
      onChange={()=>onToggle(fund.id)}
     /></td>
-    <td><b>{fund.symbol}</b> · {fund.name}</td>
-    <td>{fund.risk_level||'Not available'}</td>
-    <td><FitCell match={match} matchReady={matchReady} matchStatus={matchStatus}/></td>
-    <td>{formatMetric(fund.return_1y_pct,'%')}</td>
-    <td>{formatMetric(fund.mer_pct,'%')}</td>
-    <td><Link className="btn" href={'/investment/'+fund.id}>View ETF</Link></td>
+    <td data-label="ETF"><b>{fund.symbol}</b> · {fund.name}</td>
+    <td data-label="Official risk">{fund.risk_level||'Not available'}</td>
+    <td data-label="DNA fit"><FitCell match={match} matchReady={matchReady} matchStatus={matchStatus}/></td>
+    <td data-label="1-year return">{formatMetric(fund.return_1y_pct,'%')}</td>
+    <td data-label="MER">{formatMetric(fund.mer_pct,'%')}</td>
+    <td data-label="Details"><Link className="btn" href={'/investment/'+fund.id}>View ETF</Link></td>
    </tr>;
   })}</tbody>
  </table>;

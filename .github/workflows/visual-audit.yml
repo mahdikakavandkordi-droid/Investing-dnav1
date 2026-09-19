@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - codex/integration-product-risk-platform-v1
+      - codex/mobile-app-v1
     paths:
       - 'app/**'
       - 'components/**'
@@ -27,6 +28,12 @@ jobs:
           node-version: 22.18.0
           cache: npm
       - run: npm ci
+      - name: Run merge-readiness checks
+        run: |
+          npm test
+          npm run test:risk
+          npm run test:hygiene
+          npm run typecheck
       - name: Build app
         run: npm run build
       - name: Start local production app

@@ -55,10 +55,10 @@ export default function Explore(){
     <div className="eyebrow">Explore investments</div>
     <div className="explore-hero-row">
      <div>
-      <h1>Research different structures without the jargon.</h1>
-      <p>Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</p>
+      <h1><span className="desktop-explore-title">Research different structures without the jargon.</span><span className="mobile-explore-title">Explore</span></h1>
+      <p><span className="desktop-explore-copy">Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</span><span className="mobile-explore-copy">Find investments, scan the key facts and open the research that matters to you.</span></p>
      </div>
-     <Link className="btn" href="/compare">Compare investments</Link>
+     <Link className="btn" href="/compare">Compare investments</Link><Link className="mobile-explore-compare" href="/compare">Compare</Link>
     </div>
 
     <label className="explore-search-v2">

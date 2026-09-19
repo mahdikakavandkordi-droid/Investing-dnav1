@@ -139,16 +139,16 @@ export default function Matches(){
 function MatchHero(){
  return <div className="match-dna-hero">
   <div className="eyebrow">DNA Match · ETFs</div>
-  <h1>See how your DNA lines up with ETFs</h1>
-  <p>We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</p>
+  <h1><span className="desktop-match-title">See how your DNA lines up with ETFs</span><span className="mobile-match-title">Your ETF matches</span></h1>
+  <p><span className="desktop-match-copy">We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</span><span className="mobile-match-copy">See which ETFs align more closely with your DNA and the context for this money.</span></p>
   <p className="fine muted">A higher score means closer research compatibility with the inputs shown on this page — not a better investment, a return forecast, or a recommendation to buy.</p>
  </div>;
 }
 
 function LoadingState(){
- return <div className="card">
-  <h2>Building your matches…</h2>
-  <p className="muted">Comparing your Investor DNA with the current verified ETF research universe.</p>
+ return <div className="card mobile-match-loading" role="status">
+  <div className="mobile-loading-line wide"/><div className="mobile-loading-line"/><div className="mobile-loading-line short"/>
+  <span>Building your matches…</span>
  </div>;
 }
 
@@ -227,6 +227,7 @@ function MatchContent({
 }
 
 function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfile;goalLens?:string}){
+ const [open,setOpen]=useState(false);
  const rows=[
   ['Goal',formatInvestmentContext('goal',context.goal)],
   ['Time horizon',formatInvestmentContext('time_horizon',context.time_horizon)],
@@ -234,22 +235,30 @@ function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfil
   ['Principal protection',formatInvestmentContext('principal_required',context.principal_required)]
  ];
 
- return <section className="card">
-  <div className="eyebrow">What this Match is using</div>
-  <h2>Your money context</h2>
-  <p className="muted">These answers affect the ETF comparison below. They do not change your underlying Investor DNA.</p>
-  <div className="grid2 section compact">
-   {rows.map(([label,value])=><div className="fingerprint" key={label}>
-    <span>{label}</span>
-    <strong>{value}</strong>
-   </div>)}
-  </div>
-  {goalLens&&<div className="notice">
-   <strong>How this goal changes Match</strong>
-   <p>{goalLens}</p>
-  </div>}
-  <div className="actions compact">
-   <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
+ return <section className={open?"card match-context-disclosure open":"card match-context-disclosure"}>
+  <button type="button" className="match-context-summary" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
+   <span><span className="eyebrow">What this Match is using</span><strong>Your money context</strong></span>
+   <span className="match-context-summary-meta">4 inputs <b aria-hidden="true">+</b></span>
+  </button>
+  <div className="match-context-body">
+   <div className="match-context-desktop-heading">
+    <div className="eyebrow">What this Match is using</div>
+    <h2>Your money context</h2>
+    <p className="muted">These answers affect the ETF comparison below. They do not change your underlying Investor DNA.</p>
+   </div>
+   <div className="grid2 section compact">
+    {rows.map(([label,value])=><div className="fingerprint" key={label}>
+     <span>{label}</span>
+     <strong>{value}</strong>
+    </div>)}
+   </div>
+   {goalLens&&<div className="notice match-goal-lens">
+    <strong>How this goal changes Match</strong>
+    <p>{goalLens}</p>
+   </div>}
+   <div className="actions compact">
+    <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
+   </div>
   </div>
  </section>;
 }

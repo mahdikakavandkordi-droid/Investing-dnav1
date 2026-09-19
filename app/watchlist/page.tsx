@@ -40,7 +40,7 @@ export default function Watchlist(){
  return <main className="watchlist-page-v2">
   <div className="container watchlist-container-v2">
    <header className="watchlist-hero-v2">
-    <div><div className="eyebrow">Saved research</div><h1>Your watchlist</h1><p>Keep the investments you want to revisit in one quiet research workspace.</p></div>
+    <div><div className="eyebrow">Saved research</div><div className="watchlist-title-row"><h1>Your watchlist</h1>{user&&!authLoading&&!loading&&<span className="mobile-watch-count">{items.length} saved</span>}</div><p>Keep the investments you want to revisit in one quiet research workspace.</p></div>
     <Link className="btn primary" href="/explore">Explore investments</Link>
    </header>
 

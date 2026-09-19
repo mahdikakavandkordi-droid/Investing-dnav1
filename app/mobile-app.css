@@ -1,0 +1,1212 @@
+/* Mobile app experience layer
+   Mobile keeps the same Investing DNA brand and product contracts, but uses
+   app-like navigation, denser information hierarchy and touch-first spacing. */
+
+.mobile-app-nav{display:none}
+
+@media(max-width:760px){
+ :root{--mobile-nav-h:66px;--mobile-safe:env(safe-area-inset-bottom,0px)}
+
+ body:has(.mobile-app-nav){
+  padding-bottom:calc(var(--mobile-nav-h) + var(--mobile-safe));
+  background:#f5f8f8;
+ }
+ body:has(.mobile-app-header) .platform-nav{display:none!important}
+ body:has(.mobile-app-header) footer.section{display:none!important}
+
+ .mobile-app-nav{
+  display:block;
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:100;
+  border-top:1px solid rgba(213,227,227,.96);
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  padding-bottom:var(--mobile-safe);
+  box-shadow:0 -10px 28px rgba(16,42,67,.07);
+ }
+ .mobile-app-nav-inner{
+  height:var(--mobile-nav-h);
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  max-width:560px;
+  margin:auto;
+  padding:5px 8px 4px;
+ }
+ .mobile-app-nav-item{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  color:#7a8b96;
+  font-size:10px;
+  font-weight:720;
+  border-radius:12px;
+  transition:.16s ease;
+ }
+ .mobile-app-nav-item svg{display:block}
+ .mobile-app-nav-item.active{color:#087f78}
+ .mobile-app-nav-item.active:before{
+  content:"";
+  position:absolute;
+  margin-top:-42px;
+  width:22px;height:3px;
+  border-radius:999px;
+  background:#0d9488;
+ }
+ .mobile-app-nav-item:active{background:#eef7f5}
+
+ /* Shared app shell */
+ body:has(.mobile-app-nav) main{min-height:calc(100svh - var(--mobile-nav-h) - var(--mobile-safe))}
+ body:has(.mobile-app-nav) .container{padding-left:14px;padding-right:14px}
+ body:has(.mobile-app-nav) .btn{min-height:44px;border-radius:12px}
+
+ /* Home / signed-in workspace */
+ .profile-page.dashboard-page{padding:14px 0 24px!important;background:linear-gradient(180deg,#f8fbfb,#f3f7f7)!important}
+ .dashboard-container{padding:0 12px!important}
+ .dashboard-reference-shell{display:block!important}
+ .dashboard-reference-rail{display:none!important}
+ .dashboard-reference-main{gap:11px!important}
+ .dashboard-hero{
+  display:block!important;
+  margin:0 2px 4px!important;
+  padding:8px 2px 2px;
+ }
+ .dashboard-hero .eyebrow{color:#0d9488}
+ .dashboard-hero h1{font-size:29px!important;letter-spacing:-.045em!important;margin:5px 0 5px!important}
+ .dashboard-hero>div>p{font-size:12px!important;line-height:1.45!important;color:#71838d!important}
+ .dashboard-account{display:none!important}
+ .dashboard-intent{padding:15px!important;border-radius:15px!important}
+ .dashboard-grid{gap:10px!important}
+ .dashboard-card{
+  border-radius:17px!important;
+  padding:17px!important;
+  gap:11px!important;
+  box-shadow:0 8px 24px rgba(16,42,67,.045)!important;
+ }
+ .dashboard-card-head h2{font-size:21px!important}
+ .dashboard-card>p{font-size:12px!important}
+ .dashboard-stats{gap:7px!important}
+ .dashboard-stats>div{padding:10px!important}
+ .dashboard-card-actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .dashboard-card-actions .btn,.dashboard-card>.btn{width:100%!important}
+ .dashboard-card-actions .text-link{text-align:center;padding:7px 0}
+ .dashboard-continue{display:none!important}
+
+ /* Assessment: remove decorative vertical real estate; keep one focused task. */
+ .assessment-page-v2{padding:10px 0 18px!important;background:#f5f8f8!important}
+ .assessment-container{padding:0 10px!important}
+ .assessment-question-layout{display:block!important}
+ .assessment-question-layout>.dna-journey{display:none!important}
+ .question-shell-v2{
+  min-height:calc(100svh - var(--mobile-nav-h) - var(--mobile-safe) - 20px);
+  padding:18px 16px 90px!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+ }
+ .question-header-v2{align-items:center!important;margin-bottom:8px!important}
+ .question-count{font-size:12px!important}
+ .question-percent{background:#e7f6f3!important;color:#087f78!important;padding:5px 8px!important}
+ .question-shell-v2 progress{height:5px!important}
+ .question-title{font-size:24px!important;line-height:1.22!important;margin:21px 0 17px!important}
+ .question-options{gap:9px!important}
+ .question-options .option{
+  min-height:54px;
+  padding:13px 14px!important;
+  border-radius:13px!important;
+  font-size:14px!important;
+  line-height:1.36!important;
+ }
+ .question-options .option.active{background:#edf9f6!important}
+ .question-actions{
+  position:sticky!important;
+  bottom:calc(var(--mobile-nav-h) + var(--mobile-safe) + 6px);
+  z-index:4;
+  margin:18px -4px 0!important;
+  padding:8px 4px 2px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),#fff 24%);
+ }
+ .question-actions .btn.primary{box-shadow:0 8px 20px rgba(8,127,120,.18)}
+ .assessment-intro-v2{margin-top:3px!important}
+
+ /* Explore: list-first, swipeable filters, less desktop-card feel. */
+ .explore-page-v2{background:#f5f8f8!important}
+ .explore-hero-v2{padding:18px 0 12px!important;background:#fff!important;border-bottom:1px solid #e8efef}
+ .explore-hero-row{display:block!important}
+ .explore-hero-row h1{font-size:30px!important;line-height:1.04!important;margin:6px 0 7px!important}
+ .explore-hero-row p{font-size:13px!important;line-height:1.5!important;margin:0 0 14px!important}
+ .explore-hero-row>.btn{display:none!important}
+ .explore-search-v2{margin-top:12px!important;border-radius:13px!important}
+ .explore-tabs-v2{
+  overflow-x:auto!important;
+  display:flex!important;
+  gap:7px!important;
+  margin:12px -14px 0!important;
+  padding:0 14px 4px!important;
+  scrollbar-width:none;
+ }
+ .explore-tabs-v2::-webkit-scrollbar{display:none}
+ .explore-tabs-v2 button{flex:0 0 auto!important;min-height:36px!important;padding:8px 12px!important}
+ .explore-catalog-v2{padding:12px 0 22px!important}
+ .explore-catalog-head{align-items:flex-start!important;gap:8px!important}
+ .explore-catalog-head>div span{display:none!important}
+ .explore-catalog-head>.pill{font-size:10px!important}
+ .explore-grid-v2{grid-template-columns:1fr!important;gap:9px!important}
+ .investment-card-v2{border-radius:16px!important;padding:15px!important;box-shadow:none!important}
+ .investment-card-copy h2{font-size:17px!important;margin:10px 0 3px!important}
+ .investment-card-copy>p:last-child{font-size:12px!important;line-height:1.45!important}
+ .investment-card-metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+ .investment-card-metrics>div{padding:9px 8px!important}
+ .investment-card-footer{margin-top:12px!important}
+ .investment-card-footer>span{display:none!important}
+ .investment-card-footer a{
+  width:100%;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:11px;
+  background:#102f46;
+  color:#fff!important;
+ }
+
+ /* Investment detail: summary first; one-column research cards. */
+ .investment-detail-page-v2{padding:12px 0 24px!important;background:#f5f8f8!important}
+ .investment-detail-container-v2{padding:0 12px!important}
+ .detail-back-link{display:inline-flex!important;margin:2px 2px 10px!important;font-size:12px!important}
+ .detail-hero-v2{display:block!important;padding:18px!important;border-radius:18px!important}
+ .detail-hero-copy-v2 h1{font-size:27px!important;line-height:1.08!important;margin:9px 0 5px!important}
+ .detail-summary-v2{font-size:13px!important;line-height:1.5!important}
+ .detail-hero-actions-v2{margin-top:14px!important}
+ .detail-hero-actions-v2 .btn{width:100%!important}
+ .detail-key-facts-v2{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .detail-stat-v2{padding:12px!important;border-radius:14px!important}
+ .detail-flow-v2{gap:10px!important}
+ .detail-flow-v2>*,.fund-research-details-v2{border-radius:17px!important}
+ .fund-research-grid-v2{grid-template-columns:1fr!important}
+
+ /* Watchlist: rows instead of wide desktop cards. */
+ .watchlist-page-v2{padding:16px 0 24px!important;background:#f5f8f8!important}
+ .watchlist-container-v2{padding:0 12px!important}
+ .watchlist-hero-v2{display:block!important;margin-bottom:13px!important}
+ .watchlist-hero-v2 h1{font-size:30px!important;margin:5px 0!important}
+ .watchlist-hero-v2 p{font-size:13px!important;line-height:1.45!important}
+ .watchlist-hero-v2>.btn{display:none!important}
+ .watchlist-grid-v2{grid-template-columns:1fr!important;gap:8px!important}
+ .watchlist-card-v2{
+  min-height:0!important;
+  border-radius:15px!important;
+  padding:14px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+  align-items:center!important;
+ }
+ .watchlist-card-v2 h2{font-size:15px!important;margin:7px 0 2px!important}
+ .watchlist-card-v2 p{font-size:11px!important;margin:0!important}
+ .watchlist-card-actions-v2{display:grid!important;gap:5px!important;text-align:right!important}
+ .watchlist-card-actions-v2 a{font-size:11px!important}
+ .watchlist-card-actions-v2 button{font-size:10px!important}
+
+ /* Account */
+ .mobile-account-page{padding:16px 0 26px;background:#f5f8f8}
+ .mobile-account-shell{padding:0 14px;max-width:560px;margin:auto}
+ .mobile-account-hero{padding:8px 2px 14px}
+ .mobile-account-hero h1{font-size:30px;line-height:1.05;letter-spacing:-.045em;margin:6px 0 7px;color:#102a43}
+ .mobile-account-hero p{margin:0;color:#71838d;font-size:13px;line-height:1.45}
+ .mobile-account-card,.mobile-account-menu{background:#fff;border:1px solid #deeaE9;border-radius:17px;box-shadow:0 7px 22px rgba(16,42,67,.04)}
+ .mobile-account-card{padding:18px;margin-bottom:10px;display:grid;gap:6px}
+ .mobile-account-card strong{font-size:17px;color:#15374c;overflow-wrap:anywhere}
+ .mobile-account-card p{margin:0;color:#6a7e89;font-size:12px;line-height:1.5}
+ .mobile-account-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#0d9488;font-weight:850}
+ .mobile-account-menu{overflow:hidden;margin-bottom:10px}
+ .mobile-account-menu a{min-height:51px;padding:0 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #edf2f1;color:#234657;font-size:13px;font-weight:760}
+ .mobile-account-menu a:last-child{border-bottom:0}
+ .mobile-account-menu b{font-size:20px;color:#7f949d}
+ .mobile-account-signout{width:100%;background:#fff;color:#536b78}
+}
+
+
+/* Milestone 2 — dedicated mobile product surfaces */
+.mobile-dashboard-home,
+.mobile-explore-title,
+.mobile-explore-copy,
+.mobile-explore-compare,
+.mobile-detail-actions,
+.mobile-watch-count{display:none}
+
+@media(max-width:760px){
+ /* Home is a real mobile dashboard, not a stacked desktop workspace. */
+ .mobile-dashboard-home{display:block;padding:2px 0 8px}
+ .profile-page.dashboard-page .dashboard-reference-rail,
+ .profile-page.dashboard-page .dashboard-hero,
+ .profile-page.dashboard-page .dashboard-grid,
+ .profile-page.dashboard-page .dashboard-continue{display:none!important}
+ .profile-page.dashboard-page .dashboard-reference-shell{display:block!important}
+ .profile-page.dashboard-page .dashboard-reference-main{display:block!important}
+ .profile-page.dashboard-page .dashboard-intent{margin:0 0 10px!important}
+
+ .mobile-home-greeting{padding:8px 3px 13px}
+ .mobile-home-greeting h1{
+  margin:5px 0 4px;
+  color:#102a43;
+  font-size:29px;
+  line-height:1.04;
+  letter-spacing:-.045em;
+ }
+ .mobile-home-greeting p{margin:0;color:#71838d;font-size:12px;line-height:1.45}
+ .mobile-card-kicker{
+  display:block;
+  color:#0b8b82;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+ }
+
+ .mobile-dna-summary{
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 72px;
+  gap:12px;
+  align-items:center;
+  min-height:168px;
+  padding:19px 17px;
+  border:1px solid #d7e8e6;
+  border-radius:20px;
+  background:
+   radial-gradient(circle at 93% 18%,rgba(13,148,136,.15),transparent 27%),
+   linear-gradient(135deg,#fff 0%,#f4fbf9 100%);
+  box-shadow:0 10px 28px rgba(16,42,67,.055);
+ }
+ .mobile-dna-summary:after{
+  content:"";
+  position:absolute;
+  right:-30px;
+  bottom:-44px;
+  width:175px;
+  height:118px;
+  border:12px solid rgba(13,148,136,.08);
+  border-left-color:transparent;
+  border-bottom-color:transparent;
+  border-radius:50%;
+  transform:rotate(-18deg);
+ }
+ .mobile-dna-summary-copy{position:relative;z-index:2}
+ .mobile-dna-summary h2{margin:6px 0 7px;color:#12364b;font-size:24px;line-height:1.06;letter-spacing:-.035em}
+ .mobile-dna-summary p{margin:0;color:#637985;font-size:12px;line-height:1.5}
+ .mobile-dna-orbit{
+  position:relative;
+  z-index:2;
+  width:68px;
+  height:68px;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border:6px solid #d8efeb;
+  border-top-color:#0d9488;
+  border-right-color:#0d9488;
+  background:#fff;
+  color:#15374c;
+  box-shadow:0 5px 15px rgba(16,42,67,.06);
+ }
+ .mobile-dna-orbit span{font-size:20px;line-height:1;font-weight:850;letter-spacing:-.04em}
+ .mobile-dna-orbit small{margin-top:3px;font-size:8px;color:#72858e;text-transform:uppercase;letter-spacing:.07em}
+ .mobile-card-arrow{position:absolute;right:13px;bottom:11px;color:#0d9488;font-weight:900}
+
+ .mobile-home-snapshot{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0}
+ .mobile-home-snapshot>a{
+  min-width:0;
+  display:grid;
+  gap:4px;
+  padding:14px;
+  border:1px solid #e0eaea;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(16,42,67,.035);
+ }
+ .mobile-home-snapshot span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#778a93;font-weight:800}
+ .mobile-home-snapshot strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#17394d;font-size:16px}
+ .mobile-home-snapshot small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#71848e;font-size:10px}
+
+ .mobile-home-section{
+  margin-top:10px;
+  padding:16px;
+  border:1px solid #e0eaea;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 7px 22px rgba(16,42,67,.035);
+ }
+ .mobile-home-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+ .mobile-home-section-head h2{margin:4px 0 0;color:#17394d;font-size:18px;letter-spacing:-.025em}
+ .mobile-home-section-head>a{color:#087f78;font-size:11px;font-weight:820}
+ .mobile-action-list,.mobile-saved-list{display:grid}
+ .mobile-action-list>a,.mobile-saved-list>a{
+  display:grid;
+  align-items:center;
+  border-top:1px solid #edf2f1;
+ }
+ .mobile-action-list>a:first-child,.mobile-saved-list>a:first-child{border-top:0}
+ .mobile-action-list>a{
+  grid-template-columns:36px minmax(0,1fr) auto;
+  gap:10px;
+  min-height:60px;
+ }
+ .mobile-action-icon{
+  width:34px;height:34px;border-radius:11px;
+  display:grid;place-items:center;
+  background:#eaf7f4;color:#087f78;
+  font-size:18px;font-weight:850;
+ }
+ .mobile-action-list>a>span:nth-child(2),.mobile-saved-list>a>span:nth-child(2){display:grid;gap:2px;min-width:0}
+ .mobile-action-list strong,.mobile-saved-list strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#18394b;font-size:12px}
+ .mobile-action-list small,.mobile-saved-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7a8c95;font-size:10px}
+ .mobile-action-list b,.mobile-saved-list b{color:#87a0a7;font-size:19px;font-weight:500}
+
+ .mobile-saved-preview{padding-bottom:8px}
+ .mobile-saved-list>a{grid-template-columns:52px minmax(0,1fr) auto;gap:9px;min-height:55px}
+ .mobile-saved-symbol{
+  display:grid;place-items:center;
+  width:48px;height:30px;
+  border-radius:9px;
+  background:#102f46;
+  color:#fff;
+  font-size:10px;
+  font-weight:850;
+ }
+
+ /* DNA tab entry: concise intro + swipeable pillars. */
+ .dna-entry-page{padding:16px 0 24px!important;background:#f5f8f8}
+ .dna-entry-shell{padding:0 12px!important}
+ .dna-entry-hero{
+  padding:19px 17px;
+  border:1px solid #dce9e8;
+  border-radius:19px;
+  background:linear-gradient(145deg,#fff,#f3faf8);
+  box-shadow:0 7px 24px rgba(16,42,67,.04);
+ }
+ .dna-entry-hero h1{font-size:31px;line-height:1.06;letter-spacing:-.045em;margin:7px 0 10px}
+ .dna-entry-hero>p{font-size:14px!important;line-height:1.5!important;margin-bottom:16px}
+ .dna-entry-hero .assessment-meta{margin:0 0 16px!important}
+ .dna-entry-hero .assessment-meta span{font-size:10px;padding:6px 8px}
+ .dna-entry-hero .actions{display:grid!important;grid-template-columns:1fr!important;margin-top:16px!important}
+ .dna-entry-hero .btn{width:100%}
+ .dna-pillar-grid{
+  display:flex!important;
+  gap:9px!important;
+  overflow-x:auto;
+  margin:12px -12px 0!important;
+  padding:0 12px 4px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+ }
+ .dna-pillar-grid::-webkit-scrollbar{display:none}
+ .dna-pillar-card{
+  flex:0 0 76vw;
+  max-width:310px;
+  min-height:145px;
+  scroll-snap-align:start;
+  padding:17px!important;
+  border-radius:17px!important;
+  box-shadow:none!important;
+ }
+ .dna-pillar-card h3{font-size:17px}
+ .dna-pillar-card p{font-size:12px;line-height:1.5!important}
+ .dna-entry-belief{margin-top:10px!important;padding:15px!important}
+ .dna-entry-belief strong{font-size:15px!important}
+ .dna-entry-belief p{font-size:12px!important}
+
+ /* Explore uses a short mobile title while preserving the richer desktop copy. */
+ .desktop-explore-title,.desktop-explore-copy{display:none}
+ .mobile-explore-title,.mobile-explore-copy{display:inline}
+ .explore-hero-row{position:relative;padding-right:66px}
+ .explore-hero-row h1{font-size:32px!important}
+ .explore-hero-row p{margin-bottom:6px!important}
+ .mobile-explore-compare{
+  display:inline-flex;
+  position:absolute;
+  right:0;
+  top:2px;
+  min-height:34px;
+  align-items:center;
+  padding:0 11px;
+  border:1px solid #d6e4e3;
+  border-radius:10px;
+  color:#17675f;
+  background:#fff;
+  font-size:11px;
+  font-weight:820;
+ }
+ .investment-card-top{align-items:center!important}
+ .research-state{font-size:9px!important}
+ .investment-card-copy{padding-right:4px}
+ .investment-card-copy .investment-card-issuer{font-size:10px!important}
+ .investment-card-metrics>div span{font-size:9px!important}
+ .investment-card-metrics>div strong{font-size:12px!important}
+
+ /* Detail is read-first with a persistent action dock above bottom navigation. */
+ .detail-hero-actions-v2{display:none!important}
+ .mobile-detail-actions{
+  position:sticky;
+  bottom:calc(var(--mobile-nav-h) + var(--mobile-safe) + 8px);
+  z-index:30;
+  display:grid;
+  grid-template-columns:1fr 1.25fr;
+  gap:8px;
+  margin:10px 0 12px;
+  padding:8px;
+  border:1px solid rgba(210,227,225,.95);
+  border-radius:16px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 12px 30px rgba(16,42,67,.12);
+ }
+ .mobile-detail-actions .btn{width:100%;min-height:43px}
+ .detail-key-facts-v2{margin-top:9px!important}
+ .detail-freshness-v2{margin:9px 3px!important;font-size:10px!important;line-height:1.45!important}
+
+ /* Watchlist is a saved-items utility, not a marketing page. */
+ .watchlist-title-row{display:flex;align-items:center;gap:8px}
+ .mobile-watch-count{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:0 8px;
+  border-radius:999px;
+  background:#e8f6f3;
+  color:#087f78;
+  font-size:10px;
+  font-weight:820;
+ }
+ .watchlist-title-row h1{margin-right:auto!important}
+ .watchlist-card-v2{background:#fff!important;border-color:#e0e9e9!important;box-shadow:0 5px 17px rgba(16,42,67,.03)!important}
+ .watchlist-card-actions-v2 button{border:0;background:transparent;color:#8a5960;padding:5px;cursor:pointer}
+}
+
+@media(max-width:390px){
+ .mobile-dna-summary{grid-template-columns:minmax(0,1fr) 62px;padding:17px 14px}
+ .mobile-dna-orbit{width:60px;height:60px;border-width:5px}
+ .mobile-home-snapshot{grid-template-columns:1fr}
+ .dna-pillar-card{flex-basis:82vw}
+}
+
+
+/* Milestone 3 — interaction polish, Match, Compare and Screener */
+.mobile-match-title,
+.mobile-match-copy,
+.mobile-compare-title,
+.mobile-compare-copy,
+.mobile-screener-title,
+.mobile-screener-copy{display:none}
+
+@keyframes mobile-skeleton-pulse{
+ 0%,100%{opacity:.52}
+ 50%{opacity:1}
+}
+
+@media(max-width:760px){
+ /* Touch feedback shared across the app. */
+ .mobile-app-nav-item,
+ .mobile-dna-summary,
+ .mobile-home-snapshot>a,
+ .mobile-action-list>a,
+ .mobile-saved-list>a,
+ .investment-card-v2,
+ .watchlist-card-v2,
+ .compare-card,
+ .match-dna-card{
+  -webkit-tap-highlight-color:transparent;
+ }
+ .mobile-dna-summary:active,
+ .mobile-home-snapshot>a:active,
+ .mobile-action-list>a:active,
+ .mobile-saved-list>a:active,
+ .investment-card-v2:active,
+ .watchlist-card-v2:active{
+  transform:scale(.992);
+ }
+ .mobile-dna-summary,
+ .mobile-home-snapshot>a,
+ .mobile-action-list>a,
+ .mobile-saved-list>a,
+ .investment-card-v2,
+ .watchlist-card-v2{
+  transition:transform .12s ease,box-shadow .16s ease,border-color .16s ease;
+ }
+
+ /* Match becomes a swipeable decision surface instead of a long desktop stack. */
+ .desktop-match-title,.desktop-match-copy{display:none}
+ .mobile-match-title,.mobile-match-copy{display:inline}
+ .match-dna-page{padding:17px 0 26px!important;background:#f5f8f8!important}
+ .match-dna-page>.container{padding:0 12px!important}
+ .match-dna-hero{margin:0 2px 13px!important}
+ .match-dna-hero h1{font-size:31px!important;line-height:1.04!important;margin:6px 0 7px!important}
+ .match-dna-hero>p{font-size:13px!important;line-height:1.48!important;margin-bottom:6px!important}
+ .match-dna-hero>.fine{font-size:10px!important;line-height:1.4!important}
+ .match-status-card,.match-context-nudge,.match-dna-page>.container>.card{
+  border-radius:17px!important;
+  padding:16px!important;
+  margin:10px 0!important;
+  box-shadow:0 6px 20px rgba(16,42,67,.035)!important;
+ }
+ .match-status-card h2{font-size:20px!important;margin:5px 0 7px!important}
+ .match-status-card p,.match-context-nudge p{font-size:12px!important;line-height:1.48!important}
+ .match-status-card .actions{display:grid!important;grid-template-columns:1fr!important;margin-top:12px!important}
+ .match-status-card .btn,.match-context-nudge .btn{width:100%!important}
+ .match-context-nudge{gap:12px!important}
+ .match-dna-page .card>.grid2{
+  grid-template-columns:1fr 1fr!important;
+  gap:0!important;
+  padding:5px 0!important;
+ }
+ .match-dna-page .fingerprint{display:grid!important;gap:2px!important;padding:10px 8px!important}
+ .match-dna-page .fingerprint span{font-size:9px!important}
+ .match-dna-page .fingerprint strong{font-size:11px!important}
+
+ .match-section{margin-top:18px!important}
+ .match-section>h2{font-size:21px!important;margin:5px 0 10px!important}
+ .match-dna-grid{
+  display:flex!important;
+  overflow-x:auto;
+  gap:10px!important;
+  margin:0 -12px!important;
+  padding:0 12px 7px!important;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+ }
+ .match-dna-grid::-webkit-scrollbar{display:none}
+ .match-dna-card{
+  flex:0 0 86vw;
+  max-width:350px;
+  min-height:0!important;
+  padding:17px!important;
+  border-radius:18px!important;
+  scroll-snap-align:start;
+  box-shadow:0 7px 22px rgba(16,42,67,.04)!important;
+ }
+ .match-dna-card h3{font-size:18px!important;margin:12px 0 8px!important}
+ .match-score strong{font-size:26px!important}
+ .match-breakdown{gap:5px!important;padding:10px 0!important}
+ .match-why,.match-watch{padding:10px!important}
+ .match-why p,.match-watch p,.match-change{font-size:11px!important}
+ .match-dna-card>.btn{width:100%!important}
+ .match-more-grid{gap:8px!important}
+ .match-mini-card{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:9px!important;
+  padding:13px!important;
+  border-radius:14px!important;
+ }
+ .match-mini-card h3{font-size:14px!important;margin:5px 0 2px!important}
+ .match-mini-card p{font-size:10px!important}
+ .match-mini-card>a{grid-column:1/-1!important;padding-top:4px}
+ .match-footer-actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important;margin-top:18px!important}
+ .match-footer-actions .btn{width:100%!important}
+
+ .mobile-match-loading{display:grid!important;gap:8px!important}
+ .mobile-match-loading span{margin-top:4px;color:#71838d;font-size:11px}
+ .mobile-loading-line{
+  height:12px;
+  width:72%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#e5efee,#f3f8f7,#e5efee);
+  animation:mobile-skeleton-pulse 1.15s ease-in-out infinite;
+ }
+ .mobile-loading-line.wide{height:19px;width:92%}
+ .mobile-loading-line.short{width:48%}
+
+ /* Compare: selection first, results as a horizontal snap rail. */
+ .compare-page-v2{padding:17px 0 26px!important;background:#f5f8f8!important}
+ .compare-page-v2>.container{padding:0 12px!important}
+ .desktop-compare-title,.desktop-compare-copy{display:none}
+ .mobile-compare-title,.mobile-compare-copy{display:inline}
+ .compare-page-v2 h1{font-size:31px;line-height:1.04;letter-spacing:-.045em;margin:6px 0 7px}
+ .compare-page-v2>div>p.muted{font-size:13px;line-height:1.48;margin-top:0}
+ .compare-picker{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;margin:14px 0 0!important}
+ .compare-picker label{
+  gap:5px!important;
+  padding:11px 12px;
+  border:1px solid #e0eaea;
+  border-radius:14px;
+  background:#fff;
+  font-size:10px!important;
+ }
+ .compare-picker .field{min-height:42px;border-radius:10px}
+ .compare-picker+.actions{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+  margin:9px 0 13px!important;
+ }
+ .compare-picker+.actions .btn{width:100%}
+ .compare-picker+.actions .btn:not(.primary){display:none}
+ .mobile-compare-rail{
+  display:flex!important;
+  grid-template-columns:none!important;
+  overflow-x:auto;
+  gap:10px!important;
+  margin:15px -12px 0!important;
+  padding:0 12px 9px!important;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+ }
+ .mobile-compare-rail::-webkit-scrollbar{display:none}
+ .mobile-compare-rail .compare-card{
+  flex:0 0 86vw;
+  max-width:355px;
+  scroll-snap-align:start;
+  border-radius:18px!important;
+  padding:17px!important;
+  box-shadow:0 7px 22px rgba(16,42,67,.04)!important;
+ }
+ .compare-card h2{font-size:18px!important;margin:9px 0 12px!important}
+ .compare-card h3{font-size:10px!important;margin:18px 0 6px!important}
+ .compare-metric{padding:8px 0!important;font-size:11px!important}
+ .compare-score{font-size:25px!important;margin:9px 0 2px!important}
+ .compare-fit-list{font-size:11px!important;line-height:1.42!important}
+ .compare-card>.btn{width:100%!important}
+ .compare-page-v2 .fine.muted{font-size:9px!important;line-height:1.45!important}
+
+ /* Screener: desktop table becomes readable card rows on phones. */
+ .screener-page-v2{padding:17px 0 26px!important;background:#f5f8f8!important}
+ .screener-page-v2>.container{padding:0 12px!important}
+ .desktop-screener-title,.desktop-screener-copy{display:none}
+ .mobile-screener-title,.mobile-screener-copy{display:inline}
+ .screener-page-v2 h1{font-size:31px;line-height:1.04;letter-spacing:-.045em;margin:6px 0 7px}
+ .screener-page-v2>div>p.muted{font-size:13px;line-height:1.48;margin:0 0 12px}
+ .screener-page-v2 .match-status-card,.screener-page-v2>.container>.notice{
+  border-radius:15px!important;
+  padding:13px!important;
+  margin:10px 0!important;
+ }
+ .screener-page-v2 .match-status-card p,.screener-page-v2>.container>.notice p{font-size:11px!important;line-height:1.45!important;margin:5px 0 0!important}
+
+ .screener-page-v2 .dna-toolbar{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:7px!important;
+  margin:11px 0!important;
+  padding:11px;
+  border:1px solid #e0eaea;
+  border-radius:16px;
+  background:#fff;
+ }
+ .screener-page-v2 .dna-toolbar label{gap:4px!important;font-size:9px!important}
+ .screener-page-v2 .dna-toolbar label:first-child{grid-column:1/-1}
+ .screener-page-v2 .dna-toolbar .field{min-height:40px;padding:9px 10px;border-radius:10px;font-size:12px}
+ .screener-page-v2 .dna-toolbar>button.primary{grid-column:1/-1;width:100%}
+ .screener-page-v2 .dna-toolbar>label:last-child{grid-column:1/-1}
+ .screener-page-v2 .dna-toolbar>label:last-child .btn{width:100%;min-height:40px;font-size:11px}
+ .screener-summary{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;margin:10px 2px!important}
+ .screener-summary p{margin:0!important;font-size:10px!important}
+ .screener-summary p:last-child{display:none}
+
+ .screener-page-v2 .table{
+  display:block!important;
+  border:0!important;
+  background:transparent!important;
+  overflow:visible!important;
+  white-space:normal!important;
+ }
+ .screener-page-v2 .table thead{display:none!important}
+ .screener-page-v2 .table tbody{display:grid!important;gap:8px!important}
+ .screener-page-v2 .table tr{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:0 12px;
+  padding:13px 14px!important;
+  border:1px solid #e0eaea!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  box-shadow:0 5px 17px rgba(16,42,67,.03)!important;
+ }
+ .screener-page-v2 .table td{
+  min-width:0;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:3px;
+  padding:8px 0!important;
+  border-bottom:1px solid #edf2f1!important;
+  text-align:left!important;
+  font-size:11px!important;
+ }
+ .screener-page-v2 .table td:before{
+  content:attr(data-label);
+  color:#7b8d96;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+ }
+ .screener-page-v2 .table td[data-label="ETF"]{
+  grid-column:1/-1;
+  font-size:13px!important;
+  color:#17394d;
+  order:-3;
+ }
+ .screener-page-v2 .table td[data-label="Compare"]{
+  grid-column:1/-1;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  border-bottom:0!important;
+  order:-4;
+  padding:0 0 3px!important;
+ }
+ .screener-page-v2 .table td[data-label="Compare"]:before{margin-right:auto}
+ .screener-page-v2 .table td[data-label="Details"]{
+  grid-column:1/-1;
+  border-bottom:0!important;
+  padding:9px 0 0!important;
+ }
+ .screener-page-v2 .table td[data-label="Details"] .btn{width:100%;min-height:40px}
+ .screener-page-v2 .table td:nth-last-child(2){border-bottom:0!important}
+ .dna-fit-cell{display:grid!important;gap:2px!important}
+ .dna-fit-cell strong{font-size:13px!important}
+ .dna-fit-cell small{font-size:9px!important;color:#71838d}
+
+ .selection-bar{
+  position:fixed!important;
+  left:10px;right:10px;
+  bottom:calc(var(--mobile-nav-h) + var(--mobile-safe) + 8px)!important;
+  z-index:70!important;
+  margin:0!important;
+  padding:9px 10px!important;
+  border-radius:16px!important;
+  box-shadow:0 12px 32px rgba(16,42,67,.16)!important;
+  background:rgba(255,255,255,.96)!important;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+ }
+ .selection-bar>span{font-size:10px}
+ .selection-bar .actions{display:flex!important;flex-direction:row!important;width:auto!important;gap:5px!important}
+ .selection-bar .btn{min-height:37px!important;padding:8px 10px!important;font-size:10px!important}
+
+ /* Empty and loading states should feel intentional rather than like desktop text. */
+ .watchlist-loading-v2,
+ .screener-page-v2>div>p:not(.muted),
+ .compare-page-v2>div>p:not(.muted){
+  padding:17px;
+  border:1px solid #e0eaea;
+  border-radius:15px;
+  background:#fff;
+  color:#71838d;
+  font-size:12px;
+ }
+ .watchlist-empty-v2{border-radius:18px!important;padding:28px 20px!important}
+ .watchlist-empty-v2 .actions{display:grid!important;grid-template-columns:1fr!important}
+ .watchlist-empty-v2 .btn{width:100%}
+
+ /* Keep tap animation accessible. */
+ @media(prefers-reduced-motion:reduce){
+  .mobile-dna-summary,
+  .mobile-home-snapshot>a,
+  .mobile-action-list>a,
+  .mobile-saved-list>a,
+  .investment-card-v2,
+  .watchlist-card-v2,
+  .mobile-app-nav-item{transition:none!important}
+  .mobile-loading-line{animation:none!important}
+ }
+}
+
+@media(max-width:390px){
+ .match-dna-card,.mobile-compare-rail .compare-card{flex-basis:89vw}
+ .screener-page-v2 .dna-toolbar{grid-template-columns:1fr!important}
+ .screener-page-v2 .dna-toolbar>*{grid-column:1!important}
+ .selection-bar{left:7px;right:7px}
+}
+
+
+/* Branded mobile top bar */
+.mobile-app-header{display:none}
+@media(max-width:760px){
+ .mobile-app-header{
+  display:block;
+  position:sticky;
+  top:0;
+  z-index:90;
+  background:rgba(255,255,255,.94);
+  border-bottom:1px solid rgba(220,233,232,.95);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+ }
+ .mobile-app-header-inner{
+  height:54px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 13px;
+  max-width:560px;
+  margin:auto;
+ }
+ .mobile-app-header .brand-lockup-live{
+  height:42px!important;
+  gap:6px!important;
+ }
+ .mobile-app-header .brand-dna-mark{width:21px!important;height:27px!important}
+ .mobile-app-header .brand-wordmark strong,
+ .mobile-app-header .brand-wordmark em{font-size:15px!important}
+ .mobile-app-profile-button{
+  width:34px;height:34px;
+  display:grid;place-items:center;
+  border:1px solid #dce8e7;
+  border-radius:50%;
+  color:#17394d;
+  background:#fff;
+ }
+ .mobile-app-profile-button:active{background:#eef7f5}
+ .mobile-app-header.focused .mobile-app-header-inner{justify-content:center}
+ .mobile-app-header.focused .brand-lockup-live{transform:scale(.94)}
+}
+
+
+/* Product-review pass — reduce mobile scroll and focus deep research */
+.mobile-research-disclosure{display:contents}
+.mobile-research-summary,
+.match-context-summary{display:none}
+.mobile-research-disclosure-body,
+.match-context-body{display:contents}
+
+@media(max-width:760px){
+ /* Assessment is an immersive task: no bottom app nav competing with answers. */
+ body:has(.assessment-page-v2){padding-bottom:var(--mobile-safe)!important}
+ body:has(.assessment-page-v2) .question-shell-v2{
+  min-height:calc(100svh - 54px - var(--mobile-safe) - 20px)!important;
+ }
+ body:has(.assessment-page-v2) .question-actions{
+  bottom:calc(var(--mobile-safe) + 8px)!important;
+ }
+
+ /* Deep fund research is progressive disclosure on mobile. */
+ .detail-flow-v2{
+  display:grid!important;
+  gap:8px!important;
+ }
+ .mobile-research-disclosure{
+  display:block!important;
+  border:1px solid #dce8e7;
+  border-radius:16px;
+  background:#fff;
+  overflow:hidden;
+  box-shadow:0 5px 18px rgba(16,42,67,.03);
+ }
+ .mobile-research-summary{
+  min-height:56px;
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 15px;
+  color:#17394d;
+  font-size:13px;
+  font-weight:850;
+  cursor:pointer;
+  list-style:none;
+ }
+ .mobile-research-summary::-webkit-details-marker{display:none}
+ .mobile-disclosure-icon{
+  width:26px;height:26px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#edf7f5;
+  color:#087f78;
+  font-size:18px;
+  font-weight:500;
+  transition:transform .16s ease;
+ }
+ .mobile-research-disclosure.open .mobile-disclosure-icon{transform:rotate(45deg)}
+ .mobile-research-disclosure:not(.open) > .mobile-research-disclosure-body{display:none!important}
+ .mobile-research-disclosure.open > .mobile-research-disclosure-body{
+  display:grid!important;
+  gap:8px;
+  padding:0 8px 8px;
+ }
+ .mobile-research-disclosure-body > *{
+  margin:0!important;
+  box-shadow:none!important;
+  border-radius:13px!important;
+ }
+ .mobile-research-disclosure-body .fund-research-details-v2{
+  border-top:0!important;
+ }
+ .mobile-detail-actions{margin-bottom:8px!important}
+
+ /* Match context is available on demand instead of occupying the first viewport. */
+ .match-context-disclosure{
+  display:block!important;
+  padding:0!important;
+  overflow:hidden;
+ }
+ .match-context-summary{
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:68px;
+  padding:12px 15px;
+  cursor:pointer;
+  list-style:none;
+ }
+ .match-context-summary::-webkit-details-marker{display:none}
+ .match-context-summary > span:first-child{
+  display:grid;
+  gap:4px;
+ }
+ .match-context-summary strong{
+  color:#17394d;
+  font-size:16px;
+  letter-spacing:-.02em;
+ }
+ .match-context-summary-meta{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#71838d;
+  font-size:9px;
+  font-weight:800;
+  white-space:nowrap;
+ }
+ .match-context-summary-meta b{
+  width:25px;height:25px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#edf7f5;
+  color:#087f78;
+  font-size:17px;
+  font-weight:500;
+  transition:transform .16s ease;
+ }
+ .match-context-disclosure.open .match-context-summary-meta b{transform:rotate(45deg)}
+ .match-context-disclosure:not(.open) > .match-context-body{display:none!important}
+ .match-context-disclosure.open > .match-context-body{
+  display:block!important;
+  padding:0 14px 14px;
+ }
+ .match-context-desktop-heading{display:none!important}
+ .match-context-disclosure .grid2.section.compact{margin:0!important}
+ .match-context-disclosure .match-goal-lens{
+  margin:8px 0!important;
+  padding:11px!important;
+ }
+ .match-context-disclosure .match-goal-lens p{
+  margin:4px 0 0!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+ }
+ .match-context-disclosure .actions{margin-top:8px!important}
+ .match-context-disclosure .actions .btn{width:100%}
+
+ @media(prefers-reduced-motion:reduce){
+  .mobile-disclosure-icon,
+  .match-context-summary-meta b{transition:none!important}
+ }
+}
+
+@media(max-width:760px){
+ .mobile-research-summary,
+ .match-context-summary{
+  width:100%;
+  border:0;
+  background:transparent;
+  font:inherit;
+  text-align:left;
+ }
+}
+
+
+/* Final mobile product polish — compact task surfaces and clearer gestures */
+@media(max-width:760px){
+ /* DNA entry: keep the decision above the fold; details are secondary. */
+ .dna-entry-hero{padding:16px 15px!important}
+ .dna-entry-hero h1{font-size:28px!important;margin:6px 0 8px!important}
+ .dna-entry-hero>p{font-size:13px!important;line-height:1.45!important;margin-bottom:12px!important}
+ .dna-entry-hero .assessment-meta{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  overflow-x:auto;
+  margin:0 0 12px!important;
+  scrollbar-width:none;
+ }
+ .dna-entry-hero .assessment-meta::-webkit-scrollbar{display:none}
+ .dna-entry-hero .assessment-meta span{flex:0 0 auto;white-space:nowrap;font-size:9px!important;padding:5px 7px!important}
+ .dna-entry-hero .actions{margin-top:11px!important}
+ .dna-entry-hero .actions .btn{min-height:43px!important}
+ .dna-pillar-grid{margin-top:9px!important}
+ .dna-pillar-card{flex-basis:68vw!important;min-height:124px!important;padding:14px!important}
+ .dna-pillar-card h3{margin:0 0 5px!important;font-size:15px!important}
+ .dna-pillar-card p{margin:0!important;font-size:11px!important;line-height:1.43!important}
+ .dna-entry-belief{display:none!important}
+
+ /* Explore: search and scan, with less repeated prose in every result. */
+ .explore-hero-v2{padding:14px 0 9px!important}
+ .explore-hero-row h1{font-size:29px!important;margin:4px 0 5px!important}
+ .explore-hero-row p{font-size:12px!important;line-height:1.42!important}
+ .explore-search-v2{margin-top:9px!important}
+ .explore-tabs-v2{margin-top:9px!important}
+ .explore-catalog-v2{padding-top:9px!important}
+ .investment-card-v2{padding:13px!important}
+ .investment-card-copy h2{margin:8px 0 2px!important;font-size:16px!important}
+ .investment-card-copy>p:last-child{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  margin:5px 0 0!important;
+  font-size:11px!important;
+  line-height:1.4!important;
+ }
+ .investment-card-metrics{margin-top:9px!important}
+ .investment-card-footer{margin-top:9px!important}
+ .investment-card-footer a{min-height:39px!important;font-size:11px!important}
+
+ /* Watchlist: saved research should scan like a native utility list. */
+ .watchlist-hero-v2{margin-bottom:9px!important}
+ .watchlist-hero-v2 h1{font-size:28px!important}
+ .watchlist-hero-v2 p{margin:3px 0 0!important;font-size:12px!important}
+ .watchlist-card-v2{padding:12px 13px!important}
+ .watchlist-card-v2 h2{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  overflow:hidden;
+  margin:5px 0 1px!important;
+  font-size:14px!important;
+ }
+ .watchlist-card-v2 p{display:none}
+ .watchlist-card-actions-v2 a{font-weight:800}
+ .watchlist-card-actions-v2 button{min-height:30px;padding:4px 7px}
+
+ /* Compare: communicate that results are a horizontal swipe surface. */
+ .mobile-compare-rail{
+  padding-right:48px!important;
+  scroll-padding-left:12px;
+ }
+ .mobile-compare-rail .compare-card{flex-basis:82vw!important}
+ .compare-page-v2:has(.mobile-compare-rail) .mobile-compare-rail:after{
+  content:"Swipe";
+  flex:0 0 34px;
+  align-self:center;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  color:#81949c;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+ }
+
+ /* Bottom nav should feel stable on small phones without label crowding. */
+ .mobile-app-nav-item{font-size:9px!important}
+}
+
+@media(max-width:390px){
+ .dna-pillar-card{flex-basis:73vw!important}
+ .mobile-compare-rail .compare-card{flex-basis:84vw!important}
+}
+
+
+/* Milestone 4 — resilient mobile states and edge-case consistency */
+@media(max-width:760px){
+ /* Loading / error / empty states share one calm mobile treatment. */
+ .detail-state-card,
+ .watchlist-loading-v2,
+ .watchlist-empty-v2,
+ .explore-empty-v2,
+ .match-dna-page .match-status-card,
+ .match-dna-page .notice{
+  border:1px solid #dfeae9!important;
+  border-radius:17px!important;
+  background:#fff!important;
+  box-shadow:0 7px 22px rgba(16,42,67,.035)!important;
+ }
+ .detail-state-card{padding:18px!important;margin:5px 0!important}
+ .detail-state-card h1{margin:0 0 7px!important;font-size:21px!important;line-height:1.12!important}
+ .detail-state-card p{margin:0 0 13px!important;font-size:12px!important;line-height:1.5!important;color:#6f838d}
+ .detail-state-card .btn,.detail-state-card>a{width:100%;min-height:43px;display:flex;align-items:center;justify-content:center}
+
+ .watchlist-loading-v2{
+  min-height:116px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px!important;
+  color:#70838d;
+  font-size:12px;
+ }
+ .watchlist-empty-v2{padding:24px 18px!important;text-align:center}
+ .watchlist-empty-v2 h2{font-size:20px!important;margin:7px 0!important}
+ .watchlist-empty-v2 p{font-size:12px!important;line-height:1.5!important;margin:0 auto 14px!important;max-width:290px}
+ .watchlist-empty-v2 .actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .watchlist-empty-v2 .btn{width:100%}
+ .watchlist-empty-mark{font-size:28px!important}
+
+ .explore-empty-v2{padding:22px 17px!important;text-align:left}
+ .explore-empty-v2 h2{font-size:18px!important;margin:0 0 6px!important}
+ .explore-empty-v2 p{font-size:12px!important;line-height:1.5!important;margin:0!important}
+ .explore-loading-grid{grid-template-columns:1fr!important;gap:8px!important}
+ .explore-skeleton{min-height:168px!important;border-radius:16px!important}
+
+ /* Signed-out profile is an app entry point, not a desktop auth card squeezed down. */
+ .profile-page:not(.dashboard-page){
+  min-height:calc(100svh - var(--mobile-nav-h) - var(--mobile-safe));
+  padding:20px 0 28px!important;
+  background:#f5f8f8!important;
+ }
+ .profile-page:not(.dashboard-page)>.container{max-width:520px!important;padding:0 14px!important}
+ .profile-page:not(.dashboard-page) .card{
+  padding:19px 17px!important;
+  border-radius:19px!important;
+  border:1px solid #dce8e7!important;
+  box-shadow:0 8px 25px rgba(16,42,67,.04)!important;
+ }
+ .profile-page:not(.dashboard-page) .card h1,
+ .profile-page:not(.dashboard-page) .card h2{font-size:25px!important;line-height:1.08!important;letter-spacing:-.035em}
+ .profile-page:not(.dashboard-page) .card p{font-size:12px!important;line-height:1.5!important}
+ .profile-page:not(.dashboard-page) .field{min-height:45px!important;border-radius:11px!important}
+ .profile-page:not(.dashboard-page) .actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .profile-page:not(.dashboard-page) .btn{width:100%!important}
+
+ /* Account states should not jump in size while auth resolves. */
+ .mobile-account-page{min-height:calc(100svh - var(--mobile-nav-h) - var(--mobile-safe))}
+ .mobile-account-page .notice{margin-top:10px;border-radius:14px;font-size:11px;line-height:1.45}
+ .mobile-account-signout:disabled{opacity:.62}
+ .mobile-account-card>.actions{display:grid!important}
+ .mobile-account-card>.actions .btn{width:100%}
+
+ /* Match states: clear primary recovery action, less dead vertical space. */
+ .match-dna-page{padding-bottom:26px!important;background:#f5f8f8}
+ .match-dna-page>.container{padding-left:12px!important;padding-right:12px!important}
+ .match-dna-page .match-status-card{padding:16px!important}
+ .match-dna-page .match-status-card h2{font-size:19px!important;line-height:1.15!important;margin:5px 0 7px!important}
+ .match-dna-page .match-status-card p{font-size:11px!important;line-height:1.48!important}
+ .match-dna-page .match-status-card .actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .match-dna-page .match-status-card .btn{width:100%}
+ .match-dna-page .match-dna-grid{grid-template-columns:1fr!important;gap:9px!important}
+ .match-dna-page .match-dna-card{border-radius:17px!important;padding:15px!important}
+ .match-dna-page .match-dna-card>.btn{width:100%}
+
+ /* Retry notices should be easy to act on with one thumb. */
+ .watchlist-page-v2>.watchlist-container-v2>.notice,
+ .explore-page-v2 .notice{
+  padding:13px!important;
+  border-radius:14px!important;
+  font-size:11px!important;
+  line-height:1.45!important;
+ }
+ .watchlist-page-v2 .notice .btn,
+ .explore-page-v2 .notice .btn{width:100%;margin-top:7px}
+
+ /* Preserve a predictable safe bottom on every app state. */
+ body:has(.mobile-app-nav) main{padding-bottom:max(22px,var(--mobile-safe))}
+}
