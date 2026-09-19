@@ -85,17 +85,19 @@ jobs:
           deployed_sha=""
           for attempt in $(seq 1 24); do
             if [ "${VERCEL_BYPASS_MODE}" = "header" ]; then
-              build_info=$(curl -sSL \
+              curl -sSL \
                 -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
                 -H "x-vercel-set-bypass-cookie: true" \
-                "${TEST_ORIGIN}/api/build-info" || true)
+                -o /tmp/build-info.json \
+                "${TEST_ORIGIN}/api/build-info" || true
             else
-              build_info=$(curl -sSL --get \
+              curl -sSL --get \
                 --data-urlencode "x-vercel-protection-bypass=${VERCEL_AUTOMATION_BYPASS_SECRET}" \
-                "${TEST_ORIGIN}/api/build-info" || true)
+                -o /tmp/build-info.json \
+                "${TEST_ORIGIN}/api/build-info" || true
             fi
 
-            deployed_sha=$(BUILD_INFO="${build_info}" node -e "try{const d=JSON.parse(process.env.BUILD_INFO||'{}');process.stdout.write(d.git_commit_sha||'')}catch{}")
+            deployed_sha=$(node -e "const fs=require('fs');try{const d=JSON.parse(fs.readFileSync('/tmp/build-info.json','utf8'));process.stdout.write(d.git_commit_sha||'')}catch{}")
             if [ "${deployed_sha}" = "${GITHUB_SHA}" ]; then
               echo "Protected preview is on the exact workflow commit: ${GITHUB_SHA}"
               break
