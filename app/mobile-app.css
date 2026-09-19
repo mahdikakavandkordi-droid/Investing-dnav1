@@ -228,3 +228,271 @@
  .mobile-account-menu b{font-size:20px;color:#7f949d}
  .mobile-account-signout{width:100%;background:#fff;color:#536b78}
 }
+
+
+/* Milestone 2 — dedicated mobile product surfaces */
+.mobile-dashboard-home,
+.mobile-explore-title,
+.mobile-explore-copy,
+.mobile-explore-compare,
+.mobile-detail-actions,
+.mobile-watch-count{display:none}
+
+@media(max-width:760px){
+ /* Home is a real mobile dashboard, not a stacked desktop workspace. */
+ .mobile-dashboard-home{display:block;padding:2px 0 8px}
+ .profile-page.dashboard-page .dashboard-reference-rail,
+ .profile-page.dashboard-page .dashboard-hero,
+ .profile-page.dashboard-page .dashboard-grid,
+ .profile-page.dashboard-page .dashboard-continue{display:none!important}
+ .profile-page.dashboard-page .dashboard-reference-shell{display:block!important}
+ .profile-page.dashboard-page .dashboard-reference-main{display:block!important}
+ .profile-page.dashboard-page .dashboard-intent{margin:0 0 10px!important}
+
+ .mobile-home-greeting{padding:8px 3px 13px}
+ .mobile-home-greeting h1{
+  margin:5px 0 4px;
+  color:#102a43;
+  font-size:29px;
+  line-height:1.04;
+  letter-spacing:-.045em;
+ }
+ .mobile-home-greeting p{margin:0;color:#71838d;font-size:12px;line-height:1.45}
+ .mobile-card-kicker{
+  display:block;
+  color:#0b8b82;
+  font-size:10px;
+  font-weight:850;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+ }
+
+ .mobile-dna-summary{
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 72px;
+  gap:12px;
+  align-items:center;
+  min-height:168px;
+  padding:19px 17px;
+  border:1px solid #d7e8e6;
+  border-radius:20px;
+  background:
+   radial-gradient(circle at 93% 18%,rgba(13,148,136,.15),transparent 27%),
+   linear-gradient(135deg,#fff 0%,#f4fbf9 100%);
+  box-shadow:0 10px 28px rgba(16,42,67,.055);
+ }
+ .mobile-dna-summary:after{
+  content:"";
+  position:absolute;
+  right:-30px;
+  bottom:-44px;
+  width:175px;
+  height:118px;
+  border:12px solid rgba(13,148,136,.08);
+  border-left-color:transparent;
+  border-bottom-color:transparent;
+  border-radius:50%;
+  transform:rotate(-18deg);
+ }
+ .mobile-dna-summary-copy{position:relative;z-index:2}
+ .mobile-dna-summary h2{margin:6px 0 7px;color:#12364b;font-size:24px;line-height:1.06;letter-spacing:-.035em}
+ .mobile-dna-summary p{margin:0;color:#637985;font-size:12px;line-height:1.5}
+ .mobile-dna-orbit{
+  position:relative;
+  z-index:2;
+  width:68px;
+  height:68px;
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border:6px solid #d8efeb;
+  border-top-color:#0d9488;
+  border-right-color:#0d9488;
+  background:#fff;
+  color:#15374c;
+  box-shadow:0 5px 15px rgba(16,42,67,.06);
+ }
+ .mobile-dna-orbit span{font-size:20px;line-height:1;font-weight:850;letter-spacing:-.04em}
+ .mobile-dna-orbit small{margin-top:3px;font-size:8px;color:#72858e;text-transform:uppercase;letter-spacing:.07em}
+ .mobile-card-arrow{position:absolute;right:13px;bottom:11px;color:#0d9488;font-weight:900}
+
+ .mobile-home-snapshot{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0}
+ .mobile-home-snapshot>a{
+  min-width:0;
+  display:grid;
+  gap:4px;
+  padding:14px;
+  border:1px solid #e0eaea;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(16,42,67,.035);
+ }
+ .mobile-home-snapshot span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#778a93;font-weight:800}
+ .mobile-home-snapshot strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#17394d;font-size:16px}
+ .mobile-home-snapshot small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#71848e;font-size:10px}
+
+ .mobile-home-section{
+  margin-top:10px;
+  padding:16px;
+  border:1px solid #e0eaea;
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 7px 22px rgba(16,42,67,.035);
+ }
+ .mobile-home-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+ .mobile-home-section-head h2{margin:4px 0 0;color:#17394d;font-size:18px;letter-spacing:-.025em}
+ .mobile-home-section-head>a{color:#087f78;font-size:11px;font-weight:820}
+ .mobile-action-list,.mobile-saved-list{display:grid}
+ .mobile-action-list>a,.mobile-saved-list>a{
+  display:grid;
+  align-items:center;
+  border-top:1px solid #edf2f1;
+ }
+ .mobile-action-list>a:first-child,.mobile-saved-list>a:first-child{border-top:0}
+ .mobile-action-list>a{
+  grid-template-columns:36px minmax(0,1fr) auto;
+  gap:10px;
+  min-height:60px;
+ }
+ .mobile-action-icon{
+  width:34px;height:34px;border-radius:11px;
+  display:grid;place-items:center;
+  background:#eaf7f4;color:#087f78;
+  font-size:18px;font-weight:850;
+ }
+ .mobile-action-list>a>span:nth-child(2),.mobile-saved-list>a>span:nth-child(2){display:grid;gap:2px;min-width:0}
+ .mobile-action-list strong,.mobile-saved-list strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#18394b;font-size:12px}
+ .mobile-action-list small,.mobile-saved-list small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7a8c95;font-size:10px}
+ .mobile-action-list b,.mobile-saved-list b{color:#87a0a7;font-size:19px;font-weight:500}
+
+ .mobile-saved-preview{padding-bottom:8px}
+ .mobile-saved-list>a{grid-template-columns:52px minmax(0,1fr) auto;gap:9px;min-height:55px}
+ .mobile-saved-symbol{
+  display:grid;place-items:center;
+  width:48px;height:30px;
+  border-radius:9px;
+  background:#102f46;
+  color:#fff;
+  font-size:10px;
+  font-weight:850;
+ }
+
+ /* DNA tab entry: concise intro + swipeable pillars. */
+ .dna-entry-page{padding:16px 0 24px!important;background:#f5f8f8}
+ .dna-entry-shell{padding:0 12px!important}
+ .dna-entry-hero{
+  padding:19px 17px;
+  border:1px solid #dce9e8;
+  border-radius:19px;
+  background:linear-gradient(145deg,#fff,#f3faf8);
+  box-shadow:0 7px 24px rgba(16,42,67,.04);
+ }
+ .dna-entry-hero h1{font-size:31px;line-height:1.06;letter-spacing:-.045em;margin:7px 0 10px}
+ .dna-entry-hero>p{font-size:14px!important;line-height:1.5!important;margin-bottom:16px}
+ .dna-entry-hero .assessment-meta{margin:0 0 16px!important}
+ .dna-entry-hero .assessment-meta span{font-size:10px;padding:6px 8px}
+ .dna-entry-hero .actions{display:grid!important;grid-template-columns:1fr!important;margin-top:16px!important}
+ .dna-entry-hero .btn{width:100%}
+ .dna-pillar-grid{
+  display:flex!important;
+  gap:9px!important;
+  overflow-x:auto;
+  margin:12px -12px 0!important;
+  padding:0 12px 4px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+ }
+ .dna-pillar-grid::-webkit-scrollbar{display:none}
+ .dna-pillar-card{
+  flex:0 0 76vw;
+  max-width:310px;
+  min-height:145px;
+  scroll-snap-align:start;
+  padding:17px!important;
+  border-radius:17px!important;
+  box-shadow:none!important;
+ }
+ .dna-pillar-card h3{font-size:17px}
+ .dna-pillar-card p{font-size:12px;line-height:1.5!important}
+ .dna-entry-belief{margin-top:10px!important;padding:15px!important}
+ .dna-entry-belief strong{font-size:15px!important}
+ .dna-entry-belief p{font-size:12px!important}
+
+ /* Explore uses a short mobile title while preserving the richer desktop copy. */
+ .desktop-explore-title,.desktop-explore-copy{display:none}
+ .mobile-explore-title,.mobile-explore-copy{display:inline}
+ .explore-hero-row{position:relative;padding-right:66px}
+ .explore-hero-row h1{font-size:32px!important}
+ .explore-hero-row p{margin-bottom:6px!important}
+ .mobile-explore-compare{
+  display:inline-flex;
+  position:absolute;
+  right:0;
+  top:2px;
+  min-height:34px;
+  align-items:center;
+  padding:0 11px;
+  border:1px solid #d6e4e3;
+  border-radius:10px;
+  color:#17675f;
+  background:#fff;
+  font-size:11px;
+  font-weight:820;
+ }
+ .investment-card-top{align-items:center!important}
+ .research-state{font-size:9px!important}
+ .investment-card-copy{padding-right:4px}
+ .investment-card-copy .investment-card-issuer{font-size:10px!important}
+ .investment-card-metrics>div span{font-size:9px!important}
+ .investment-card-metrics>div strong{font-size:12px!important}
+
+ /* Detail is read-first with a persistent action dock above bottom navigation. */
+ .detail-hero-actions-v2{display:none!important}
+ .mobile-detail-actions{
+  position:sticky;
+  bottom:calc(var(--mobile-nav-h) + var(--mobile-safe) + 8px);
+  z-index:30;
+  display:grid;
+  grid-template-columns:1fr 1.25fr;
+  gap:8px;
+  margin:10px 0 12px;
+  padding:8px;
+  border:1px solid rgba(210,227,225,.95);
+  border-radius:16px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 12px 30px rgba(16,42,67,.12);
+ }
+ .mobile-detail-actions .btn{width:100%;min-height:43px}
+ .detail-key-facts-v2{margin-top:9px!important}
+ .detail-freshness-v2{margin:9px 3px!important;font-size:10px!important;line-height:1.45!important}
+
+ /* Watchlist is a saved-items utility, not a marketing page. */
+ .watchlist-title-row{display:flex;align-items:center;gap:8px}
+ .mobile-watch-count{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:0 8px;
+  border-radius:999px;
+  background:#e8f6f3;
+  color:#087f78;
+  font-size:10px;
+  font-weight:820;
+ }
+ .watchlist-title-row h1{margin-right:auto!important}
+ .watchlist-card-v2{background:#fff!important;border-color:#e0e9e9!important;box-shadow:0 5px 17px rgba(16,42,67,.03)!important}
+ .watchlist-card-actions-v2 button{border:0;background:transparent;color:#8a5960;padding:5px;cursor:pointer}
+}
+
+@media(max-width:390px){
+ .mobile-dna-summary{grid-template-columns:minmax(0,1fr) 62px;padding:17px 14px}
+ .mobile-dna-orbit{width:60px;height:60px;border-width:5px}
+ .mobile-home-snapshot{grid-template-columns:1fr}
+ .dna-pillar-card{flex-basis:82vw}
+}
