@@ -227,6 +227,7 @@ function MatchContent({
 }
 
 function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfile;goalLens?:string}){
+ const [open,setOpen]=useState(false);
  const rows=[
   ['Goal',formatInvestmentContext('goal',context.goal)],
   ['Time horizon',formatInvestmentContext('time_horizon',context.time_horizon)],
@@ -234,11 +235,11 @@ function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfil
   ['Principal protection',formatInvestmentContext('principal_required',context.principal_required)]
  ];
 
- return <details className="card match-context-disclosure">
-  <summary>
+ return <section className={open?"card match-context-disclosure open":"card match-context-disclosure"}>
+  <button type="button" className="match-context-summary" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
    <span><span className="eyebrow">What this Match is using</span><strong>Your money context</strong></span>
    <span className="match-context-summary-meta">4 inputs <b aria-hidden="true">+</b></span>
-  </summary>
+  </button>
   <div className="match-context-body">
    <div className="match-context-desktop-heading">
     <div className="eyebrow">What this Match is using</div>
@@ -259,7 +260,7 @@ function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfil
     <Link className="btn" href="/dna/context?returnTo=/match">Edit this context</Link>
    </div>
   </div>
- </details>;
+ </section>;
 }
 
 function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;constraints:ConstraintShape;featuredCount:number}){
