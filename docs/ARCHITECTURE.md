@@ -204,7 +204,7 @@ Market-data refresh is a service-side ingestion concern, not a browser concern.
 Current V1 path:
 
 ```text
-post-close scheduler
+Supabase Cron (Vault-authenticated)
   -> market-data-refresh Edge Function
   -> get_due_price_history_ingestion_plan()
   -> approved provider adapter
@@ -215,7 +215,7 @@ post-close scheduler
 
 Refresh cadence is asset/data aware through `market_data_refresh_policies`. Only daily ETF price history is automation-enabled in V1; slower or unsupported domains remain explicitly disabled until an appropriate source adapter exists.
 
-The Edge worker requires service-role authorization. A scheduled run that has stale instruments but no approved automated provider must report `blocked`; it must not stamp existing research rows with today's date.
+The Edge worker accepts either direct service-role authorization or a random Vault-held worker token verified through a service-only RPC. A scheduled run that has stale instruments but no approved automated provider must report `blocked`; it must not stamp existing research rows with today's date.
 
 Operational detail and activation gates live in `MARKET-DATA-REFRESH.md`.
 
