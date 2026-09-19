@@ -1,6 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import {PDFDocument,StandardFonts,rgb} from 'pdf-lib';
-import {buildPortfolioBlueprint} from '../_shared/portfolio-blueprint.ts';
+import {buildPortfolioBlueprint} from './portfolio-blueprint.ts';
 
 const headers={
   'Content-Type':'application/json',
