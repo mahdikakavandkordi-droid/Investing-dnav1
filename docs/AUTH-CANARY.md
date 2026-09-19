@@ -128,7 +128,7 @@ Record only what is required for engineering evidence:
 
 Do **not** commit the canary email address, email link, access token, refresh token, session cookie or raw auth logs containing credentials.
 
-## Current real-hosted evidence — 2026-09-16
+## Current real-hosted evidence — checked again 2026-09-19
 
 Pre-canary aggregate live state was:
 
@@ -153,7 +153,7 @@ A controlled real hosted attempt then established the following evidence:
 - the callback then reached Vercel Deployment Protection in a browser that did not hold the protected-preview share cookie, so the app itself did not establish/retain the session;
 - built-in Supabase SMTP rate limiting was also observed during repeated engineering retries and must not be treated as production-ready email infrastructure.
 
-Post-attempt aggregate live state is:
+Post-attempt aggregate live state, re-read from the live project on 2026-09-19, remains:
 
 ```text
 auth users: 1
@@ -162,7 +162,10 @@ investor profiles: 0
 account-linked assessments: 0
 watchlists: 0
 watchlist items: 0
+pilot feedback rows: 0
 ```
+
+The live `investing-dna-pilot` Edge Function is ACTIVE at version 20. Its live `index.ts` and `deno.json` were compared byte-for-byte with the repository copies on 2026-09-19 and matched exactly. This establishes frontend/backend source alignment for the canary boundary; it does **not** establish a successful real email/session/persistence round trip.
 
 Therefore the real canary is **PARTIAL, not PASS**.
 

@@ -1,6 +1,6 @@
 # Investor DNA deployment runbook
 
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-19
 
 Deployment state must be described precisely. A green GitHub build, a successful Vercel deployment and a live canary are separate checks.
 
@@ -69,7 +69,9 @@ This proves the repository/build/browser-mock contract only.
 
 ### 2. Vercel build status
 
-Confirm the exact commit SHA has a successful Vercel deployment. A provider quota/build-rate-limit result means the commit has **not** been deployment-verified even if GitHub CI is green. The deployed preview exposes a non-sensitive `/api/build-info` marker sourced from Vercel system Git metadata. Automated canaries require either the exact workflow commit or a deployed ancestor that is Git-diff-equivalent across runtime source/build paths, so docs/workflow-only commits do not force a redundant deployment while stale application code still fails the gate.
+Confirm the exact application commit SHA has a successful Vercel deployment. A provider quota/build-rate-limit result means that commit has **not** been deployment-verified even if GitHub CI is green.
+
+The deployed Preview canary is triggered from a successful GitHub `deployment_status` event. It tests the exact deployment URL supplied by Vercel and checks out the exact deployment SHA. Do not replace that with a hard-coded branch alias when making an acceptance claim.
 
 ### 3. Preview canary
 
@@ -108,9 +110,9 @@ Run relevant SQL regressions and review live state after migrations. For materia
 
 ## Current hosting state
 
-A recent runtime/hardening head (`6f92a2d3639bd077e0e1e9be2c946d36ea87b583`) passed full GitHub CI and received a successful Vercel build status. Later auth-hardening/documentation commits may independently hit provider build-rate limits; always check the **exact** SHA being accepted.
+The current account-continuity runtime head `df037a528490fdb5d39a19b8bf81d75d9ffe0795` has a Vercel deployment in `READY` state (`dpl_DsfHBE4CAj7nGpLLzRAq8Z9ZXh6X`). The same code head also passed the full repository CI and Visual UI Audit. Commits after that runtime head have been workflow/documentation hardening; Vercel may rate-limit redundant builds for those commits without implying an application compile failure.
 
-Vercel connector account/team discovery has been inconsistent in this session, so the GitHub Vercel commit status remains an independent deployment signal.
+The automatic Preview canary now waits for the next successful deployment event instead of treating provider rate limiting as an application failure.
 
 ## Rollout wording
 

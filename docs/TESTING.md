@@ -1,7 +1,7 @@
 # Investor DNA testing guide
 
 Status: canonical verification reference  
-Last reviewed: 2026-09-16
+Last reviewed: 2026-09-19
 
 Investor DNA uses multiple test layers because no single test proves product correctness, repository cleanliness, database security and deployed behavior.
 
@@ -195,16 +195,18 @@ GitHub Actions `.github/workflows/ci.yml` currently runs:
 
 1. `npm ci`
 2. `npm test`
-3. `npm run test:hygiene`
-4. `npm run typecheck`
-5. `npm run typecheck:hygiene`
-6. `npm run build`
-7. Chrome availability check
-8. `npm run test:flow`
-9. `npm run test:assessment`
-10. `npm run test:funds`
-11. `npm run test:m4`
-12. `npm run test:assets`
+3. `npm run test:risk`
+4. `npm run test:hygiene`
+5. `npm run typecheck`
+6. `npm run typecheck:hygiene`
+7. `npm run build`
+8. Chrome availability check
+9. `npm run test:flow`
+10. `npm run test:assessment`
+11. `npm run test:funds`
+12. `npm run test:m4`
+13. `npm run test:assets`
+14. `npm run test:hard`
 
 All applicable steps must be green before calling an exact head engineering-green.
 
@@ -223,7 +225,9 @@ Do not collapse them into “deployed”.
 
 ### Protected Vercel Preview canary
 
-`.github/workflows/preview-canary.yml` exercises the real branch Preview with headless Chrome on the active integration/preview branches. Vercel Deployment Protection is bypassed through the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET`; the credential is never committed or printed. Before running the browser journey, the workflow polls `/api/build-info` and reads the deployed `VERCEL_GIT_COMMIT_SHA`. It accepts either the exact workflow SHA or an older deployed SHA only when a full-history Git diff proves there is no change in runtime source paths (`app/`, `components/`, `lib/`, `public/` or build/package configuration). A stale runtime branch alias therefore fails instead of producing a false-positive canary, while workflow/docs-only commits do not require a redundant deployment.
+`.github/workflows/preview-canary.yml` now follows Vercel's deployment-event model instead of racing a branch alias after every push. Its automatic trigger is GitHub `deployment_status`: only a successful deployment for `codex/integration-product-risk-platform-v1` starts the canary. The workflow checks out the exact `github.event.deployment.sha` and tests the exact `github.event.deployment_status.target_url`, so a provider build-rate-limit does not create a misleading browser failure against an older Preview. A manual `workflow_dispatch` remains available when an exact deployed URL and SHA are supplied explicitly.
+
+Vercel Deployment Protection is bypassed through the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET`; the credential is never committed or printed. The canary also verifies that the checked-out commit equals the deployment commit before launching Playwright.
 
 `tests/run-deployed-preview-canary.cjs` bootstraps the protected-preview browser session, then runs `tests/deployed-preview-flow.cjs` against the deployed Next.js frontend while intercepting Supabase requests. This deliberately prevents the canary from creating real assessments, sending email or mutating the live database.
 

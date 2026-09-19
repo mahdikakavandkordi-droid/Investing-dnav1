@@ -7,10 +7,10 @@ This is the short-lived project handoff snapshot. Canonical references remain `d
 - integration branch: `codex/integration-product-risk-platform-v1`
 - mobile PR #7: merged
 - mobile V1 squash merge: `7e4d165087c3c5e1e8411a24b3cb490cd06f9bf7`
-- current integration head: `c5b411d87753ab6713a3227e5fd5c56af997eb75`
-- current product/runtime code head before the docs-only canary checklist commit: `210ff15beea6759f7d12f191a1fbbabefde760a7`
+- latest application/account-continuity runtime head: `df037a528490fdb5d39a19b8bf81d75d9ffe0795`
+- commits after that runtime head are deployment-workflow/documentation hardening.
 
-Post-merge cleanup updated legacy browser regressions to the current mobile-first flow rather than weakening the assertions.
+Post-merge cleanup updated legacy browser regressions to the mobile-first product flow rather than weakening the assertions.
 
 ## Milestone state
 
@@ -21,71 +21,79 @@ Post-merge cleanup updated legacy browser regressions to the current mobile-firs
 
 M4 still needs real cognitive participants, later product-pilot evidence, completion of the real hosted account persistence canary, production-grade transactional email setup and formal Canadian compliance/privacy review.
 
-## Current product shape
+## Mobile V1 / product state
 
-- Platform: **Investor DNA**.
-- Assessment: **Investing DNA**.
-- Investment structural research profile: **Investment DNA**.
-- Compatibility layer: **DNA Match**.
-- Explore / Detail / Compare: cross-asset.
-- Screener / DNA Match: ETF-only.
-- Watchlist / Profile: asset-neutral.
-- Portfolio Builder remains out of current V1 runtime.
+Mobile V1 is merged and includes:
 
-## Mobile V1 status
-
-The mobile experience is now merged into the integration branch.
-
-Implemented:
-
-- compact branded top bar;
-- fixed five-tab navigation: Home / DNA / Explore / Watchlist / Profile;
+- compact branded top bar and five-tab app navigation;
 - dedicated mobile Home/workspace;
-- focused assessment with bottom app navigation hidden during questions;
+- focused assessment flow;
 - mobile-first Explore, Detail, Watchlist, Match, Compare and Screener;
-- progressive disclosure for deeper investment research;
-- compact Match money-context disclosure;
-- signed-out/loading/empty/error states;
-- mobile save-intent continuity after account entry;
-- real-device viewport hardening for safe areas, iOS form zoom, touch interactions and landscape height.
+- progressive disclosure for deep research and Match context;
+- loading/empty/error/signed-out states;
+- save-intent continuity through optional account entry;
+- iPhone safe-area, input-zoom, touch and landscape hardening.
 
 Automated screenshot review is not a substitute for a real-device product judgment. Use `docs/MOBILE-DEVICE-CANARY.md` when Mahdi tests on his phone.
 
 ## Engineering verification
 
-Latest fully completed repository CI before the real-device hardening pass:
+The mobile/device hardening head `228a7f5acab95cf78a79126b2b7b652a8ca99216` passed:
 
-- workflow run `35443174026` — PASS
-- `npm test` — PASS
-- Product Risk contract — PASS
-- repository hygiene — PASS
-- TypeScript + unused checks — PASS
-- production build — PASS
-- main flow — PASS
-- assessment flow — PASS
-- ETF/fund flow — PASS
-- M4 launch flow — PASS
-- cross-asset flow — PASS
-- hard-user flow — PASS
+- full repository CI: run `35443635055` — PASS;
+- Visual UI Audit: run `35443635036` — PASS.
 
-The latest mobile real-device hardening commits must remain green under the same gates before they are treated as engineering-accepted.
+The later account-continuity runtime head `df037a528490fdb5d39a19b8bf81d75d9ffe0795` also passed:
 
-## Deployment state
+- full repository CI: run `35443984755` — PASS;
+- Visual UI Audit: run `35443984749` — PASS.
 
-Vercel Git status may show build-rate-limit failures on some exact commits; do not interpret those as application compile failures.
+Its Vercel deployment `dpl_DsfHBE4CAj7nGpLLzRAq8Z9ZXh6X` is `READY`.
 
-A branch deployment on commit `c8fb2fcf1bd67b7022d73da78d1de790b27cc41a` reached Vercel `READY`. Later commits through the fully green `168895f...` head were test-only. The subsequent real-device hardening changes require a fresh accepted Vercel build before calling that exact head deployed.
+## Deployment canary
 
-Keep these states separate:
+The old push-triggered Preview canary was prone to testing a stale branch alias when Vercel rate-limited a build. It has been replaced with a deployment-driven gate:
 
-- repository CI green;
-- Vercel build success;
-- deployed preview canary passed;
-- real email/account canary passed.
+```text
+Vercel successful deployment
+ -> GitHub deployment_status event
+ -> checkout exact deployment SHA
+ -> use exact deployment target_url
+ -> establish Vercel automation bypass
+ -> run deployed Playwright journey
+```
+
+This canary should not be called green until a successful deployment event runs the new workflow to completion. Provider build-rate-limit is a deployment-state issue, not evidence of an application compile failure.
+
+## Live Supabase state — 2026-09-19
+
+Project `bxjjannguzzzqsamnhem` is `ACTIVE_HEALTHY`.
+
+Aggregate account-canary state:
+
+```text
+auth users: 1
+profiles: 0
+investor profiles: 0
+account-linked assessments: 0
+watchlists: 0
+watchlist items: 0
+pilot feedback rows: 0
+```
+
+The real Magic Link/account canary therefore remains **PARTIAL, not PASS**.
+
+The live `investing-dna-pilot` Edge Function is ACTIVE at version 20, and its live `index.ts` plus `deno.json` exactly match the repository copies.
+
+Current Advisor snapshot:
+
+- Security: 32 `rls_enabled_no_policy` INFO findings. Many are service/internal tables and must be classified, not blindly opened with browser policies.
+- Security: leaked-password protection WARN is present. The current product is passwordless Magic Link, so this is not an active password-flow blocker; revisit if password auth is introduced.
+- Performance: 38 `unused_index` INFO findings. Do not drop young-pilot indexes solely because the Advisor has not observed usage yet.
+
+No ownership/RLS semantics should be changed merely to make Advisor counts smaller.
 
 ## Real hosted Auth canary
-
-The real Magic Link/account canary remains incomplete. Do not claim it passed.
 
 Canary A still needs:
 
@@ -97,19 +105,29 @@ authenticated /profile in the app
  -> confirm persistence
 ```
 
-Canary B still needs a real guest Investing DNA claim and persistence round trip.
+Canary B still needs:
 
-Do not change the two deferred account ownership helpers until those canaries prove the intended hosted account path.
+```text
+guest Investing DNA result
+ -> account email link in the same browser/device
+ -> claim assessment
+ -> sign out
+ -> fresh sign in
+ -> confirm saved DNA is restored
+```
+
+The Profile email flow now explicitly tells the user to keep the current tab open, use the newest link in the same browser/device, exposes a 60-second resend cooldown, and lets the user change the email address.
+
+Do not change the two deferred authenticated ownership helpers until Canary A/B prove the intended hosted path.
 
 ## Immediate follow-ups
 
-1. Keep the real-device mobile hardening green in CI/visual audit.
-2. Mahdi performs the real mobile-device canary later using `docs/MOBILE-DEVICE-CANARY.md`.
-3. Fix only observed device/product issues from that pass rather than redesigning blindly from screenshots.
-4. Finish hosted Auth Canary A and B in one real browser/session.
-5. Configure controlled transactional email/custom SMTP before public pilot onboarding.
-6. Run the first six cognitive sessions and revise only on documented evidence triggers.
-7. Complete the 12-session cognitive gate before the 20–50 user product pilot.
-8. Formal Canadian compliance/privacy review remains a launch gate.
+1. Let the next successful Vercel deployment exercise the new deployment-status Preview canary.
+2. Run real hosted Canary A and B in one browser/device using a controlled external inbox.
+3. Configure controlled transactional email/custom SMTP before public pilot onboarding.
+4. Mahdi performs the real mobile-device canary later; fix observed device issues rather than redesigning from screenshots.
+5. Run the first six cognitive sessions and revise only on documented evidence triggers.
+6. Complete the 12-session cognitive gate before the 20–50 user product pilot.
+7. Formal Canadian compliance/privacy review remains a launch gate.
 
 If this snapshot conflicts with current code or canonical docs, update this snapshot rather than preserving stale handoff text.
