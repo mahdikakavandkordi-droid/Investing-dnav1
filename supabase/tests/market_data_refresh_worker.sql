@@ -70,7 +70,7 @@ begin
 end $$;
 
 begin;
-do $
+do $audit$
 declare
   v_run uuid;
   v_finished jsonb;
@@ -82,7 +82,7 @@ begin
   if v_finished->>'status' <> 'no_work' then
     raise exception 'worker audit lifecycle did not reach no_work';
   end if;
-end $;
+end $audit$;
 rollback;
 
 select 'PASS: market-data refresh policy, due-plan and service boundary' as result;
