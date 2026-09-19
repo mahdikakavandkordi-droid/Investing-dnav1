@@ -55,14 +55,14 @@ jobs:
           echo "Waiting for protected preview endpoint: ${TEST_ORIGIN}"
           echo "Automation bypass secret is present (length: ${#VERCEL_AUTOMATION_BYPASS_SECRET})"
 
-          header_code=$(curl -sS \
+          header_code=$(curl -sSL \
             -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
             -H "x-vercel-set-bypass-cookie: true" \
             -o /tmp/header-preview.html \
             -w '%{http_code}' \
             "${TEST_ORIGIN}/dna/assessment" || true)
 
-          query_code=$(curl -sS \
+          query_code=$(curl -sSL \
             --get \
             --data-urlencode "x-vercel-protection-bypass=${VERCEL_AUTOMATION_BYPASS_SECRET}" \
             -o /tmp/query-preview.html \
@@ -85,12 +85,12 @@ jobs:
           deployed_sha=""
           for attempt in $(seq 1 24); do
             if [ "${VERCEL_BYPASS_MODE}" = "header" ]; then
-              build_info=$(curl -sS \
+              build_info=$(curl -sSL \
                 -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
                 -H "x-vercel-set-bypass-cookie: true" \
                 "${TEST_ORIGIN}/api/build-info" || true)
             else
-              build_info=$(curl -sS --get \
+              build_info=$(curl -sSL --get \
                 --data-urlencode "x-vercel-protection-bypass=${VERCEL_AUTOMATION_BYPASS_SECRET}" \
                 "${TEST_ORIGIN}/api/build-info" || true)
             fi
