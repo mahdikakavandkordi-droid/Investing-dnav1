@@ -138,7 +138,23 @@ Primary navigation should make the core journey discoverable:
 
 Specialized tools such as the ETF Screener can remain contextual tools rather than replacing a core product step in global navigation.
 
-## 9. Compliance text supports the experience; it does not replace it
+## 9. Returning users should have a reason to come back
+
+A signed-in return visit should resume the research loop rather than restart the acquisition experience.
+
+The returning Home workspace may surface:
+
+- the saved Investor DNA;
+- the current money context;
+- Watchlist count;
+- current DNA Match state;
+- newer sourced market data for saved investments since the prior workspace visit.
+
+"Since your last visit" is account continuity, not a market alert or recommendation. It must describe factual product/data changes only. A new post-close price does not imply the investment became better or worse.
+
+The server-owned return marker is private account state. The browser may cache the returned summary for the current tab/session so revisiting Home during the same sitting does not repeatedly advance the baseline. Signing out clears that session cache.
+
+## 10. Compliance text supports the experience; it does not replace it
 
 Research-stage limitations and non-advice language must remain accurate and visible, but do not lead every card with internal model/compliance language. First explain the user-facing purpose, then provide the relevant limitation/provenance where it matters.
 
