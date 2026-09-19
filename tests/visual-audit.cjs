@@ -187,6 +187,14 @@ async function shot(page,name){
  await page.screenshot({path:path.join(OUT,name+'.png'),fullPage:true});
 }
 
+async function assertMobileShell(page,activeLabel){
+ assert.equal(await page.locator('.mobile-app-nav-item').count(),5);
+ assert.ok(await page.locator('.mobile-app-nav').isVisible());
+ assert.ok(await page.locator('.mobile-app-header').isVisible());
+ assert.equal(await page.getByRole('link',{name:activeLabel,exact:true}).getAttribute('aria-current'),'page');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+}
+
 async function runViewport(browser,label,viewport){
  contextReady=false;
  const mobile=label==='mobile';
@@ -280,27 +288,33 @@ async function runViewport(browser,label,viewport){
  await shot(page,label+'-10-dashboard');
 
  if(mobile){
+  await assertMobileShell(page,'Home');
+
   await page.goto(ORIGIN+'/match',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Your ETF matches',exact:true}).waitFor();
+  await assertMobileShell(page,'DNA');
   await shot(page,label+'-11-match');
 
   await page.goto(ORIGIN+'/compare',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Compare investments',exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
   await shot(page,label+'-12-compare');
+
+  await page.goto(ORIGIN+'/screener',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'ETF Screener',exact:true}).waitFor();
+  await page.getByText('1 ETF shown',{exact:true}).waitFor();
+  await assertMobileShell(page,'Explore');
+  await shot(page,label+'-13-screener');
 
   await page.goto(ORIGIN+'/watchlist',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Your watchlist',exact:true}).waitFor();
-  await shot(page,label+'-13-watchlist');
+  await assertMobileShell(page,'Watchlist');
+  await shot(page,label+'-14-watchlist');
 
   await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
-  await shot(page,label+'-14-account');
-
-  assert.equal(await page.locator('.mobile-app-nav').count(),1);
-  assert.equal(await page.locator('.mobile-app-header').count(),1);
-  assert.ok(await page.locator('.mobile-app-nav').isVisible());
-  assert.ok(await page.locator('.mobile-app-header').isVisible());
-  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await assertMobileShell(page,'Profile');
+  await shot(page,label+'-15-account');
  }
 
  assert.deepEqual(errors,[]);
