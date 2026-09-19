@@ -213,12 +213,32 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return json(500, { error: "server_configuration_missing" });
 
+  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
   const authorization = req.headers.get("authorization") ?? "";
-  if (authorization !== `Bearer ${SERVICE_ROLE_KEY}`) {
-    return json(403, { error: "service_role_required" });
+  const workerToken = req.headers.get("x-market-worker-token") ?? "";
+  let authorized = authorization === `Bearer ${SERVICE_ROLE_KEY}`;
+
+  if (!authorized && workerToken) {
+    const { data: tokenValid, error: tokenError } = await supabase.rpc(
+      "verify_market_data_worker_token",
+      { p_token: workerToken },
+    );
+    authorized = !tokenError && tokenValid === true;
   }
 
-  let body: { dry_run?: boolean; symbols?: string[]; trigger_source?: string } = {};
+  if (!authorized) {
+    return json(403, { error: "market_worker_authorization_required" });
+  }
+
+  let body: {
+    dry_run?: boolean;
+    symbols?: string[];
+    trigger_source?: string;
+    plan_at?: string;
+  } = {};
   try {
     body = await req.json();
   } catch {
@@ -229,11 +249,17 @@ Deno.serve(async (req: Request) => {
   const requestedSymbols = Array.isArray(body.symbols)
     ? new Set(body.symbols.map((value) => String(value).trim().toUpperCase()).filter(Boolean))
     : null;
-  const triggerSource = body.trigger_source === "github_schedule" ? "github_schedule" : "manual";
+  const triggerSource =
+    body.trigger_source === "github_schedule"
+      ? "github_schedule"
+      : body.trigger_source === "supabase_cron"
+        ? "supabase_cron"
+        : "manual";
 
-  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const planAt =
+    typeof body.plan_at === "string" && Number.isFinite(Date.parse(body.plan_at))
+      ? body.plan_at
+      : null;
 
   let workerRunId: string | null = null;
   if (!dryRun) {
@@ -245,7 +271,10 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { data: rawPlan, error: planError } = await supabase.rpc("get_due_price_history_ingestion_plan");
+    const { data: rawPlan, error: planError } = await supabase.rpc(
+      "get_due_price_history_ingestion_plan",
+      planAt ? { p_now: planAt } : {},
+    );
     if (planError) throw new Error(`due_plan_failed:${planError.message}`);
 
     let plan = (Array.isArray(rawPlan) ? rawPlan : []) as DueItem[];
@@ -254,6 +283,7 @@ Deno.serve(async (req: Request) => {
     if (dryRun) {
       return json(200, {
         status: "dry_run",
+        plan_at: planAt,
         due_count: plan.length,
         due: plan.map((item) => ({
           symbol: item.symbol,
@@ -348,6 +378,7 @@ Deno.serve(async (req: Request) => {
     else if (fetchedCount === 0 && ingestedCount === 0) status = "no_work";
 
     const details = {
+      plan_at: planAt,
       provider_ready_count: providerReadyCount,
       skipped: skipped.slice(0, 100),
       fetch_errors: fetchErrors.slice(0, 100),
