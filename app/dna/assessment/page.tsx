@@ -258,7 +258,7 @@ function PersonalizationStep({draft,total,busy,error,onPersist,onBack,onFinish}:
    <div className="question-actions"><button className="btn" disabled={busy} onClick={onBack}>Back</button><button className="btn primary" disabled={busy||!ready} onClick={onFinish}>{busy?'Building your DNA…':'See my Investor DNA'} <span aria-hidden="true">→</span></button></div>
    {error&&<p role="alert" className="notice">{error}</p>}
   </section>
-  <aside className="personalization-scenery" aria-hidden="true"><div className="personalization-sun"/><div className="personalization-ridge ridge-one"/><div className="personalization-ridge ridge-two"/><div className="personalization-path"/><div className="personalization-flag">⚑</div></aside>
+  <aside className="personalization-scenery approved-illustration-panel" aria-hidden="true"><img src="/illustrations/personalized-investor-dna-report.webp" alt="" className="approved-side-illustration"/></aside>
  </div>;
 }
 
