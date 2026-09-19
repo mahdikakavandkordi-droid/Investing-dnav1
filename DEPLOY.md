@@ -69,7 +69,7 @@ This proves the repository/build/browser-mock contract only.
 
 ### 2. Vercel build status
 
-Confirm the exact commit SHA has a successful Vercel deployment. A provider quota/build-rate-limit result means the commit has **not** been deployment-verified even if GitHub CI is green.
+Confirm the exact commit SHA has a successful Vercel deployment. A provider quota/build-rate-limit result means the commit has **not** been deployment-verified even if GitHub CI is green. The deployed preview exposes a non-sensitive `/api/build-info` marker sourced from Vercel system Git metadata so automated canaries can prove they are exercising the exact commit rather than an older branch deployment.
 
 ### 3. Preview canary
 

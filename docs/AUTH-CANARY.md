@@ -25,9 +25,9 @@ The Profile page uses one email path rather than asking the user to decide betwe
 - existing email -> sign in;
 - new email -> free account after email confirmation;
 - the same form preserves incoming investment and limited DNA-claim intent;
-- after sending, the UI explicitly asks the user to open the **newest** one-time email in the same browser;
+- after sending, the UI explicitly asks the user to keep the current tab open and use the **newest** one-time email in the same browser/device;
 - the UI warns that a mail app can open another browser and explains that the link should then be copied into the browser that holds the current app session;
-- resend has a visible 60-second cooldown to reduce accidental rate-limit bursts;
+- resend remains available in the sent state with a visible 60-second cooldown, plus a clear path to change the email address;
 - expired/used links and provider rate limits are translated into recovery-oriented product copy rather than raw provider errors.
 
 This UX hardening does not weaken the ownership boundary. Browser state and URL parameters still do not establish ownership; authenticated server-side paths remain authoritative.
@@ -39,6 +39,7 @@ This UX hardening does not weaken the ownership boundary. Browser state and URL 
 - Supabase Auth email provider is enabled.
 - Supabase Auth URL Configuration contains the deployed Site URL and a matching `/profile` redirect destination.
 - Use a controlled external inbox. Do not use a pilot participant identity for engineering canaries.
+- When testing a protected Vercel Preview, first open that Preview in the same browser/device that will consume the email callback and establish its temporary Preview-access cookie/share session. Do this **before** requesting the Magic Link; otherwise Vercel protection can intercept the callback before the app can hydrate Auth.
 
 The V1 browser client intentionally uses the client-only implicit email-link flow. `lib/supabase.ts` configures `flowType=implicit`, `detectSessionInUrl=true`, `persistSession=true`, and `autoRefreshToken=true`.
 

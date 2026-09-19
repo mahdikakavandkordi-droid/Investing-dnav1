@@ -252,6 +252,13 @@ progress{width:100%;height:8px;accent-color:#087f78}
 
 /* Profile / account */
 .auth-form{display:grid;gap:12px;max-width:440px;margin:28px 0}
+.auth-sent{display:grid;gap:12px;margin:22px 0 4px}
+.auth-sent h2{margin:0;font-size:24px;letter-spacing:-.025em}
+.auth-sent>p{margin:0;color:#667085}
+.auth-browser-note{padding:14px 15px;border:1px solid #dce8e6;border-radius:14px;background:#f7fbfa}
+.auth-browser-note strong{display:block;margin-bottom:4px;color:#17394d}
+.auth-browser-note p{margin:0;color:#596b75;font-size:13px;line-height:1.5}
+.auth-sent-actions{display:flex;gap:8px;flex-wrap:wrap}
 .mode-tabs{display:flex;gap:8px;margin:24px 0}
 .mode-tabs button[aria-pressed=true]{background:#eaf7f4;border-color:#087f78}
 .profile-next{margin:24px 0;padding:20px;border:1px solid #dce8e6;background:#f7fbfa;border-radius:16px}

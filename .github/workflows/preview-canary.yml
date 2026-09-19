@@ -5,6 +5,7 @@ on:
     branches:
       - codex/platform-v4-account-continuity
       - codex/visual-redesign-v1
+      - codex/integration-product-risk-platform-v1
   workflow_dispatch:
 
 jobs:
@@ -80,5 +81,32 @@ jobs:
             export VERCEL_BYPASS_MODE="query"
           fi
           echo "Using Vercel bypass mode: ${VERCEL_BYPASS_MODE}"
+
+          deployed_sha=""
+          for attempt in $(seq 1 24); do
+            if [ "${VERCEL_BYPASS_MODE}" = "header" ]; then
+              build_info=$(curl -sS \
+                -H "x-vercel-protection-bypass: ${VERCEL_AUTOMATION_BYPASS_SECRET}" \
+                -H "x-vercel-set-bypass-cookie: true" \
+                "${TEST_ORIGIN}/api/build-info" || true)
+            else
+              build_info=$(curl -sS --get \
+                --data-urlencode "x-vercel-protection-bypass=${VERCEL_AUTOMATION_BYPASS_SECRET}" \
+                "${TEST_ORIGIN}/api/build-info" || true)
+            fi
+
+            deployed_sha=$(BUILD_INFO="${build_info}" node -e "try{const d=JSON.parse(process.env.BUILD_INFO||'{}');process.stdout.write(d.git_commit_sha||'')}catch{}")
+            if [ "${deployed_sha}" = "${GITHUB_SHA}" ]; then
+              echo "Protected preview is on the exact workflow commit: ${GITHUB_SHA}"
+              break
+            fi
+            echo "Waiting for exact preview commit (attempt ${attempt}/24; current=${deployed_sha:-unavailable})"
+            sleep 10
+          done
+
+          if [ "${deployed_sha}" != "${GITHUB_SHA}" ]; then
+            echo "Preview is stale or the exact commit was not deployed; refusing a false-positive canary."
+            exit 1
+          fi
 
           node tests/run-deployed-preview-canary.cjs

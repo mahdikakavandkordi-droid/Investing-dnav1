@@ -1290,3 +1290,11 @@
  .mobile-app-nav-item{gap:1px!important}
  .mobile-app-nav-item.active:before{margin-top:-36px}
 }
+
+
+/* Hosted account canary UX: email callbacks must return to the browser holding app intent. */
+@media(max-width:760px){
+ .profile-page:not(.dashboard-page) .auth-sent-actions{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+ .profile-page:not(.dashboard-page) .auth-sent-actions .btn{width:100%!important}
+ .profile-page:not(.dashboard-page) .auth-browser-note{padding:13px!important}
+}
