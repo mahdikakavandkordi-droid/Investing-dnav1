@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as d from '../lib/dna.ts';
+import {buildPortfolioBlueprint} from '../lib/portfolio-blueprint.ts';
 
 const data=new Map();
 const sessionData=new Map();
@@ -16,6 +17,53 @@ assert.equal(d.score(undefined),'—');
 assert.equal(d.score(0),'0');
 assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y'}),false);
 assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y',liquidity_need:'low',principal_required:'no'}),true);
+
+const blueprintContext=(overrides={})=>({
+  goal:'growth',time_horizon:'5_10y',liquidity_need:'medium',principal_required:'no',...overrides
+});
+const balancedBlueprint=buildPortfolioBlueprint({risk_tolerance:62,risk_capacity:68},blueprintContext());
+assert.deepEqual(balancedBlueprint.scenarios.map(x=>x.allocation),[
+  {equity:45,fixedIncome:45,cash:10},
+  {equity:60,fixedIncome:30,cash:10},
+  {equity:70,fixedIncome:20,cash:10}
+]);
+const growthBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:92,risk_capacity:88},
+  blueprintContext({time_horizon:'gt_10y',liquidity_need:'low'})
+);
+assert.deepEqual(growthBlueprint.scenarios.map(x=>x.allocation),[
+  {equity:70,fixedIncome:15,cash:15},
+  {equity:85,fixedIncome:10,cash:5},
+  {equity:90,fixedIncome:5,cash:5}
+]);
+const capacityGuardBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:90,risk_capacity:34},
+  blueprintContext({time_horizon:'gt_10y',liquidity_need:'low'})
+);
+assert.equal(capacityGuardBlueprint.scenarios[1].allocation.equity,30);
+assert.ok(capacityGuardBlueprint.scenarios[1].allocation.equity<growthBlueprint.scenarios[1].allocation.equity);
+const protectionBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:85,risk_capacity:85},
+  blueprintContext({goal:'house_purchase',time_horizon:'1_3y',liquidity_need:'high',principal_required:'yes'})
+);
+assert.deepEqual(protectionBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:65,cash:35});
+assert.equal(protectionBlueprint.scenarios[2].constrained,true);
+assert.equal(protectionBlueprint.scenarios[2].allocation.equity,0);
+const emergencyBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:80,risk_capacity:80},
+  blueprintContext({goal:'emergency_reserve',time_horizon:'lt_1y',liquidity_need:'high',principal_required:'yes'})
+);
+assert.deepEqual(emergencyBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:40,cash:60});
+for(const bp of [balancedBlueprint,growthBlueprint,capacityGuardBlueprint,protectionBlueprint,emergencyBlueprint]){
+  for(const scenario of bp.scenarios){
+    const a=scenario.allocation;
+    assert.equal(a.equity+a.fixedIncome+a.cash,100);
+    assert.equal(a.equity%5,0);
+    assert.equal(a.fixedIncome%5,0);
+    assert.equal(a.cash%5,0);
+  }
+}
+assert.equal(buildPortfolioBlueprint({risk_tolerance:60,risk_capacity:60},{goal:'growth'}),null);
 
 const draft={version:1,createdAt:Date.now(),ownerId:null,session:{assessment_id:'id',session_token:'token'},answers:{RC01:'A'},index:0};
 d.writeDraft(draft);
