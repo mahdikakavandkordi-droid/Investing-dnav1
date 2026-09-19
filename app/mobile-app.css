@@ -11,8 +11,8 @@
   padding-bottom:calc(var(--mobile-nav-h) + var(--mobile-safe));
   background:#f5f8f8;
  }
- body:has(.mobile-app-nav) .platform-nav{display:none!important}
- body:has(.mobile-app-nav) footer.section{display:none!important}
+ body:has(.mobile-app-header) .platform-nav{display:none!important}
+ body:has(.mobile-app-header) footer.section{display:none!important}
 
  .mobile-app-nav{
   display:block;
