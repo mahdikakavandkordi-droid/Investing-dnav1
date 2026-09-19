@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22.18.0
@@ -83,6 +85,8 @@ jobs:
           echo "Using Vercel bypass mode: ${VERCEL_BYPASS_MODE}"
 
           deployed_sha=""
+          runtime_equivalent="false"
+          runtime_paths=(app components lib public package.json package-lock.json next.config.mjs)
           for attempt in $(seq 1 24); do
             if [ "${VERCEL_BYPASS_MODE}" = "header" ]; then
               curl -sSL \
@@ -98,16 +102,23 @@ jobs:
             fi
 
             deployed_sha=$(node -e "const fs=require('fs');try{const d=JSON.parse(fs.readFileSync('/tmp/build-info.json','utf8'));process.stdout.write(d.git_commit_sha||'')}catch{}")
+            runtime_equivalent="false"
             if [ "${deployed_sha}" = "${GITHUB_SHA}" ]; then
+              runtime_equivalent="true"
               echo "Protected preview is on the exact workflow commit: ${GITHUB_SHA}"
               break
             fi
-            echo "Waiting for exact preview commit (attempt ${attempt}/24; current=${deployed_sha:-unavailable})"
+            if [ -n "${deployed_sha}" ] && git cat-file -e "${deployed_sha}^{commit}" 2>/dev/null && git diff --quiet "${deployed_sha}" "${GITHUB_SHA}" -- "${runtime_paths[@]}"; then
+              runtime_equivalent="true"
+              echo "Protected preview commit ${deployed_sha} is runtime-equivalent to workflow head ${GITHUB_SHA}."
+              break
+            fi
+            echo "Waiting for current runtime preview (attempt ${attempt}/24; deployed=${deployed_sha:-unavailable})"
             sleep 10
           done
 
-          if [ "${deployed_sha}" != "${GITHUB_SHA}" ]; then
-            echo "Preview is stale or the exact commit was not deployed; refusing a false-positive canary."
+          if [ "${runtime_equivalent}" != "true" ]; then
+            echo "Preview is stale for runtime source; refusing a false-positive canary."
             exit 1
           fi
 

@@ -223,7 +223,7 @@ Do not collapse them into “deployed”.
 
 ### Protected Vercel Preview canary
 
-`.github/workflows/preview-canary.yml` exercises the real branch Preview with headless Chrome on the active integration/preview branches. Vercel Deployment Protection is bypassed through the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET`; the credential is never committed or printed. Before running the browser journey, the workflow polls `/api/build-info` and requires the deployed `VERCEL_GIT_COMMIT_SHA` to equal the workflow `GITHUB_SHA`. A stale branch alias therefore fails instead of producing a false-positive canary.
+`.github/workflows/preview-canary.yml` exercises the real branch Preview with headless Chrome on the active integration/preview branches. Vercel Deployment Protection is bypassed through the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET`; the credential is never committed or printed. Before running the browser journey, the workflow polls `/api/build-info` and reads the deployed `VERCEL_GIT_COMMIT_SHA`. It accepts either the exact workflow SHA or an older deployed SHA only when a full-history Git diff proves there is no change in runtime source paths (`app/`, `components/`, `lib/`, `public/` or build/package configuration). A stale runtime branch alias therefore fails instead of producing a false-positive canary, while workflow/docs-only commits do not require a redundant deployment.
 
 `tests/run-deployed-preview-canary.cjs` bootstraps the protected-preview browser session, then runs `tests/deployed-preview-flow.cjs` against the deployed Next.js frontend while intercepting Supabase requests. This deliberately prevents the canary from creating real assessments, sending email or mutating the live database.
 
