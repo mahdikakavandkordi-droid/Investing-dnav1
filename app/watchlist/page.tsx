@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {instrumentWatchlist,removeInstrument} from '@/lib/instruments';
 import type {SavedInstrument} from '@/lib/instruments';
+import {trackProductEvent} from '@/lib/analytics';
 
 /** Account-scoped, asset-neutral saved research list. */
 export default function Watchlist(){
@@ -33,6 +34,7 @@ export default function Watchlist(){
   try{
    await removeInstrument(id);
    setItems(current=>current.filter(item=>item.investment_id!==id));
+   void trackProductEvent('watchlist_removed',{investment_id:id});
   }catch(e){setError(e instanceof Error?e.message:'Unable to remove investment.');}
   finally{setBusyId('');}
  }
