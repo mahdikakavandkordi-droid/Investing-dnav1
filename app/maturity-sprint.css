@@ -10,6 +10,7 @@
 .home-returning-tile span{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#64716f)}
 .home-returning-tile strong{font-size:1.02rem;overflow-wrap:anywhere}
 .home-returning-tile small{color:var(--muted,#64716f);line-height:1.35}
+.investment-card-market-date{margin:10px 0 0;font-size:.78rem;color:var(--muted,#64716f)}
 .detail-freshness-panel{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0 18px}
 .detail-freshness-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid rgba(29,70,66,.14);border-radius:999px;background:rgba(255,255,255,.72);font-size:.82rem}
 .detail-freshness-chip.delayed{border-color:rgba(166,107,24,.25);background:rgba(255,247,230,.86)}
