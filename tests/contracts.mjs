@@ -46,14 +46,18 @@ const protectionBlueprint=buildPortfolioBlueprint(
   {risk_tolerance:85,risk_capacity:85},
   blueprintContext({goal:'house_purchase',time_horizon:'1_3y',liquidity_need:'high',principal_required:'yes'})
 );
-assert.deepEqual(protectionBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:65,cash:35});
+assert.deepEqual(protectionBlueprint.scenarios[0].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.deepEqual(protectionBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.deepEqual(protectionBlueprint.scenarios[2].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.equal(protectionBlueprint.scenarios[0].constrained,true);
 assert.equal(protectionBlueprint.scenarios[2].constrained,true);
-assert.equal(protectionBlueprint.scenarios[2].allocation.equity,0);
 const emergencyBlueprint=buildPortfolioBlueprint(
   {risk_tolerance:80,risk_capacity:80},
   blueprintContext({goal:'emergency_reserve',time_horizon:'lt_1y',liquidity_need:'high',principal_required:'yes'})
 );
-assert.deepEqual(emergencyBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:40,cash:60});
+assert.deepEqual(emergencyBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.equal(emergencyBlueprint.scenarios[0].constrained,true);
+assert.equal(emergencyBlueprint.scenarios[2].constrained,true);
 for(const bp of [balancedBlueprint,growthBlueprint,capacityGuardBlueprint,protectionBlueprint,emergencyBlueprint]){
   for(const scenario of bp.scenarios){
     const a=scenario.allocation;
