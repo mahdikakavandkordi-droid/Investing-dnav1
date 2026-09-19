@@ -79,6 +79,8 @@ After the cognitive debrief, keep product feedback separate from question-compre
 - Which part of the result felt most useful?
 - Which part felt least credible or most confusing?
 - Could you explain why an ETF matched or conflicted with your DNA in your own words?
+- Did the Match feel like it was telling you which investment to buy? Why or why not?
+- What did you think a score such as 82/100 represented? Did it feel like a compatibility score, a return estimate, or something else?
 - What would make you return to the product?
 
 Do not use positive product feedback as evidence that the questionnaire itself is valid.
