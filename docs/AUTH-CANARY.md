@@ -38,6 +38,15 @@ The Funds browser flow now also exercises a signed-in returning Home state. It v
 
 This closes an automated UI continuity gap, but it does **not** change the hosted canary status. The real Canary A/B still requires an external email link, a deployed browser session, sign-out and a genuinely fresh sign-in.
 
+Maturity Sprint 3 adds two privacy-minimized evidence events:
+
+- `auth_callback_session_established` — emitted only after the browser has a real authenticated user while processing a Magic Link callback;
+- `account_state_restored` — emitted after authenticated account state and Watchlist state have loaded following that callback.
+
+The callback event is emitted before the sensitive URL fragment is scrubbed; scrubbing itself still happens immediately after the event is queued. The restore event carries only narrow booleans/counts (`has_dna`, `has_context`, `watchlist_count`) plus the safe callback mode. It does not include email, tokens or questionnaire answers.
+
+Use `docs/AUTH-CANARY-EVIDENCE.sql` after the controlled run to verify the server-side event sequence without selecting email addresses or auth credentials.
+
 ## Preconditions
 
 - GitHub CI is green for the exact application head being tested.
@@ -130,6 +139,7 @@ Record only what is required for engineering evidence:
 - Canary A PASS/FAIL and failing boundary if any;
 - Canary B PASS/FAIL and failing boundary if any;
 - post-canary aggregate counts for auth users, linked profiles, account-linked assessments and Watchlist items;
+- privacy-minimized callback/restore event sequence from `docs/AUTH-CANARY-EVIDENCE.sql`;
 - any remediation commit/migration.
 
 Do **not** commit the canary email address, email link, access token, refresh token, session cookie or raw auth logs containing credentials.
@@ -171,7 +181,7 @@ watchlist items: 0
 pilot feedback rows: 0
 ```
 
-The live `investing-dna-pilot` Edge Function is ACTIVE at version 20. Its live `index.ts` and `deno.json` were compared byte-for-byte with the repository copies on 2026-09-19 and matched exactly. This establishes frontend/backend source alignment for the canary boundary; it does **not** establish a successful real email/session/persistence round trip.
+The live `investing-dna-pilot` Edge Function is ACTIVE at version 22. Its live `index.ts` and `deno.json` were compared byte-for-byte with the repository copies on 2026-09-19 and matched exactly. This establishes frontend/backend source alignment for the canary boundary; it does **not** establish a successful real email/session/persistence round trip.
 
 Therefore the real canary is **PARTIAL, not PASS**.
 
