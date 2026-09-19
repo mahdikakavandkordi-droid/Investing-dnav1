@@ -156,10 +156,13 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
 }
 
 function ResearchDisclosure({title,children}:{title:string;children:React.ReactNode}){
- return <details className="mobile-research-disclosure">
-  <summary><span>{title}</span><span className="mobile-disclosure-icon" aria-hidden="true">+</span></summary>
+ const [open,setOpen]=useState(false);
+ return <section className={open?"mobile-research-disclosure open":"mobile-research-disclosure"}>
+  <button type="button" className="mobile-research-summary" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>
+   <span>{title}</span><span className="mobile-disclosure-icon" aria-hidden="true">+</span>
+  </button>
   <div className="mobile-research-disclosure-body">{children}</div>
- </details>;
+ </section>;
 }
 
 function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|null}){
