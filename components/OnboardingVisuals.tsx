@@ -42,8 +42,8 @@ export function PersonalizationVisual(){
     <path d="M53 25v28M47 31h9a6 6 0 010 12h-5a6 6 0 000 12h9" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"/>
    </g>
 
-   <rect x="430" y="332" width="116" height="112" rx="23" fill="#dcfff3" stroke="#fff" strokeWidth="4"/>
-   <g transform="translate(459 355)">
+   <rect x="450" y="344" width="116" height="112" rx="23" fill="#dcfff3" stroke="#fff" strokeWidth="4"/>
+   <g transform="translate(479 367)">
     <path d="M28 45v29" stroke="#087f76" strokeWidth="6" strokeLinecap="round"/>
     <path d="M28 45C12 44 4 35 3 20c15-1 26 7 28 23" fill="#2fba71"/>
     <path d="M29 44c3-17 14-26 30-24-2 16-10 25-30 24" fill="#12a65b"/>
