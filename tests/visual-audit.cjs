@@ -163,6 +163,7 @@ async function installMocks(ctx){
    if(body.action==='claim_assessment')return send({claimed:true});
    if(body.action==='submit_feedback')return send({saved:true});
   }
+  if(url.includes('/rest/v1/rpc/app_search_investments'))return send([vbalInstrument]);
   if(url.includes('/rest/v1/rpc/app_search_instruments'))return send([
    {id:'a414ecb2-e63f-4127-8009-ea9471723cb9',symbol:'VGRO',name:'Vanguard Growth ETF Portfolio',asset_type:'ETF',issuer_name:'Vanguard Canada',currency:'CAD',mer_pct:.22,equity_pct:80,fixed_income_pct:20,liquidity_level:'high',price_volatility:'low',profile_management_style:'passive',diversification_level:'high',profile_summary:'A growth-oriented one-ticket portfolio with broad global equity exposure and a smaller bond allocation.'},
    {id:'34ebca65-b84e-4e2d-9395-072abb447fcc',symbol:'RBC-GIC-1Y-CASH',name:'RBC 1-Year Cashable GIC',asset_type:'GIC',issuer_name:'Royal Bank of Canada',currency:'CAD',deposit_rate_pct:1.95,term_months:12,redeemability:'redeemable',deposit_insurance_eligible:true,deposit_insurance_scheme:'CDIC',capital_protection:'insured_deposit',liquidity_level:'medium',price_volatility:'none',description:'A one-year cashable GIC reference product designed to preserve principal while allowing earlier access subject to product terms.'},
