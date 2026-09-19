@@ -60,7 +60,10 @@ async function fetchWithRetry(url: string, attempts = 3) {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       const response = await fetch(url, {
-        headers: { accept: "application/json" },
+        headers: {
+          accept: "application/json",
+          "user-agent": "Investor-DNA-Research/1.0 (+https://github.com/mahdikakavandkordi-droid/Investing-dnav1)",
+        },
       });
       if (response.ok) return response;
       const body = await response.text();
@@ -126,9 +129,83 @@ async function fetchMassiveDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
   return rows;
 }
 
+function unixSecondsAtUtcStart(date: string) {
+  return Math.floor(new Date(date + "T00:00:00Z").getTime() / 1000);
+}
+
+async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
+  if (item.country_code !== "CA" || item.exchange !== "TSX") {
+    throw new Error("yahoo_free_route_is_tsx_canada_only");
+  }
+
+  const fallbackFrom = addUtcDays(item.target_price_date, -14);
+  const from = item.latest_price_date
+    ? laterDate(addUtcDays(item.latest_price_date, 1), fallbackFrom)
+    : fallbackFrom;
+  const yahooSymbol = item.symbol.toUpperCase() + ".TO";
+
+  const url = new URL(
+    `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`,
+  );
+  url.searchParams.set("period1", String(unixSecondsAtUtcStart(from)));
+  url.searchParams.set("period2", String(unixSecondsAtUtcStart(addUtcDays(item.target_price_date, 1))));
+  url.searchParams.set("interval", "1d");
+  url.searchParams.set("events", "history");
+  url.searchParams.set("includePrePost", "false");
+
+  const response = await fetchWithRetry(url.toString());
+  const payload = await response.json();
+  const chart = payload?.chart;
+  if (chart?.error) {
+    throw new Error(
+      `yahoo_chart_error:${String(chart.error.code ?? "unknown")}:${String(chart.error.description ?? "")}`,
+    );
+  }
+
+  const result = Array.isArray(chart?.result) ? chart.result[0] : null;
+  const timestamps = Array.isArray(result?.timestamp) ? result.timestamp : [];
+  const quote = Array.isArray(result?.indicators?.quote) ? result.indicators.quote[0] : null;
+  if (!result || !quote || timestamps.length === 0) return [];
+
+  const metaCurrency = typeof result?.meta?.currency === "string"
+    ? result.meta.currency.toUpperCase()
+    : item.currency ?? "CAD";
+
+  const rows: CanonicalPriceRow[] = [];
+  for (let index = 0; index < timestamps.length; index += 1) {
+    const timestamp = Number(timestamps[index]);
+    const close = Number(quote?.close?.[index]);
+    if (!Number.isFinite(timestamp) || !Number.isFinite(close) || close <= 0) continue;
+
+    const priceDate = new Date(timestamp * 1000).toISOString().slice(0, 10);
+    if (item.latest_price_date && priceDate <= item.latest_price_date) continue;
+    if (priceDate > item.target_price_date) continue;
+
+    const open = Number(quote?.open?.[index]);
+    const high = Number(quote?.high?.[index]);
+    const low = Number(quote?.low?.[index]);
+    const volume = Number(quote?.volume?.[index]);
+
+    rows.push({
+      symbol: item.symbol,
+      price_date: priceDate,
+      open: Number.isFinite(open) && open > 0 ? open : null,
+      high: Number.isFinite(high) && high > 0 ? high : null,
+      low: Number.isFinite(low) && low > 0 ? low : null,
+      close,
+      nav: null,
+      volume: Number.isFinite(volume) && volume >= 0 ? volume : null,
+      currency: metaCurrency,
+    });
+  }
+
+  return rows;
+}
+
 async function fetchProvider(item: DueItem): Promise<CanonicalPriceRow[]> {
   const provider = item.selected_source?.provider_type;
   if (provider === "massive") return await fetchMassiveDaily(item);
+  if (provider === "yahoo_finance_unofficial") return await fetchYahooDaily(item);
   throw new Error(`provider_not_implemented:${provider ?? "none"}`);
 }
 
@@ -213,6 +290,10 @@ Deno.serve(async (req: Request) => {
       }
 
       try {
+        // A small delay keeps the temporary free feed polite and reduces rate-limit risk.
+        if (providerType === "yahoo_finance_unofficial") {
+          await new Promise((resolve) => setTimeout(resolve, 175));
+        }
         const rows = await fetchProvider(item);
         fetchedCount += rows.length;
         if (rows.length > 0) {
