@@ -1,5 +1,3 @@
-import React from "react";
-
 export function PersonalizationVisual(){
  return <svg className="approved-onboarding-svg" viewBox="0 0 460 610" role="img" aria-label="Personalized Investor DNA report illustration">
   <defs>
