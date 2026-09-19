@@ -32,18 +32,17 @@ export function HomeWorkspaceReturn(){
   Promise.all([
    rpc<AppState>("get_current_investor_app_state").catch(()=>null),
    instrumentWatchlist().catch(()=>({items:[] as SavedInstrument[]})),
-  ]).then(async ([appState,watchlist])=>{
+  ]).then(([appState,watchlist])=>{
    if(!active)return;
    setState(appState);
    setSaved(watchlist.items||[]);
 
+   // The return summary is additive. Never hold the core workspace behind a
+   // second network boundary after account state and Watchlist are ready.
    if(appState?.has_profile){
-    try{
-     const summary=await openReturningWorkspace(user.id);
-     if(active)setRetention(summary);
-    }catch{
-     // Retention context is additive. Account state still renders if unavailable.
-    }
+    void openReturningWorkspace(user.id)
+     .then(summary=>{if(active)setRetention(summary)})
+     .catch(()=>{});
    }
   }).finally(()=>{if(active)setLoading(false)});
 
