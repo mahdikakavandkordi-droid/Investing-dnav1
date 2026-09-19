@@ -23,8 +23,11 @@ Browser / Next.js
   |-- public/read RPCs ---------------------> Supabase Postgres read models
   |-- authenticated RPCs ------------------> profile / watchlist / account state
   `-- investing-dna-pilot Edge Function ---> assessment sessions, answers,
-                                             submit/claim/context,
-                                             analytics and feedback
+  |                                          submit/claim/context,
+  |                                          analytics and feedback
+  `-- investor-dna-report Edge Function --> ownership/capability check,
+                                             canonical PDF generation,
+                                             optional report email delivery
 
 Supabase Postgres
   |-- Investing DNA assessment + scoring
@@ -53,6 +56,7 @@ Important modules:
 - `lib/investments.ts` — ETF-specific research/compatibility adapter.
 - `lib/product-risk/` — modular Product Risk DNA contracts: consumer dimensions, asset-module registry and public read adapter. Asset-specific sensors and canonical risk calculation stay server-side.
 - `lib/supabase.ts` — browser Supabase transport.
+- `lib/portfolio-blueprint.ts` — deterministic `portfolio-blueprint-v1` asset-class scenario engine used by the final report and mirrored exactly into the PDF report service.
 - `lib/analytics.ts`, `lib/browser-session.ts` — privacy-minimized pilot events/session IDs.
 - `lib/use-account.ts` — auth-session hook.
 
@@ -61,6 +65,9 @@ Append-only database evolution. Once a migration is applied, corrections are mad
 
 ### `supabase/functions/investing-dna-pilot/`
 Privileged assessment/pilot server boundary. Browser input is untrusted and must be validated before service-role work.
+
+### `supabase/functions/investor-dna-report/`
+Dedicated report-export boundary. It authorizes either the signed-in assessment owner or the still-valid guest assessment capability before reading canonical report data. It generates the PDF server-side and can optionally hand the attachment to the configured transactional email provider. Report email delivery is separate from account creation.
 
 ### `supabase/tests/`
 Transactional/live database regressions for ownership, scoring/Match behavior, data boundaries and M4 hardening.
@@ -145,6 +152,7 @@ Current versions:
 
 - Match: `investment-dna-match-v7`
 - Goal Fit: `goal-fit-v1`
+- Portfolio Blueprint: `portfolio-blueprint-v1`
 - Product Risk DNA: `product-risk-dna-v1-research` (shadow calibration; not publicly published)
 - historical retained engine: `investment-dna-match-v6`
 
@@ -167,6 +175,34 @@ context_only_score_policy = hidden_until_context_complete
 
 This prevents DNA-only ordering from being mistaken for personalized compatibility.
 
+### Portfolio Blueprint
+
+Portfolio Blueprint is a separate report layer from DNA Match. It does not rank securities.
+
+```text
+completed Investor DNA
+  + complete money context
+  -> portfolio-blueprint-v1
+       - capacity/willingness risk anchor
+       - horizon/liquidity/goal/protection caps
+  -> More Defensive / Core / More Growth
+  -> Equity / Fixed income / Cash only
+```
+
+The model fails closed when either risk score or a required goal-context field is unavailable. Financial capacity is a ceiling. Hard principal-protection or emergency-reserve contexts are not forced into market-risk assets merely to make three scenarios look different; when the model reaches a hard boundary, scenario cards explicitly show that constraint.
+
+The current model intentionally does not infer geographic, sector or security-level weights. The web report and exported PDF use byte-identical copies of the same engine source, protected by a contract test. Public methodology lives at `/research/portfolio-blueprint`.
+
+### Report export
+
+A completed report can be downloaded/printed without creating an account.
+
+```text
+guest report -> assessment capability token -> investor-dna-report -> PDF
+saved report -> auth.uid ownership check -> investor-dna-report -> PDF
+```
+
+Optional Email PDF uses the same authorization boundary and does not create an account. Raw recipient email is sent transiently to the configured provider but is not persisted in the report-delivery audit; only a SHA-256 email hash plus status/reference metadata is stored for rate limiting/troubleshooting. If the provider is not configured, the app must show the feature as unavailable and fall back to Download PDF rather than claiming delivery.
 ### Retention
 
 Authenticated users may persist current Investor DNA linkage, investment context, watchlist items and returning profile state. Watchlist storage/language is asset-neutral even though Match is ETF-only.
@@ -240,7 +276,8 @@ Browser may:
 - call the Edge Function with untrusted input;
 - render returned data;
 - keep limited recovery/session state;
-- request Supabase Auth.
+- request Supabase Auth;
+- request an authorized PDF export for its current completed assessment.
 
 Browser must not:
 
@@ -249,7 +286,8 @@ Browser must not:
 - bypass safety gates;
 - write raw pilot/admin tables directly;
 - use a service-role key;
-- mutate historical model behavior.
+- mutate historical model behavior;
+- infer a Portfolio Blueprint when required risk/context inputs are missing.
 
 Privileged service/Edge code must validate session/action/ownership/payload shape before privileged writes.
 
