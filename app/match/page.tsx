@@ -27,7 +27,7 @@ type GoalAwareExplanation=NonNullable<MatchItem['explanation']>&{
  }|null;
 };
 
-/** Personalized ETF compatibility surface backed by the canonical Match payload. */
+/** Personalized fund compatibility surface backed by the canonical Match payload. */
 export default function Matches(){
  const {user,loading:authLoading}=useAccount();
  const [state,setState]=useState<AppState|null>(null);
@@ -56,8 +56,13 @@ export default function Matches(){
     matches:local.result.match
    });
    setLoading(true);
-   rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100})
-    .then(rows=>{if(active)setFunds(rows)})
+   Promise.all([
+    Promise.all([
+    rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100}),
+    rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
+   ]).then(([etfs,mutualFunds])=>[...etfs,...mutualFunds]),
+    rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
+   ]).then(([etfs,mutualFunds])=>{if(active)setFunds([...etfs,...mutualFunds])})
     .catch(e=>{if(active)setError(e.message)})
     .finally(()=>{if(active)setLoading(false)});
    return ()=>{active=false};
@@ -138,9 +143,9 @@ export default function Matches(){
 
 function MatchHero(){
  return <div className="match-dna-hero">
-  <div className="eyebrow">DNA Match · ETFs</div>
-  <h1><span className="desktop-match-title">See how your DNA lines up with ETFs</span><span className="mobile-match-title">Your ETF matches</span></h1>
-  <p><span className="desktop-match-copy">We compare your comfort and capacity for risk with what each ETF is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</span><span className="mobile-match-copy">See which ETFs align more closely with your DNA and the context for this money.</span></p>
+  <div className="eyebrow">DNA Match · Funds</div>
+  <h1><span className="desktop-match-title">See how your DNA lines up with funds</span><span className="mobile-match-title">Your fund matches</span></h1>
+  <p><span className="desktop-match-copy">We compare your comfort and capacity for risk with what each ETF or mutual fund is built to do, then layer in the real goal, time horizon, access needs and principal-protection requirement for this money.</span><span className="mobile-match-copy">See which funds align more closely with your DNA and the context for this money.</span></p>
   <p className="fine muted">A higher score means closer research compatibility with the inputs shown on this page — not a better investment, a return forecast, or a recommendation to buy.</p>
  </div>;
 }
@@ -162,7 +167,7 @@ function ErrorState({error}:{error:string}){
 function SignedOutState(){
  return <div className="card">
   <h2>Discover your DNA to unlock Match</h2>
-  <p>You can complete the assessment and see your current ETF compatibility as a guest. Create an account only if you want to keep it across visits.</p>
+  <p>You can complete the assessment and see your current fund compatibility as a guest. Create an account only if you want to keep it across visits.</p>
   <div className="actions">
    <Link className="btn primary" href="/dna/assessment">Discover my Investing DNA</Link>
    <Link className="btn" href="/profile">Sign in to saved DNA</Link>
@@ -211,7 +216,7 @@ function MatchContent({
    : match?.status!=='review_required'
      ? <div className="card">
         <h2>{match?.status==='context_required'?'No DNA-only comparisons are available':'No ranked comparisons are available'}</h2>
-        <p>Explore the ETF research universe without treating the list as a personal match.</p>
+        <p>Explore the fund research universe without treating the list as a personal match.</p>
         <Link className="btn" href="/explore">Explore investments</Link>
        </div>
      : null}
@@ -244,7 +249,7 @@ function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfil
    <div className="match-context-desktop-heading">
     <div className="eyebrow">What this Match is using</div>
     <h2>Your money context</h2>
-    <p className="muted">These answers affect the ETF comparison below. They do not change your underlying Investor DNA.</p>
+    <p className="muted">These answers affect the fund comparison below. They do not change your underlying Investor DNA.</p>
    </div>
    <div className="grid2 section compact">
     {rows.map(([label,value])=><div className="fingerprint" key={label}>
@@ -267,8 +272,8 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
  if(match?.status==='review_required'){
   return <div className="match-status-card warning">
    <div className="eyebrow">Matching paused</div>
-   <h2>Review this money before ranking ETFs</h2>
-   <p>The current inputs or ETF data triggered a review point, so we are not turning them into a ranked list.</p>
+   <h2>Review this money before ranking funds</h2>
+   <p>The current inputs or fund data triggered a review point, so we are not turning them into a ranked list.</p>
    {constraints.reasons?.length?<ul>{constraints.reasons.map(reason=><li key={reason}>{reason}</li>)}</ul>:null}
    <div className="actions">
     <Link className="btn" href="/dna/context?returnTo=/match">Review investment context</Link>
@@ -280,7 +285,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
  if(match?.status==='no_suitable_options'){
   return <div className="match-status-card warning">
    <div className="eyebrow">No forced match</div>
-   <h2>No ETF in the current research universe passes your fit limits</h2>
+   <h2>No fund in the current research universe passes your fit limits</h2>
    <p>We are not forcing a result. The comparisons below sit outside at least one current limit and are shown only to explain the mismatch.</p>
   </div>;
  }
@@ -300,7 +305,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
    <div className="eyebrow">Context-aware match</div>
    <h2>{count} current option{count===1?'':'s'} passed the research fit limits</h2>
    <p>Use the context summary and the reasons on each card to understand what is driving the comparison.</p>
-   {match.data_as_of&&<p className="fine muted">ETF data through {match.data_as_of} · Match model {match.model_version}</p>}
+   {match.data_as_of&&<p className="fine muted">Fund data through {match.data_as_of} · Match model {match.model_version}</p>}
   </div>;
  }
 
@@ -376,7 +381,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
   </p>
 
   {investmentId
-   ? <Link className="btn primary" href={'/investment/'+investmentId}>Open ETF research</Link>
+   ? <Link className="btn primary" href={'/investment/'+investmentId}>Open fund research</Link>
    : <Link className="btn" href="/explore">Find in Explore</Link>}
  </article>;
 }
@@ -385,7 +390,7 @@ function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPaylo
  const contextOnly=match?.status==='context_required';
  return <section className="match-section match-more">
   <div className="eyebrow">{contextOnly?'More DNA-only comparisons':'Also passed current limits'}</div>
-  <h2>{contextOnly?'Continue exploring the ETF universe':'Other ETFs to compare'}</h2>
+  <h2>{contextOnly?'Continue exploring the fund universe':'Other funds to compare'}</h2>
   <div className="match-more-grid">
    {rows.map(item=>{
     const id=idBySymbol.get(item.symbol);
@@ -445,16 +450,16 @@ function changeNote(item:MatchItem,match?:MatchPayload){
   return 'Add the real goal, withdrawal horizon, liquidity need and principal requirement for this money. That turns this from a DNA-only comparison into a context-aware Match.';
  }
  if(typeof scores.market_exposure_fit==='number'&&scores.market_exposure_fit<95){
-  return 'A lower-equity ETF would sit closer to the current exposure limit. A genuinely longer horizon may also change that limit; do not change your inputs just to improve a score.';
+  return 'A lower-equity fund would sit closer to the current exposure limit. A genuinely longer horizon may also change that limit; do not change your inputs just to improve a score.';
  }
  if(typeof scores.official_risk_fit==='number'&&scores.official_risk_fit<85){
-  return 'An ETF with a lower issuer-disclosed risk category would align more closely with the risk tolerance and capacity in your current DNA.';
+  return 'A fund with a lower issuer-disclosed risk category would align more closely with the risk tolerance and capacity in your current DNA.';
  }
  if(typeof scores.goal_role_fit==='number'&&scores.goal_role_fit<60){
-  return 'An ETF whose structure better serves the goal and horizon you entered for this money would improve the goal-fit component.';
+  return 'A fund whose structure better serves the goal and horizon you entered for this money would improve the goal-fit component.';
  }
  if(typeof scores.exposure_breadth==='number'&&scores.exposure_breadth<75){
   return 'A structure with broader market or asset-class exposure would improve the diversification component.';
  }
- return 'The fit can move when your genuine money context changes, the ETF structure changes, or newer verified ETF data becomes available.';
+ return 'The fit can move when your genuine money context changes, the fund structure changes, or newer verified fund data becomes available.';
 }
