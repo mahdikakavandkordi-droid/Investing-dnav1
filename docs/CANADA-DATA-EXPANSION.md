@@ -164,6 +164,8 @@ Latest Mackenzie + RBC backfill:
 
 The live `market-data-refresh` Edge Function is ACTIVE with TSX and Cboe Canada support.
 
+Browser research now reads the latest canonical audited price-history row when it is newer than the slower metadata snapshot. This means newly added ETFs show their current research-feed price without copying an unofficial quote into issuer metadata. Official MER remains the fallback only when an issuer-disclosed MER actually exists; management fee is not mislabeled as MER. RBC browser rows now also expose their sourced risk label and monthly distribution frequency.
+
 No synthetic market-history freshness date is written before the worker actually succeeds.
 
 ## DNA Match boundary
@@ -185,6 +187,7 @@ Match eligibility remains a separate evidence-review step.
 - `20260920214232_canada_mackenzie_core_etf_wave_v1.sql`
 - `20260920214411_canada_rbc_core_etf_wave_v1.sql`
 - `20260920214539_normalize_mackenzie_issuer_and_risk_provenance.sql`
+- `20260920215105_surface_canonical_prices_and_rbc_browser_metrics.sql`
 
 ## Regression
 
