@@ -69,7 +69,7 @@ export function ProductRiskCard({investmentId}:{investmentId:string}){
      <button
       type="button"
       className="product-risk-help-button-v1"
-      aria-label={`${pick("What does","Que signifie")} ${label}?`}
+      aria-label={locale==="fr"?`Que signifie ${label}?`:`What does ${label} mean?`}
       onClick={()=>setSelected(dimension)}
      >{pick("What does this mean?","Qu’est-ce que cela signifie?")}</button>
     </article>;
