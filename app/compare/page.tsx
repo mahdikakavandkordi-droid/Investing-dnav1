@@ -11,6 +11,7 @@ import {rpc} from '@/lib/supabase';
 import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import type {AppState,MatchItem} from '@/lib/dna';
 import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
+import {useLocale} from '@/lib/locale';
 
 const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
  ['capital_protection','Capital protection'],
@@ -25,6 +26,7 @@ const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
 
 /** Structure-first comparison. Personalized fit is layered only onto ETFs. */
 export default function Compare(){
+ const {pick}=useLocale();
  const {user}=useAccount();
  const [items,setItems]=useState<Instrument[]>([]);
  const [selected,setSelected]=useState<string[]>(['','','']);
@@ -87,18 +89,18 @@ export default function Compare(){
 
  return <section className="section compare-page-v2">
   <div className="container">
-   <div className="eyebrow">Compare</div>
-   <h1><span className="desktop-compare-title">Compare Investment DNA side by side</span><span className="mobile-compare-title">Compare investments</span></h1>
+   <div className="eyebrow">{pick("Compare","Comparer")}</div>
+   <h1><span className="desktop-compare-title">{pick("Compare Investment DNA side by side","Comparer les Investment DNA côte à côte")}</span><span className="mobile-compare-title">{pick("Compare investments","Comparer les placements")}</span></h1>
    <p className="muted"><span className="desktop-compare-copy">Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.</span><span className="mobile-compare-copy">Choose two or three investments and swipe through the key differences.</span></p>
 
-   {loading?<p>Loading comparison tools…</p>:<ComparisonPicker items={items} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
+   {loading?<p>{pick("Loading comparison tools…","Chargement des outils de comparaison…")}</p>:<ComparisonPicker items={items} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
    {error&&<p className="notice" role="alert">{error}</p>}
 
    {rows.length>=2&&<>
     <div className="compare-grid mobile-compare-rail">
      {rows.map(item=><ComparisonCard key={item.id} item={item} dnaPresent={!!state?.dna} matchStatus={matchStatus} match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}/>) }
     </div>
-    <p className="fine muted">Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.</p>
+    <p className="fine muted">{pick("Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.","Les rendements historiques et les taux/rendements affichés ne sont pas des prévisions. Les libellés Investment DNA sont des descripteurs de recherche. DNA Match pour les FNB est un signal de compatibilité, pas une recommandation d’achat.")}</p>
    </>}
   </div>
  </section>;
@@ -107,16 +109,17 @@ export default function Compare(){
 function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instrument[];selected:string[];busy:boolean;onSelect:(index:number,id:string)=>void;onCompare:()=>void;}){
  return <>
   <div className="compare-picker">
-   {selected.map((id,index)=><label key={index}>Investment {index+1}<select className="field" value={id} onChange={event=>onSelect(index,event.target.value)}>
-    <option value="">{index<2?'Choose an investment':'Optional third investment'}</option>
+   {selected.map((id,index)=><label key={index}>{pick("Investment","Placement")} {index+1}<select className="field" value={id} onChange={event=>onSelect(index,event.target.value)}>
+    <option value="">{index<2?pick('Choose an investment','Choisir un placement'):pick('Optional third investment','Troisième placement facultatif')}</option>
     {items.filter(item=>!selected.includes(item.id)||item.id===id).map(item=><option key={item.id} value={item.id}>{assetLabel(item.asset_type)} · {item.symbol?`${item.symbol} — `:''}{item.name}</option>)}
    </select></label>)}
   </div>
-  <div className="actions"><button className="btn primary" disabled={busy} onClick={onCompare}>{busy?'Comparing…':'Compare investments'}</button><Link className="btn" href="/explore">Back to Explore</Link></div>
+  <div className="actions"><button className="btn primary" disabled={busy} onClick={onCompare}>{busy?pick('Comparing…','Comparaison…'):pick('Compare investments','Comparer les placements')}</button><Link className="btn" href="/explore">{pick("Back to Explore","Retour à Explorer")}</Link></div>
   </>;
 }
 
 function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dnaPresent:boolean;matchStatus?:string;match?:MatchItem;}){
+ const {pick}=useLocale();
  const canMatch=matchEligible(item.asset_type);
  const metrics=heroMetrics(item.asset_type);
  const contextOnly=matchStatus==='context_required';
@@ -127,21 +130,22 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
   <div className="actions compact"><span className="pill">{assetLabel(item.asset_type)}</span>{item.symbol&&<span className="pill">{item.symbol}</span>}</div>
   <h2>{item.name}</h2>
   <FitSummary canMatch={canMatch} match={match} matchStatus={matchStatus} dnaPresent={dnaPresent}/>
-  <h3>Shared Investment DNA</h3>
+  <h3>{pick("Shared Investment DNA","Investment DNA commun")}</h3>
   {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}><span>{label}</span><strong>{pretty(item[key])}</strong></div>)}
-  <h3>{assetLabel(item.asset_type)} facts</h3>
+  <h3>{assetLabel(item.asset_type)} · {pick("facts","données")}</h3>
   {metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
-  {item.credit_exposure&&<div className="compare-metric"><span>Credit exposure</span><strong>{pretty(item.credit_exposure)}</strong></div>}
-  {item.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(item.time_structure)}</strong></div>}
+  {item.credit_exposure&&<div className="compare-metric"><span>{pick("Credit exposure","Exposition au crédit")}</span><strong>{pretty(item.credit_exposure)}</strong></div>}
+  {item.time_structure&&<div className="compare-metric"><span>{pick("Time structure","Structure temporelle")}</span><strong>{pretty(item.time_structure)}</strong></div>}
   {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':'Why this ETF may fit'}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
-  <Link className="btn" href={`/investment/${item.id}`}>View details</Link>
+  <Link className="btn" href={`/investment/${item.id}`}>{pick("View details","Voir les détails")}</Link>
  </article>;
 }
 
 function FitSummary({canMatch,match,matchStatus,dnaPresent}:{canMatch:boolean;match?:MatchItem;matchStatus?:string;dnaPresent:boolean}){
- if(!canMatch)return <div className="notice"><span>Research profile · personalized Match not enabled for this asset type yet</span></div>;
- if(!match)return <div className="notice"><span>{dnaPresent?'No ETF compatibility row is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span></div>;
+ const {pick}=useLocale();
+ if(!canMatch)return <div className="notice"><span>{pick("Research profile · personalized Match not enabled for this asset type yet","Profil de recherche · Match personnalisé non activé pour ce type d’actif")}</span></div>;
+ if(!match)return <div className="notice"><span>{dnaPresent?pick('No ETF compatibility row is available for this item','Aucune donnée de compatibilité FNB n’est disponible pour ce placement'):pick('Complete Investing DNA to add an ETF compatibility layer','Terminez Investing DNA pour ajouter une couche de compatibilité FNB')}</span></div>;
  const score=matchScorePresentation(match,matchStatus);
  const layerCopy=matchStatus==='context_required'?'DNA-only ETF compatibility layer':matchStatus==='review_required'?'Personalized ranking paused':'Personal ETF compatibility layer';
  return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match,matchStatus)}</strong><p className="fine muted">{layerCopy}</p></div>;
