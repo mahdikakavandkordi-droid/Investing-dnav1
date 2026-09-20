@@ -95,7 +95,7 @@ begin
 
   if not exists (
     select 1 from public.v_instrument_research_catalog
-    where symbol='HXS' and complexity_level='high' and replication_method='Total-return swaps'
+    where symbol='HXS' and complexity_level='high' and profile_replication_method='Total-return swaps'
   ) then
     raise exception 'HXS swap-complexity disclosure is missing';
   end if;
