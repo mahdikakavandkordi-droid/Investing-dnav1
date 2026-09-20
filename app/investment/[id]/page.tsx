@@ -22,7 +22,7 @@ import {OfficialFundFactsCard,OfficialFundDocumentCard} from '@/components/Offic
 import {ResearchContextCard} from '@/components/ResearchContextCard';
 import {ProductRiskCard} from '@/components/ProductRiskCard';
 
-/** Generic cross-asset detail shell; ETF-only research is composed when eligible. */
+/** Generic detail shell for the focused V1 product universe. */
 export default function Detail(){
  const {id}=useParams<{id:string}>();
  const [item,setItem]=useState<Instrument|null>(null);
@@ -121,8 +121,9 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
   <div className="detail-flow-v2">
    {isFund
     ? <>
-      <ResearchDisclosure title="Fund DNA & fees">
-       {facts&&<OfficialFundFactsCard facts={facts}/>}
+      <ResearchDisclosure title={item.asset_type==='MUTUAL_FUND'?'Fund profile & fees':'Fund DNA & fees'}>
+       {facts&&<OfficialFundFactsCard facts={facts} assetType={item.asset_type}/>}
+       {item.asset_type==='MUTUAL_FUND'&&<InstrumentTermsCard instrument={item}/>}
        {dna&&<InvestmentDnaCard dna={dna}/>}
       </ResearchDisclosure>
       <ResearchDisclosure title="Risk">
@@ -177,7 +178,7 @@ function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|n
 
  return <div className="detail-freshness-panel">
   {marketDate&&<span className={clearlyDelayed?"detail-freshness-chip delayed":"detail-freshness-chip"}>
-   {clearlyDelayed?'Market data may be delayed':'Market data after close'} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
+   {clearlyDelayed?(item.asset_type==='MUTUAL_FUND'?'NAV may be delayed':'Market data may be delayed'):(item.asset_type==='MUTUAL_FUND'?'Latest NAV':'Market data after close')} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
   </span>}
   {!marketDate&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<span className="detail-freshness-chip delayed">Latest {item.asset_type==='MUTUAL_FUND'?'NAV':'market-price'} date is not available</span>}
   <p className="muted fine detail-freshness-note">{researchCopy} Missing figures are never shown as zero.</p>
