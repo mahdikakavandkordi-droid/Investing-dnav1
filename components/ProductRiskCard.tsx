@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {getProductRisk} from '@/lib/product-risk/api';
 import {productRiskDimensionDefinition} from '@/lib/product-risk/dimensions';
 import type {ProductRiskAvailable,ProductRiskDimension} from '@/lib/product-risk/types';
+import {useLocale} from '@/lib/locale';
 
 /**
  * Published-only consumer Product Risk surface.
@@ -14,6 +15,7 @@ import type {ProductRiskAvailable,ProductRiskDimension} from '@/lib/product-risk
 export function ProductRiskCard({investmentId}:{investmentId:string}){
  const [risk,setRisk]=useState<ProductRiskAvailable|null>(null);
  const [selected,setSelected]=useState<ProductRiskDimension|null>(null);
+ const {locale,pick}=useLocale();
 
  useEffect(()=>{
   let active=true;
@@ -43,13 +45,13 @@ export function ProductRiskCard({investmentId}:{investmentId:string}){
   <div className="product-risk-head-v1">
    <div>
     <div className="eyebrow">Product Risk DNA</div>
-    <h2>How this investment behaves under risk</h2>
-    <p>{risk.summary||'A source-backed product risk profile is available for this investment.'}</p>
+    <h2>{pick("How this investment behaves under risk","Comment ce placement se comporte face au risque")}</h2>
+    <p>{risk.summary||pick('A source-backed product risk profile is available for this investment.','Un profil de risque produit appuyé par des sources est disponible pour ce placement.')}</p>
    </div>
-   <div className="product-risk-overall-v1" aria-label={`Overall Risk: ${risk.overall_risk.band||'Unknown'}`}>
-    <span>Overall Risk</span>
-    <strong>{risk.overall_risk.band||'Unknown'}</strong>
-    <small>Confidence: {risk.overall_risk.confidence}</small>
+   <div className="product-risk-overall-v1" aria-label={`${pick('Overall Risk','Risque global')}: ${risk.overall_risk.band||pick('Unknown','Inconnu')}`}>
+    <span>{pick("Overall Risk","Risque global")}</span>
+    <strong>{risk.overall_risk.band||pick('Unknown','Inconnu')}</strong>
+    <small>{pick("Confidence","Confiance")}: {risk.overall_risk.confidence}</small>
    </div>
   </div>
 
@@ -63,27 +65,27 @@ export function ProductRiskCard({investmentId}:{investmentId:string}){
       <strong>{dimension.level}</strong>
      </div>
      <p className="product-risk-direction-v1">{directionCopy(dimension)}</p>
-     <small>Evidence confidence: {dimension.confidence}</small>
+     <small>{pick("Evidence confidence","Confiance des preuves")}: {dimension.confidence}</small>
      <button
       type="button"
       className="product-risk-help-button-v1"
-      aria-label={`What does ${label} mean?`}
+      aria-label={`${pick("What does","Que signifie")} ${label}?`}
       onClick={()=>setSelected(dimension)}
-     >What does this mean?</button>
+     >{pick("What does this mean?","Qu’est-ce que cela signifie?")}</button>
     </article>;
    })}
   </div>
 
   {notes.length>0&&<div className="product-risk-notes-v1">
-   <h3>Key things to know</h3>
+   <h3>{pick("Key things to know","Points clés à connaître")}</h3>
    <ul>{notes.slice(0,4).map(note=><li key={note}>{note}</li>)}</ul>
   </div>}
 
   <div className="product-risk-footer-v1">
-   <p><strong>Product Risk describes the investment, not your personal fit.</strong> DNA Match is a separate compatibility layer that also uses your Investor DNA and money context.</p>
+   <p><strong>{pick("Product Risk describes the investment, not your personal fit.","Product Risk décrit le placement, pas votre compatibilité personnelle.")}</strong> {pick("DNA Match is a separate compatibility layer that also uses your Investor DNA and money context.","DNA Match est une couche de compatibilité distincte qui utilise aussi votre Investor DNA et votre contexte financier.")}</p>
    <div>
-    {risk.as_of_date&&<span>Risk inputs as of {risk.as_of_date}</span>}
-    <Link href="/research/product-risk">How Product Risk DNA works →</Link>
+    {risk.as_of_date&&<span>{pick("Risk inputs as of","Données de risque en date du")} {risk.as_of_date}</span>}
+    <Link href="/research/product-risk">{pick("How Product Risk DNA works →","Comment fonctionne Product Risk DNA →")}</Link>
    </div>
   </div>
 
@@ -91,25 +93,26 @@ export function ProductRiskCard({investmentId}:{investmentId:string}){
  </section>;
 }
 
-function directionCopy(dimension:ProductRiskDimension){
- if(dimension.direction==='higher_is_better')return 'Higher = more of this beneficial property';
- if(dimension.direction==='higher_is_worse')return 'Higher = more risk pressure';
- return 'A descriptive product characteristic';
+function directionCopy(dimension:ProductRiskDimension,locale:"en"|"fr"="en"){
+ if(dimension.direction==='higher_is_better')return locale==='fr'?'Plus élevé = davantage de cette caractéristique favorable':'Higher = more of this beneficial property';
+ if(dimension.direction==='higher_is_worse')return locale==='fr'?'Plus élevé = davantage de pression de risque':'Higher = more risk pressure';
+ return locale==='fr'?'Une caractéristique descriptive du produit':'A descriptive product characteristic';
 }
 
 function ProductRiskDialog({dimension,onClose}:{dimension:ProductRiskDimension;onClose:()=>void}){
+ const {locale,pick}=useLocale();
  const definition=productRiskDimensionDefinition(dimension.code);
  const label=definition?.label||dimension.code;
  return <div className="product-risk-modal-backdrop-v1" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
   <div className="product-risk-modal-v1" role="dialog" aria-modal="true" aria-label={label}>
-   <button type="button" className="product-risk-modal-close-v1" aria-label="Close Product Risk explanation" onClick={onClose}>×</button>
-   <div className="eyebrow">Product Risk dimension</div>
+   <button type="button" className="product-risk-modal-close-v1" aria-label={pick("Close Product Risk explanation","Fermer l’explication Product Risk")} onClick={onClose}>×</button>
+   <div className="eyebrow">{pick("Product Risk dimension","Dimension Product Risk")}</div>
    <h2>{label}</h2>
-   <div className="product-risk-modal-level-v1"><span>Current level</span><strong>{dimension.level}</strong></div>
-   <p>{dimension.explanation||definition?.shortDefinition||'This dimension describes one part of the investment’s risk profile.'}</p>
-   <h3>Why it matters</h3>
+   <div className="product-risk-modal-level-v1"><span>{pick("Current level","Niveau actuel")}</span><strong>{dimension.level}</strong></div>
+   <p>{dimension.explanation||definition?.shortDefinition||pick('This dimension describes one part of the investment’s risk profile.','Cette dimension décrit une partie du profil de risque du placement.')}</p>
+   <h3>{pick("Why it matters","Pourquoi c’est important")}</h3>
    <p>{dimension.why_it_matters||definition?.whyItMatters}</p>
-   <p className="muted fine">{directionCopy(dimension)}. Evidence confidence: {dimension.confidence}.</p>
+   <p className="muted fine">{directionCopy(dimension)} . {pick("Evidence confidence","Confiance des preuves")}: {dimension.confidence}.</p>
   </div>
  </div>;
 }
