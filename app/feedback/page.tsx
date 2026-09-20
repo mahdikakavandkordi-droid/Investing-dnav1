@@ -7,6 +7,7 @@ import {pilot,rpc} from '@/lib/supabase';
 import {readClaimTicket} from '@/lib/dna';
 import type {AppState} from '@/lib/dna';
 import {useAccount} from '@/lib/use-account';
+import {useLocale} from '@/lib/locale';
 
 type Score=1|2|3|4|5;
 
@@ -25,6 +26,7 @@ export default function Feedback(){
  const [busy,setBusy]=useState(false);
  const [saved,setSaved]=useState(false);
  const [error,setError]=useState('');
+ const {pick}=useLocale();
 
  useEffect(()=>{
   const claim=readClaimTicket();
@@ -57,7 +59,7 @@ export default function Feedback(){
    });
    setSaved(true);
   }catch(e){
-   setError(e instanceof Error?e.message:'Could not save feedback.');
+   setError(e instanceof Error?e.message:pick('Could not save feedback.','Impossible d’enregistrer les commentaires.'));
   }finally{
    setBusy(false);
   }
@@ -67,57 +69,57 @@ export default function Feedback(){
 
  return <section className="section">
   <div className="container narrow">
-   <div className="eyebrow">Investing DNA pilot</div>
-   <h1>Tell us what felt clear — and what did not</h1>
-   <p className="muted">This takes about a minute. We use it to improve comprehension and product value, not to change your score.</p>
+   <div className="eyebrow">{pick("Investing DNA pilot","Pilote Investing DNA")}</div>
+   <h1>{pick("Tell us what felt clear — and what did not","Dites-nous ce qui était clair — et ce qui ne l’était pas")}</h1>
+   <p className="muted">{pick("This takes about a minute. We use it to improve comprehension and product value, not to change your score.","Cela prend environ une minute. Nous l’utilisons pour améliorer la compréhension et la valeur du produit, pas pour modifier votre score.")}</p>
 
    <form onSubmit={submit} className="auth-form">
-    <Scale legend="How easy was the experience to use?" value={ease} onChange={setEase}/>
-    <Scale legend="How much did you trust the way the result was explained?" value={trust} onChange={setTrust}/>
-    <Scale legend="How useful was the result for understanding investments?" value={useful} onChange={setUseful}/>
+    <Scale legend={pick("How easy was the experience to use?","Dans quelle mesure l’expérience était-elle facile à utiliser?")} value={ease} onChange={setEase}/>
+    <Scale legend={pick("How much did you trust the way the result was explained?","Dans quelle mesure avez-vous fait confiance à la façon dont le résultat était expliqué?")} value={trust} onChange={setTrust}/>
+    <Scale legend={pick("How useful was the result for understanding investments?","Dans quelle mesure le résultat était-il utile pour comprendre les placements?")} value={useful} onChange={setUseful}/>
     <BooleanQuestion
-     legend="Did you understand why a fund did or did not fit your DNA?"
+     legend={pick("Did you understand why a fund did or did not fit your DNA?","Avez-vous compris pourquoi un fonds correspondait ou non à votre DNA?")}
      value={understood}
-     yesLabel="Yes"
-     noLabel="Not really"
+     yesLabel={pick("Yes","Oui")}
+     noLabel={pick("Not really","Pas vraiment")}
      onChange={setUnderstood}
     />
     <BooleanQuestion
-     legend="Did DNA Match feel like it was telling you which investment to buy?"
+     legend={pick("Did DNA Match feel like it was telling you which investment to buy?","DNA Match vous a-t-il semblé indiquer quel placement acheter?")}
      value={matchAsBuy}
-     yesLabel="Yes"
-     noLabel="No"
+     yesLabel={pick("Yes","Oui")}
+     noLabel={pick("No","Non")}
      onChange={setMatchAsBuy}
     />
     <BooleanQuestion
-     legend="Did you interpret a Match score as an estimate of future return or performance?"
+     legend={pick("Did you interpret a Match score as an estimate of future return or performance?","Avez-vous interprété un score Match comme une estimation du rendement ou de la performance future?")}
      value={scoreAsReturn}
-     yesLabel="Yes"
-     noLabel="No"
+     yesLabel={pick("Yes","Oui")}
+     noLabel={pick("No","Non")}
      onChange={setScoreAsReturn}
     />
     <BooleanQuestion
-     legend="Would you come back to Investing DNA to research or compare another investment?"
+     legend={pick("Would you come back to Investing DNA to research or compare another investment?","Reviendriez-vous sur Investing DNA pour rechercher ou comparer un autre placement?")}
      value={returnAgain}
-     yesLabel="Yes"
-     noLabel="Probably not"
+     yesLabel={pick("Yes","Oui")}
+     noLabel={pick("Probably not","Probablement pas")}
      onChange={setReturnAgain}
     />
 
     <label>
-     What was confusing or missing? <span className="fine muted">Optional</span>
+     {pick("What was confusing or missing?","Qu’est-ce qui était confus ou manquant?")} <span className="fine muted">{pick("Optional","Facultatif")}</span>
      <textarea
       className="field"
       rows={5}
       maxLength={1500}
       value={text}
       onChange={event=>setText(event.target.value)}
-      placeholder="Tell us the one thing you would change…"
+      placeholder={pick("Tell us the one thing you would change…","Dites-nous la chose que vous changeriez…")}
      />
     </label>
 
     <button className="btn primary" disabled={busy||!ease||!trust||!useful||understood===null||matchAsBuy===null||scoreAsReturn===null||returnAgain===null}>
-     {busy?'Saving…':'Send pilot feedback'}
+     {busy?pick('Saving…','Enregistrement…'):pick('Send pilot feedback','Envoyer mes commentaires')}
     </button>
     {error&&<p className="notice" role="alert">{error}</p>}
    </form>
@@ -126,6 +128,7 @@ export default function Feedback(){
 }
 
 function Scale({legend,value,onChange}:{legend:string;value:Score|null;onChange:(value:Score)=>void}){
+ const {pick}=useLocale();
  return <fieldset className="card">
   <legend><strong>{legend}</strong></legend>
   <div className="mode-tabs" role="radiogroup" aria-label={legend}>
@@ -137,7 +140,7 @@ function Scale({legend,value,onChange}:{legend:string;value:Score|null;onChange:
     onClick={()=>onChange(score)}
    >{score}</button>)}
   </div>
-  <p className="fine muted">1 = low · 5 = high</p>
+  <p className="fine muted">{pick("1 = low · 5 = high","1 = faible · 5 = élevé")}</p>
  </fieldset>;
 }
 
@@ -160,15 +163,16 @@ function BooleanQuestion({
 }
 
 function FeedbackSaved(){
+ const {pick}=useLocale();
  return <section className="section">
   <div className="container narrow">
    <div className="card">
-    <div className="eyebrow">Pilot feedback saved</div>
-    <h1>Thank you — this is exactly what we need for the pilot.</h1>
-    <p>Your response will be analyzed in aggregate with product funnel data. It does not change your DNA or Match result.</p>
+    <div className="eyebrow">{pick("Pilot feedback saved","Commentaires du pilote enregistrés")}</div>
+    <h1>{pick("Thank you — this is exactly what we need for the pilot.","Merci — c’est exactement ce dont nous avons besoin pour le pilote.")}</h1>
+    <p>{pick("Your response will be analyzed in aggregate with product funnel data. It does not change your DNA or Match result.","Votre réponse sera analysée de façon agrégée avec les données du parcours produit. Elle ne modifie ni votre DNA ni votre résultat Match.")}</p>
     <div className="actions">
-     <Link className="btn primary" href="/profile">Back to my profile</Link>
-     <Link className="btn" href="/match">Open my matches</Link>
+     <Link className="btn primary" href="/profile">{pick("Back to my profile","Retour à mon profil")}</Link>
+     <Link className="btn" href="/match">{pick("Open my matches","Ouvrir mes correspondances")}</Link>
     </div>
    </div>
   </div>
