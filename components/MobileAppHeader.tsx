@@ -5,7 +5,7 @@ import {usePathname} from "next/navigation";
 import {UserRound} from "lucide-react";
 import {BrandMark} from "@/components/BrandMark";
 
-const APP_ROUTES=["/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account"];
+const APP_ROUTES=["/","/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account"];
 
 export function MobileAppHeader(){
  const pathname=usePathname()||"/";

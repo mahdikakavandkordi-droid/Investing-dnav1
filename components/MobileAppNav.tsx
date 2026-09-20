@@ -5,14 +5,14 @@ import {usePathname} from "next/navigation";
 import {Home, Dna, Search, Heart, UserRound} from "lucide-react";
 
 const items=[
- {label:"Home",href:"/profile",Icon:Home,match:(path:string)=>path==="/profile"||path==="/dashboard"},
+ {label:"Home",href:"/",Icon:Home,match:(path:string)=>path==="/"||path==="/profile"||path==="/dashboard"},
  {label:"DNA",href:"/dna",Icon:Dna,match:(path:string)=>path.startsWith("/dna")||path==="/match"},
  {label:"Explore",href:"/explore",Icon:Search,match:(path:string)=>path.startsWith("/explore")||path.startsWith("/investment/")||path==="/screener"||path==="/compare"},
  {label:"Watchlist",href:"/watchlist",Icon:Heart,match:(path:string)=>path.startsWith("/watchlist")},
  {label:"Profile",href:"/account",Icon:UserRound,match:(path:string)=>path.startsWith("/account")}
 ] as const;
 
-const APP_ROUTES=["/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account"];
+const APP_ROUTES=["/","/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account"];
 
 export function MobileAppNav(){
  const pathname=usePathname()||"/";

@@ -10,8 +10,51 @@ const CAPABILITIES=[
  {icon:"♡",title:"Save your watchlist",body:"Keep the investments you want to revisit without interrupting your research."}
 ];
 
+
+function MobileHomeLanding(){
+ return <section className="mobile-home-landing" aria-label="Investing DNA mobile home">
+  <div className="mobile-home-landing-hero">
+   <span className="mobile-card-kicker">Invest with clarity</span>
+   <h1>Know your investor DNA.</h1>
+   <p>Understand how you invest, add context for this money, then research investments with a clearer reason why.</p>
+   <div className="mobile-home-landing-actions">
+    <Link className="btn primary" href="/dna/assessment">Start your DNA <span aria-hidden>→</span></Link>
+    <Link className="btn" href="/explore">Explore first</Link>
+   </div>
+  </div>
+
+  <section className="mobile-home-path-card">
+   <div className="mobile-home-section-head"><div><span className="mobile-card-kicker">Your path</span><h2>Three steps. One connected flow.</h2></div></div>
+   <div className="mobile-home-path-list">
+    <Link href="/dna/assessment"><b>01</b><span><strong>Discover your DNA</strong><small>Risk tolerance, capacity and decision style.</small></span><i>›</i></Link>
+    <Link href="/dna/context"><b>02</b><span><strong>Add money context</strong><small>Goal, horizon, access and protection needs.</small></span><i>›</i></Link>
+    <Link href="/match"><b>03</b><span><strong>Research DNA Match</strong><small>See compatible ETFs and why they line up.</small></span><i>›</i></Link>
+   </div>
+  </section>
+
+  <section className="mobile-home-value-card">
+   <span className="mobile-card-kicker">What you get</span>
+   <div className="mobile-home-value-grid">
+    <div><strong>Your profile</strong><small>A personal Investor DNA report.</small></div>
+    <div><strong>Goal-aware Match</strong><small>Compatibility with context, not a buy recommendation.</small></div>
+    <div><strong>Clear research</strong><small>ETF, GIC, T-Bill and bond details without fake missing values.</small></div>
+   </div>
+  </section>
+
+  <section className="mobile-home-explore-card">
+   <div><span className="mobile-card-kicker">Research</span><h2>Explore Canadian investments</h2><p>Start with the asset type you care about, then compare the facts that actually matter.</p></div>
+   <div className="mobile-home-asset-chips" aria-label="Available research categories"><span>ETFs</span><span>GICs</span><span>T-Bills</span><span>Bonds</span></div>
+   <Link className="btn" href="/explore">Open Explore <span aria-hidden>→</span></Link>
+  </section>
+
+  <p className="mobile-home-disclaimer">Educational research, not investment advice.</p>
+ </section>;
+}
+
 export default function Home(){
  return <div className="platform-home">
+  <MobileHomeLanding/>
+  <div className="desktop-home-experience">
   <section className="platform-hero">
    <div className="platform-hero-scenery" aria-hidden="true">
     <span className="hero-mountain hero-mountain-far"/>
@@ -148,5 +191,6 @@ export default function Home(){
     <article><span>✦</span><div><strong>Built for Canadian investors</strong><p>Canadian assets, Canadian context and source-backed research.</p></div></article>
    </div>
   </section>
+  </div>
  </div>;
 }

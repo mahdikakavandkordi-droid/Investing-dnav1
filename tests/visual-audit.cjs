@@ -206,6 +206,15 @@ async function runViewport(browser,label,viewport){
  page.on('pageerror',e=>errors.push(String(e)));
 
  await page.goto(ORIGIN+'/',{waitUntil:'networkidle'});
+ if(mobile){
+  await page.getByRole('heading',{name:'Know your investor DNA.',exact:true}).waitFor();
+  assert.ok(await page.locator('.mobile-home-landing').isVisible());
+  assert.equal(await page.locator('.desktop-home-experience:visible').count(),0);
+  await assertMobileShell(page,'Home');
+ }else{
+  assert.ok(await page.locator('.desktop-home-experience').isVisible());
+  assert.equal(await page.locator('.mobile-home-landing:visible').count(),0);
+ }
  await shot(page,label+'-01-home');
 
  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
