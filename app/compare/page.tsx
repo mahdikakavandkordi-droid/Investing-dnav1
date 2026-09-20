@@ -107,6 +107,7 @@ export default function Compare(){
 }
 
 function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instrument[];selected:string[];busy:boolean;onSelect:(index:number,id:string)=>void;onCompare:()=>void;}){
+ const {pick}=useLocale();
  return <>
   <div className="compare-picker">
    {selected.map((id,index)=><label key={index}>{pick("Investment","Placement")} {index+1}<select className="field" value={id} onChange={event=>onSelect(index,event.target.value)}>
