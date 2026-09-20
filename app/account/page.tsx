@@ -52,7 +52,7 @@ export default function AccountPage(){
    </>:<section className="mobile-account-card">
     <h2>{pick("Save your DNA when it becomes useful.","Enregistrez votre DNA lorsque cela devient utile.")}</h2>
     <p>{pick("You can explore and complete the assessment before creating an account.","Vous pouvez explorer et terminer l’évaluation avant de créer un compte.")}</p>
-    <div className="actions"><Link className="btn primary" href="/profile">{pick("Sign in or create account","Se connecter ou créer un compte")}</Link></div>
+    <div className="actions"><Link className="btn primary" href="/signup">{pick("Create free account","Créer un compte gratuit")}</Link><Link className="btn" href="/login">{pick("Sign in","Connexion")}</Link></div>
    </section>}
    {error&&<div className="notice" role="alert">{error}</div>}
   </div>
