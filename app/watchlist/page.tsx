@@ -66,8 +66,8 @@ function SignedOutWatchlist({locale}:{locale:"en"|"fr"}){
   <h2>{pick("A place to come back to","Un espace où revenir")}</h2>
   <p>{pick("Create an account only when you want to keep investment research across visits and devices.","Créez un compte seulement si vous souhaitez conserver votre recherche entre vos visites et vos appareils.")}</p>
   <div className="actions">
-   <Link className="btn primary" href="/profile?mode=signup">{pick("Create account","Créer un compte")}</Link>
-   <Link className="btn" href="/profile">{pick("Sign in","Connexion")}</Link>
+   <Link className="btn primary" href="/signup">{pick("Create account","Créer un compte")}</Link>
+   <Link className="btn" href="/login">{pick("Sign in","Connexion")}</Link>
   </div>
  </section>;
 }
