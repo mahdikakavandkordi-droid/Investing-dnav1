@@ -3,7 +3,7 @@
 import {DnaEntryActions} from "@/components/DnaEntryActions";
 import {useLocale} from "@/lib/locale";
 
-const PILLARS=(pick:(en:string,fr:string)=>string):[string,string][][]=>[
+const PILLARS=(pick:(en:string,fr:string)=>string):[string,string][]=>[
  [pick("Risk tolerance","Tolérance au risque"),pick("How much uncertainty and market movement you are emotionally comfortable accepting.","Le niveau d’incertitude et de mouvement des marchés que vous êtes à l’aise d’accepter.")],
  [pick("Financial capacity","Capacité financière"),pick("How much risk your finances can realistically absorb without disrupting important needs.","Le niveau de risque que vos finances peuvent réellement absorber sans compromettre vos besoins importants.")],
  [pick("Decision patterns","Habitudes de décision"),pick("How you tend to react to evidence, pressure, other people and changing markets.","Votre façon habituelle de réagir aux informations, à la pression, aux autres et aux marchés en changement.")],
