@@ -120,7 +120,7 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
 
   <ResearchFreshness item={item} freshness={freshness}/>
 
-  <div className="mobile-detail-actions" aria-label={pick("Investment actions","Actions sur le placement")}><Link className="btn" href={`/compare?ids=${item.id}`}>{pick("Compare","Comparer")}</Link><Link className="btn primary" href={`/profile?mode=signup&investment=${item.id}`}>{pick("Save","Enregistrer")}</Link></div>
+  <div className="mobile-detail-actions" aria-label={pick("Investment actions","Actions sur le placement")}><Link className="btn" href={`/compare?ids=${item.id}`}>{pick("Compare","Comparer")}</Link><Link className="btn primary" href={`/signup?investment=${item.id}`}>{pick("Save","Enregistrer")}</Link></div>
 
   <div className="detail-flow-v2">
    {isFund
