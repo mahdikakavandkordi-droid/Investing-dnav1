@@ -117,8 +117,8 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
     <h2>{guestMatch?pick('Save this research for later','Enregistrer cette recherche pour plus tard'):(pick('Keep this','Garder ce')+' '+typeLabel.toLowerCase()+' '+pick('on your radar','à surveiller'))}</h2>
     <p>{pick("Create a free passwordless account only if you want to save research items and return to your watchlist later.","Créez un compte gratuit sans mot de passe seulement si vous souhaitez enregistrer des recherches et revenir à votre liste de suivi plus tard.")}</p>
     <div className="actions">
-     <Link className="btn primary" href={'/profile?mode=signup&investment='+id}>{pick("Save with an account","Enregistrer avec un compte")}</Link>
-     <Link className="btn" href={'/profile?investment='+id}>{pick("Already have an account? Sign in","Vous avez déjà un compte? Connexion")}</Link>
+     <Link className="btn primary" href={'/signup?investment='+id}>{pick("Save with an account","Enregistrer avec un compte")}</Link>
+     <Link className="btn" href={'/login?investment='+id}>{pick("Already have an account? Sign in","Vous avez déjà un compte? Connexion")}</Link>
     </div>
     <p className="muted fine">{pick("Browsing research, Investor DNA results and same-session ETF Match stay available without an account.","La recherche, les résultats Investor DNA et le Match FNB de la session restent disponibles sans compte.")}</p>
    </div>
