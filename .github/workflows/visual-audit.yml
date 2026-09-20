@@ -6,6 +6,7 @@ on:
     branches:
       - codex/integration-product-risk-platform-v1
       - codex/mobile-app-v1
+      - codex/maturity-sprint-5-portfolio-blueprint
     paths:
       - 'app/**'
       - 'components/**'
