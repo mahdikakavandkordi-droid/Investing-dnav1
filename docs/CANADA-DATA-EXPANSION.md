@@ -155,12 +155,11 @@ The temporary zero-cost Yahoo route remains a low-priority research feed. It can
 
 The original 40 TSX ETFs completed their catch-up before this Sprint 6 expansion. New waves then entered the same audited worker.
 
-Latest Mackenzie + RBC backfill:
-- due instruments: **14**
-- bars fetched: **54**
-- bars ingested: **54**
-- skipped: **0**
-- errors: **0**
+Latest market-history verification:
+- all **79 / 79 ETFs** now have canonical price history through the latest trading day in scope (**2026-09-18**)
+- the previously missing TD / Global X / Purpose batch backfilled **153 fetched / 153 ingested / 0 errors**
+- Fidelity Cboe Canada backfill completed **72 / 72 rows / 0 errors**
+- Mackenzie + RBC backfill completed **54 / 54 rows / 0 errors**
 
 The live `market-data-refresh` Edge Function is ACTIVE with TSX and Cboe Canada support.
 
@@ -188,6 +187,8 @@ Match eligibility remains a separate evidence-review step.
 - `20260920214411_canada_rbc_core_etf_wave_v1.sql`
 - `20260920214539_normalize_mackenzie_issuer_and_risk_provenance.sql`
 - `20260920215105_surface_canonical_prices_and_rbc_browser_metrics.sql`
+- `20260920220127_repair_research_source_links_v1.sql`
+- `20260920220456_browser_risk_fallback_to_official_rating_v1.sql`
 
 ## Regression
 
@@ -203,3 +204,25 @@ Match eligibility remains a separate evidence-review step.
 - current research coverage floors.
 
 The live SQL regression completes without error.
+
+
+## Data health audit
+
+The 2026-09-20 full-catalog audit found no duplicate active symbol/exchange pairs, no future-dated research rows, no invalid negative price/MER/AUM values, and no broken complete-exposure totals.
+
+Two provenance gaps in issuer-verified performance and six older profile source links were repaired against already-stored official issuer sources. After repair:
+- issuer-verified performance rows missing a source: **0**
+- active ETF profile rows missing a source: **0**
+- browser-facing ETF prices present: **79 / 79**
+- browser-facing ETF official risk present: **79 / 79**
+
+Ten ETFs intentionally retain a null MER rather than confusing management fee with MER: the eight Mackenzie additions plus the new RBC RCAN and RUSA funds. Their available issuer management fee remains separately sourced.
+
+Current latest data-quality statuses for the ETF universe are:
+- verified: **27**
+- verified_partial: **17**
+- stale: **35**
+
+The stale label is conservative and source-date driven. After the market-history backfills, none of the stale ETFs is stale because price history is missing; the remaining flags are older risk-metric / holdings / metric source dates or missing holdings. Those rows stay stale until a newer issuer source is actually available rather than being re-dated artificially.
+
+One TD hedged-international holding row (THE underlying TPE at 100.35%) legitimately exceeds 100% gross exposure in the source context. It is preserved rather than clamped because hedge/cash offsets make gross holdings different from a simple 100% long-only portfolio.
