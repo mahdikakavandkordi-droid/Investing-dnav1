@@ -97,7 +97,9 @@ Yahoo Finance is not being treated as an official issuer source or as a permanen
 
 The temporary free TSX bridge is active without any paid credential or GitHub secret. Supabase Cron owns the recurring schedule.
 
-A controlled canary on 2026-09-19 completed successfully for `VFV`: 4 rows fetched, 4 inserted, 0 errors. A full catch-up then completed for all 40 current Canadian ETFs: 200 rows fetched, 200 inserted, 0 errors. After that run, all 40 ETFs had a latest price-history date of 2026-09-18.
+A controlled canary on 2026-09-19 completed successfully for `VFV`: 4 rows fetched, 4 inserted, 0 errors. A full catch-up then completed for the original 40-ETF Canadian universe: 200 rows fetched, 200 inserted, 0 errors. After that run, all 40 had a latest price-history date of 2026-09-18.
+
+On 2026-09-20 the active Canadian ETF research universe expanded from 40 to 57 instruments with a sourced 17-ETF batch from TD Asset Management, Global X and Purpose Investments. Current issuer-page metrics and official ETF Facts were seeded for that batch. Those 17 instruments enter the same scheduled `yahoo_free` TSX price-history path on the next eligible post-close run; the catalog does not fabricate a historical refresh date before that worker actually succeeds.
 
 The source remains explicitly temporary and low priority. After funding, replace it with a licensed Canadian provider, give that provider a higher source priority, run a source-overlap canary, and only then retire `yahoo_free`.
 
