@@ -23,7 +23,8 @@ function finiteMix(facts:OfficialFundFacts){
   .filter(([,value])=>Number.isFinite(value)&&value>=0);
 }
 
-export function OfficialFundFactsCard({facts}:{facts:OfficialFundFacts}){
+export function OfficialFundFactsCard({facts,assetType}:{facts:OfficialFundFacts;assetType?:string|null}){
+ void assetType;
  const mix=finiteMix(facts);
  const overall=mix.filter(([key])=>key==='equity'||key==='fixed_income'||key==='cash'||key==='other');
  const equity=mix.filter(([key])=>key!=='equity'&&key.includes('equity'));
@@ -40,7 +41,7 @@ export function OfficialFundFactsCard({facts}:{facts:OfficialFundFacts}){
  return <section className="official-facts-card official-facts-v2">
   <div className="official-facts-intro">
    <div className="eyebrow">Fund at a glance</div>
-   <h2>How this ETF is allocated</h2>
+   <h2>How this fund is allocated</h2>
    <p className="official-summary">{facts.summary||facts.objective||'A plain-English summary is not available yet.'}</p>
   </div>
 
@@ -82,9 +83,11 @@ function AllocationBreakdown({title,parent,rows}:{title:string;parent:string;row
  </section>;
 }
 
-export function OfficialFundDocumentCard({facts}:{facts:OfficialFundFacts}){
+export function OfficialFundDocumentCard({facts,assetType}:{facts:OfficialFundFacts;assetType?:string|null}){
+ const isMutualFund=assetType==='MUTUAL_FUND';
+ const documentLabel=isMutualFund?'Fund Facts':'ETF Facts';
  return <section className="official-document-card">
-  <div><div className="eyebrow">Official document</div><h2>ETF Facts</h2><p>The issuer's legal summary covers the fund's objective, holdings, risk, past performance and costs.</p><p className="official-source-line">Source: {facts.source_name}{facts.etf_facts_date?` · ${niceDate(facts.etf_facts_date)}`:''}</p></div>
-  <a className="btn primary" href={facts.etf_facts_url} target="_blank" rel="noreferrer">Open ETF Facts ↗</a>
+  <div><div className="eyebrow">Official document</div><h2>{documentLabel}</h2><p>The issuer's legal summary covers the fund's objective, holdings, risk, past performance and costs.</p><p className="official-source-line">Source: {facts.source_name}{facts.etf_facts_date?` · ${niceDate(facts.etf_facts_date)}`:''}</p></div>
+  <a className="btn primary" href={facts.etf_facts_url} target="_blank" rel="noreferrer">Open {documentLabel} ↗</a>
  </section>;
 }
