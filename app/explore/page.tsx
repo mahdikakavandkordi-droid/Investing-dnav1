@@ -56,7 +56,7 @@ export default function Explore(){
     <div className="explore-hero-row">
      <div>
       <h1><span className="desktop-explore-title">Research different structures without the jargon.</span><span className="mobile-explore-title">Explore</span></h1>
-      <p><span className="desktop-explore-copy">Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</span><span className="mobile-explore-copy">Find investments, scan the key facts and open the research that matters to you.</span></p>
+      <p><span className="desktop-explore-copy">Search ETFs, mutual funds and GICs, then compare products within the same type and see how each one fits into your investment research.</span><span className="mobile-explore-copy">Find investments, scan the key facts and open the research that matters to you.</span></p>
      </div>
      <Link className="btn" href="/compare">Compare investments</Link><Link className="mobile-explore-compare" href="/compare">Compare</Link>
     </div>
@@ -83,7 +83,7 @@ export default function Explore(){
       <strong>{loading?'Loading research…':`${visible.length} investment${visible.length===1?'':'s'}`}</strong>
       <span>Only sourced research fields are shown. Missing optional facts are hidden instead of filled with placeholders.</span>
      </div>
-     <span className="pill">DNA Match: ETFs</span>
+     <span className="pill">DNA Match: ETFs + Mutual Funds</span>
     </div>
 
     {loading
@@ -143,8 +143,8 @@ function InvestmentCard({item}:{item:Instrument}){
    </div>)}
   </div>}
 
-  {item.market_price_date&&item.asset_type==='ETF'&&<p className="investment-card-market-date">
-   Price updated after close · {formatMarketDate(item.market_price_date)}
+  {item.market_price_date&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<p className="investment-card-market-date">
+   {item.asset_type==='MUTUAL_FUND'?'NAV updated':'Price updated after close'} · {formatMarketDate(item.market_price_date)}
   </p>}
 
   <div className="investment-card-footer">
