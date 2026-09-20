@@ -1423,3 +1423,13 @@
  .mobile-app-header-actions{display:flex;align-items:center;gap:7px}
  .mobile-app-header-actions .locale-switch{flex:0 0 auto}
 }
+
+
+@media(max-width:760px){
+ .auth-entry-page{padding:14px 0 26px;min-height:calc(100svh - var(--mobile-safe))}
+ .auth-entry-page>.container{padding:0 14px!important}
+ .dedicated-auth-card{padding:20px 17px!important;border-radius:18px!important}
+ .dedicated-auth-card>h1{font-size:29px!important;line-height:1.04!important}
+ .dedicated-auth-form{gap:10px}
+ .dedicated-auth-switch{display:grid;text-align:center;gap:4px}
+}
