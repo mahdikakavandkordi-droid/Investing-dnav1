@@ -4,6 +4,7 @@ import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {UserRound} from "lucide-react";
 import {BrandMark} from "@/components/BrandMark";
+import {LanguageToggle} from "@/lib/locale";
 
 const APP_ROUTES=["/","/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account"];
 
