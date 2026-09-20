@@ -366,8 +366,25 @@ async function runViewport(browser,label,viewport){
   await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Save your DNA when it becomes useful.',exact:true}).waitFor();
+  await page.getByRole('link',{name:'Create free account',exact:true}).waitFor();
+  await page.getByRole('link',{name:'Sign in',exact:true}).waitFor();
   await assertMobileShell(page,'Profile');
   await shot(page,label+'-14c-account-signed-out');
+
+  await page.goto(ORIGIN+'/signup',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Create your Investing DNA account',exact:true}).waitFor();
+  assert.ok(await page.locator('.mobile-app-header').isVisible());
+  assert.equal(await page.locator('.mobile-app-nav').count(),0);
+  await page.getByLabel('First name').waitFor();
+  await page.getByLabel('Email address').waitFor();
+  await shot(page,label+'-14c2-signup');
+
+  await page.goto(ORIGIN+'/login',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Sign in to Investing DNA',exact:true}).waitFor();
+  assert.ok(await page.locator('.mobile-app-header').isVisible());
+  assert.equal(await page.locator('.mobile-app-nav').count(),0);
+  await page.getByLabel('Email address').waitFor();
+  await shot(page,label+'-14c3-login');
 
   await page.goto(ORIGIN+'/profile',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:/Save your Investor DNA|Create your free account or sign in/}).waitFor();
