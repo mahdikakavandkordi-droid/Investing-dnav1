@@ -15,11 +15,13 @@
 .investment-card-v2{position:relative;overflow:hidden}
 .investment-card-v2:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#80cfc3}
 .investment-card-etf:before{background:#65c8b8}
+.investment-card-mutual_fund:before{background:#6f97c7}
 .investment-card-gic:before{background:#e8c85d}
 .investment-card-bond:before{background:#9b83d8}
 .investment-card-t_bill:before{background:#e59494}
 .investment-card-commercial_paper:before{background:#8aa9b5}
 .investment-card-etf .asset-tag{background:#dff4ef;color:#177f72}
+.investment-card-mutual_fund .asset-tag{background:#e8f0fb;color:#456b99}
 .investment-card-gic .asset-tag{background:#fff0bd;color:#86680b}
 .investment-card-bond .asset-tag{background:#eee5ff;color:#6a4aa6}
 .investment-card-t_bill .asset-tag{background:#ffe0e0;color:#aa4b4b}
@@ -156,6 +158,9 @@
 .investment-detail-identity.asset-detail-etf{
  --asset-accent:#65c8b8;--asset-soft:#dff4ef;--asset-ink:#177f72;--asset-wash:#f4fbf9;--asset-border:#cfe9e4;
 }
+.investment-detail-identity.asset-detail-mutual_fund{
+ --asset-accent:#6f97c7;--asset-soft:#e8f0fb;--asset-ink:#456b99;--asset-wash:#f7faff;--asset-border:#d5e2f2;
+}
 .investment-detail-identity.asset-detail-gic{
  --asset-accent:#e8c85d;--asset-soft:#fff0bd;--asset-ink:#86680b;--asset-wash:#fffbef;--asset-border:#f0df9f;
 }
@@ -226,3 +231,11 @@
  .investment-detail-identity .detail-hero-v2:before{height:4px}
  .investment-detail-identity .detail-key-facts-v2 .detail-stat-v2:before{width:2px}
 }
+
+/* V1 same-type compare identity */
+.compare-card{position:relative;overflow:hidden}
+.compare-card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#d8e1e4}
+.compare-card-etf:before{background:#65c8b8}
+.compare-card-mutual_fund:before{background:#6f97c7}
+.compare-card-gic:before{background:#e8c85d}
+.compare-card-mutual_fund .pill:first-child{background:#e8f0fb;color:#456b99}
