@@ -57,10 +57,7 @@ export default function Matches(){
    });
    setLoading(true);
    Promise.all([
-    Promise.all([
     rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100}),
-    rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
-   ]).then(([etfs,mutualFunds])=>[...etfs,...mutualFunds]),
     rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
    ]).then(([etfs,mutualFunds])=>{if(active)setFunds([...etfs,...mutualFunds])})
     .catch(e=>{if(active)setError(e.message)})
@@ -71,7 +68,10 @@ export default function Matches(){
   setLoading(true);
   Promise.all([
    rpc<AppState>('get_current_investor_app_state'),
-   rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100})
+   Promise.all([
+    rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100}),
+    rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
+   ]).then(([etfs,mutualFunds])=>[...etfs,...mutualFunds])
   ])
    .then(([appState,fundRows])=>{
     if(!active)return;
