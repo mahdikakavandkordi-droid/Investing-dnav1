@@ -19,7 +19,7 @@ import {useLocale} from '@/lib/locale';
  * if they shared fund metrics such as MER or historical fund returns.
  */
 export default function Screener(){
- const {locale,pick}=useLocale();
+ const {pick}=useLocale();
  const {user,loading:authLoading}=useAccount();
  const [rows,setRows]=useState<Fund[]>([]);
  const [query,setQuery]=useState('');
