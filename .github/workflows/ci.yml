@@ -12,6 +12,7 @@ on:
       - codex/maturity-sprint-2-retention
       - codex/maturity-sprint-3-auth-canary
       - codex/maturity-sprint-4-pilot-readiness
+      - codex/maturity-sprint-5-portfolio-blueprint
   pull_request:
     branches:
       - codex/integration-product-risk-platform-v1
@@ -19,6 +20,7 @@ on:
       - codex/maturity-sprint-1
       - codex/maturity-sprint-2-retention
       - codex/maturity-sprint-3-auth-canary
+      - codex/maturity-sprint-4-pilot-readiness
   workflow_dispatch:
 
 jobs:

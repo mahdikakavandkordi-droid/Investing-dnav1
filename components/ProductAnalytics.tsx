@@ -34,9 +34,9 @@ export function ProductAnalytics(){
    });
   }
 
-  if(pathname==='/profile'&&new URLSearchParams(location.search).get('mode')==='signup'){
+  if(pathname==='/signup'){
    void trackProductEvent('signup_requested',{
-    route:'/profile',
+    route:'/signup',
     metadata:{source:'signup_route'}
    });
   }

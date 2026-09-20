@@ -106,6 +106,10 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
   const send=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
   if(url.includes('/auth/v1/user'))return send({message:'No active session'},401);
   if(url.includes('/auth/v1/logout'))return send({});
+  if(url.includes('/functions/v1/investor-dna-report')){
+   if(body.action==='status')return send({email_pdf_enabled:false});
+   throw new Error('Unexpected report action in hard flow: '+body.action);
+  }
   if(url.includes('/functions/v1/investing-dna-pilot')){
    if(body.action==='track_event')return send({tracked:true});
    if(body.action==='submit_feedback')return send({saved:true});
@@ -203,6 +207,10 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/Mahdi, a clearer path for this goal\./);
  assert.match(text,/91\s*\/100|91\/100/);
  assert.match(text,/same DNA/i);
+ assert.match(text,/Part 3 · Portfolio Blueprint/i);
+ assert.match(text,/Your Core Blueprint/i);
+ assert.match(text,/Equity\s*60%/i);
+ assert.match(text,/Equity\s*75%/i);
 
  await page.goto(ORIGIN+'/match');
  await page.getByText('Context-aware match',{exact:true}).waitFor();
@@ -243,6 +251,8 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  await seed(draftFor('JACKPOT','available',context));
  await page.goto(ORIGIN+'/dna/result');
  await page.getByRole('heading',{name:'VANGUARD',exact:true}).waitFor();
+ const vanguardReportText=await page.locator('body').innerText();
+ assert.match(vanguardReportText,/Equity\s*85%/i,'high-tolerance/high-capacity core blueprint did not differ from the moderate persona');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Desktop report has horizontal overflow');
  assert.deepEqual(runtimeErrors,[],'Browser runtime errors were observed during hard flow');
  console.log('PASS hard user flow: archetypes + defensive Match states + mobile/desktop + connected ETF surfaces');

@@ -1,5 +1,10 @@
+"use client";
+
+import {useLocale} from "@/lib/locale";
+
 export function PersonalizationVisual(){
- return <svg className="approved-onboarding-svg" viewBox="0 0 600 768" role="img" aria-label="Personalized Investor DNA report illustration">
+ const {pick}=useLocale();
+ return <svg className="approved-onboarding-svg" viewBox="0 0 600 768" role="img" aria-label={pick("Personalized Investor DNA report illustration","Illustration du rapport Investor DNA personnalisé")}>
   <defs>
    <linearGradient id="pv-bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#dff7f7"/><stop offset=".63" stopColor="#f3fbf8"/><stop offset="1" stopColor="#d9efea"/></linearGradient>
    <linearGradient id="pv-teal2" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#19b7ad"/><stop offset="1" stopColor="#087f76"/></linearGradient>
@@ -56,15 +61,15 @@ export function PersonalizationVisual(){
   <circle cx="300" cy="154" r="24" fill="url(#pv-teal2)"/>
   <path d="M252 225c3-33 21-51 48-51s45 18 48 51z" fill="url(#pv-teal2)"/>
 
-  <text x="300" y="277" textAnchor="middle" fontSize="32" fontWeight="800" fill="#102A43">Your name</text>
+  <text x="300" y="277" textAnchor="middle" fontSize="32" fontWeight="800" fill="#102A43">{pick("Your name","Votre nom")}</text>
   <rect x="238" y="293" width="124" height="44" rx="22" fill="#c8f5eb"/>
-  <text x="300" y="322" textAnchor="middle" fontSize="23" fontWeight="800" fill="#087f76">Your age</text>
+  <text x="300" y="322" textAnchor="middle" fontSize="23" fontWeight="800" fill="#087f76">{pick("Your age","Votre âge")}</text>
 
   <g transform="translate(220 363)">
    <circle cx="24" cy="24" r="24" fill="#d8f8f1"/>
    <path d="M14 35c14-24 8-39 21-47-3 11 7 21-2 36-5 9-11 11-19 11z" fill="none" stroke="#087f76" strokeWidth="3.5" strokeLinecap="round"/>
-   <text x="59" y="19" fontSize="14" fill="#637A86">Your personalized</text>
-   <text x="59" y="41" fontSize="16" fontWeight="800" fill="#102A43">Investor DNA report</text>
+   <text x="59" y="19" fontSize="14" fill="#637A86">{pick("Your personalized","Votre rapport")}</text>
+   <text x="59" y="41" fontSize="16" fontWeight="800" fill="#102A43">{pick("Investor DNA report","Investor DNA personnalisé")}</text>
   </g>
 
   <g>
@@ -77,7 +82,8 @@ export function PersonalizationVisual(){
 }
 
 export function MoneyContextVisual(){
- return <svg className="approved-onboarding-svg" viewBox="0 0 460 610" role="img" aria-label="Goal, time horizon, liquidity and protection context illustration">
+ const {pick}=useLocale();
+ return <svg className="approved-onboarding-svg" viewBox="0 0 460 610" role="img" aria-label={pick("Goal, time horizon, liquidity and protection context illustration","Illustration de l’objectif, de l’horizon, de la liquidité et de la protection")}>
   <defs>
    <linearGradient id="mc-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#e7f8f8"/><stop offset=".68" stopColor="#f4fbfa"/><stop offset="1" stopColor="#d7efea"/></linearGradient>
    <linearGradient id="mc-m1" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#9ed4da"/><stop offset="1" stopColor="#6ab8c1"/></linearGradient>
@@ -96,16 +102,16 @@ export function MoneyContextVisual(){
   <g filter="url(#mc-shadow)">
    <rect x="36" y="94" width="142" height="120" rx="22" fill="#fff"/>
    <circle cx="107" cy="129" r="27" fill="#ffe0db"/><circle cx="107" cy="129" r="15" fill="none" stroke="#e95549" strokeWidth="4"/><circle cx="107" cy="129" r="6" fill="#e95549"/><path d="M120 116l12-12M125 104h8v8" stroke="#e95549" strokeWidth="4" strokeLinecap="round"/>
-   <text x="107" y="181" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Goal</text>
+   <text x="107" y="181" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">{pick("Goal","Objectif")}</text>
    <rect x="282" y="94" width="142" height="120" rx="22" fill="#fff"/>
    <circle cx="353" cy="129" r="27" fill="#fff0c9"/><circle cx="353" cy="129" r="16" fill="none" stroke="#d28b00" strokeWidth="4"/><path d="M353 118v13l9 6" stroke="#d28b00" strokeWidth="4" fill="none" strokeLinecap="round"/>
-   <text x="353" y="181" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Time Horizon</text>
+   <text x="353" y="181" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">{pick("Time Horizon","Horizon")}</text>
    <rect x="36" y="323" width="142" height="120" rx="22" fill="#fff"/>
    <circle cx="107" cy="358" r="27" fill="#daf8f4"/><path d="M107 340c10 15 17 23 17 34a17 17 0 01-34 0c0-11 7-19 17-34z" fill="none" stroke="#078a80" strokeWidth="4"/>
-   <text x="107" y="410" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Liquidity</text>
+   <text x="107" y="410" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">{pick("Liquidity","Liquidité")}</text>
    <rect x="282" y="323" width="142" height="120" rx="22" fill="#fff"/>
    <circle cx="353" cy="358" r="27" fill="#eee5ff"/><path d="M353 340l18 8v14c0 13-7 21-18 27-11-6-18-14-18-27v-14l18-8z" fill="none" stroke="#744fd1" strokeWidth="4"/><path d="M344 363l6 6 13-14" fill="none" stroke="#744fd1" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-   <text x="353" y="410" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Protection</text>
+   <text x="353" y="410" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">{pick("Protection","Protection")}</text>
   </g>
   <g filter="url(#mc-shadow)">
    <circle cx="230" cy="266" r="75" fill="#d8fff2" stroke="#fff" strokeWidth="6"/>
@@ -114,8 +120,8 @@ export function MoneyContextVisual(){
     <path d="M10 0c-20 8-20 20 0 28s20 20 0 28"/>
     <path d="M-7 8h14M-8 20h16M-8 36h16M-7 48h14"/>
    </g>
-   <text x="230" y="290" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Your Money</text>
-   <text x="230" y="314" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">Context</text>
+   <text x="230" y="290" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">{pick("Your Money","Votre contexte")}</text>
+   <text x="230" y="314" textAnchor="middle" fontSize="18" fontWeight="800" fill="#102A43">{pick("Context","financier")}</text>
   </g>
   <circle cx="196" cy="228" r="6" fill="#ff7067" stroke="#fff" strokeWidth="3"/><circle cx="264" cy="228" r="6" fill="#f3b321" stroke="#fff" strokeWidth="3"/><circle cx="196" cy="304" r="6" fill="#22b9ad" stroke="#fff" strokeWidth="3"/><circle cx="264" cy="304" r="6" fill="#8c6de2" stroke="#fff" strokeWidth="3"/>
   <g>

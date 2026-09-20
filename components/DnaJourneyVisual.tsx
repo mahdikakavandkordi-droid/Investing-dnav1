@@ -1,3 +1,7 @@
+"use client";
+
+import {useLocale} from "@/lib/locale";
+
 /**
  * Assessment progress visual.
  *
@@ -6,6 +10,7 @@
  * the final position. Scoring remains fully outside this component.
  */
 export function DnaJourneyVisual({current,total}:{current:number;total:number}){
+ const {pick}=useLocale();
  const rungCount=Math.max(1,Math.ceil(total/2));
  const clamped=Math.max(1,Math.min(total,current));
  const active=Math.min(rungCount-1,Math.floor((clamped-1)/2));
@@ -19,16 +24,16 @@ export function DnaJourneyVisual({current,total}:{current:number;total:number}){
  });
  const marker=rungs[active];
 
- return <aside className="dna-journey" aria-label={`Investor DNA progress step ${stage} of ${rungCount}`}>
+ return <aside className="dna-journey" aria-label={`${pick("Investor DNA progress step","Progression Investor DNA, étape")} ${stage} ${pick("of","sur")} ${rungCount}`}>
   <div className="dna-journey-heading">
-   <span>Your DNA is taking shape</span>
+   <span>{pick("Your DNA is taking shape","Votre DNA prend forme")}</span>
    <strong>{String(stage).padStart(2,'0')} / {String(rungCount).padStart(2,'0')}</strong>
   </div>
   <div className="dna-mobile-progress">
    <div className="dna-mini-helix" aria-hidden="true">
     {rungs.map(rung=><span key={`mini-${rung.index}`} className={'dna-mini-rung '+(rung.index%2?'odd':'even')+' '+(rung.index<active?'complete':rung.index===active?'active':'')}><i/><b/></span>)}
    </div>
-   <div className="dna-mobile-caption"><b>Questions {active*2+1}–{Math.min(total,active*2+2)}</b><span>One DNA move for every two answers.</span></div>
+   <div className="dna-mobile-caption"><b>Questions {active*2+1}–{Math.min(total,active*2+2)}</b><span>{pick("One DNA move for every two answers.","Une étape DNA pour chaque paire de réponses.")}</span></div>
   </div>
   <div className="dna-journey-inner">
    <svg viewBox="0 0 240 570" role="presentation">
@@ -55,7 +60,7 @@ export function DnaJourneyVisual({current,total}:{current:number;total:number}){
    </svg>
    <div className="dna-journey-caption">
     <b>Questions {active*2+1}–{Math.min(total,active*2+2)}</b>
-    <span>One step on your DNA for every two answers.</span>
+    <span>{pick("One step on your DNA for every two answers.","Une étape de votre DNA pour chaque paire de réponses.")}</span>
    </div>
   </div>
  </aside>;

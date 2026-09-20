@@ -222,6 +222,25 @@ Current Advisor snapshot after Sprint 4:
 - 38 RLS/no-policy INFO findings, with the new dependency table intentionally service-only;
 - 41 unused-index INFO findings, including the new dependency index which is too new to judge by usage.
 
+## Maturity Sprint 5 — 2026-09-19
+
+Branch `codex/maturity-sprint-5-portfolio-blueprint` / Draft PR #13 is stacked on Sprint 4.
+
+Implemented:
+
+- final Investor DNA report now includes **Part 3 · Portfolio Blueprint** after Applied DNA;
+- `portfolio-blueprint-v1` creates More Defensive / Core / More Growth using only Equity, Fixed income and Cash;
+- no Canada/US/international, sector or security-level weights are inferred;
+- financial capacity and goal constraints cap exposure; full-principal-protection and emergency-reserve contexts fail safe to the Cash bucket rather than receiving market-risk assets for cosmetic scenario variety;
+- contract tests include named personas plus thousands of risk/context combinations and enforce 100% totals, five-point increments and monotonic scenario guardrails;
+- public methodology is available at `/research/portfolio-blueprint`;
+- result report now exposes Download PDF, Print and Email PDF actions without requiring account creation;
+- dedicated `investor-dna-report` Edge Function is ACTIVE at version 3 and authorizes guest capability or signed-in ownership before PDF generation;
+- live migration `20260919210203_report_delivery_events_v1.sql` adds a service-only email-delivery audit using a one-way email hash rather than storing the raw recipient address;
+- live `supabase/tests/report_delivery.sql` passes;
+- Email PDF code path is present but remains unavailable until a transactional sender/API credential is configured; Download PDF/Print do not depend on that provider.
+
+Vercel continues to report the Hobby build-rate-limit on recent exact heads. Do not equate that provider quota with an application compile failure. PR #13 exact-head CI must be checked before calling Sprint 5 engineering-green.
 ## Immediate follow-ups
 
 1. Let the next successful Vercel deployment exercise the new deployment-status Preview canary.

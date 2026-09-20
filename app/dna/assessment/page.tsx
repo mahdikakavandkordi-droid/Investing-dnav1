@@ -18,6 +18,7 @@ import {ASSESSMENT_COPY} from "@/lib/assessment-copy";
 import type {AssessmentCohort,AssessmentLocale} from "@/lib/assessment-copy";
 import {DnaJourneyVisual} from "@/components/DnaJourneyVisual";
 import {PersonalizationVisual} from "@/components/OnboardingVisuals";
+import {useLocale} from "@/lib/locale";
 
 const COGNITIVE_ACCESS_KEY='investing-dna:cognitive-access:v1';
 const LANGUAGE_KEY='investing-dna:language';
@@ -32,13 +33,14 @@ export default function Assessment(){
  const [warning,setWarning]=useState("");
  const [locale,setLocale]=useState<AssessmentLocale>('en');
  const [cohort,setCohort]=useState<AssessmentCohort>('DEV_V1_10');
+ const {setLocale:setGlobalLocale}=useLocale();
  const lock=useRef(false);
  const copy=ASSESSMENT_COPY[locale];
 
  useEffect(()=>{
   try{
    const saved=localStorage.getItem(LANGUAGE_KEY);
-   if(saved==='fr'||saved==='fa'||saved==='en')setLocale(saved);
+   if(saved==='fr'||saved==='fa'||saved==='en'){setLocale(saved);if(saved==='fr'||saved==='en')setGlobalLocale(saved);}
    const requested=new URL(location.href).searchParams.get('cohort');
    if(requested==='COGNITIVE_V1_10')setCohort('COGNITIVE_V1_10');
   }catch{}
@@ -60,10 +62,10 @@ export default function Assessment(){
    if(!active)return;
    if(saved?.result){router.replace('/dna/result');return;}
    if(!saved)return;
-   if(saved.session.language_code)setLocale(saved.session.language_code);
+   if(saved.session.language_code){setLocale(saved.session.language_code);if(saved.session.language_code==='fr'||saved.session.language_code==='en')setGlobalLocale(saved.session.language_code);}
    const data=await pilot<{questions:Question[]}>('questionnaire',saved.session);
    if(!active)return;
-   if(!data.questions?.length)throw new Error('No questions are available.');
+   if(!data.questions?.length)throw new Error(locale==='fr'?'Aucune question n’est disponible.':'No questions are available.');
    const restored={...saved,answers:normalizeAnswers(saved.answers,data.questions)};
    setQuestions(data.questions);
    persist(restored);
@@ -75,12 +77,13 @@ export default function Assessment(){
 
  function changeLocale(value:AssessmentLocale){
   setLocale(value);
+  if(value==='en'||value==='fr')setGlobalLocale(value);
   try{localStorage.setItem(LANGUAGE_KEY,value)}catch{}
  }
 
  function persist(next:Draft){
   setDraft(next);
-  if(!writeDraft(next))setWarning("This browser cannot keep your progress after closing the page. Keep this page open until you finish.");
+  if(!writeDraft(next))setWarning(locale==='fr'?"Ce navigateur ne peut pas conserver votre progression après la fermeture de la page. Gardez cette page ouverte jusqu’à la fin.":"This browser cannot keep your progress after closing the page. Keep this page open until you finish.");
  }
 
  async function start(){
@@ -91,7 +94,7 @@ export default function Assessment(){
    let cohortAccessCode:string|undefined;
    if(cohort==='COGNITIVE_V1_10'){
     cohortAccessCode=sessionStorage.getItem(COGNITIVE_ACCESS_KEY)?.trim()||undefined;
-    if(!cohortAccessCode)throw new Error('This research session requires a moderator invite code. Start from the cognitive research entry page.');
+    if(!cohortAccessCode)throw new Error(locale==='fr'?'Cette session de recherche exige un code d’invitation du modérateur. Commencez depuis la page d’entrée de recherche cognitive.':'This research session requires a moderator invite code. Start from the cognitive research entry page.');
    }
    const assessmentSession=await pilot<Draft['session']>('start',{
     cohort_code:cohort,
@@ -103,30 +106,30 @@ export default function Assessment(){
    const next:Draft={version:1,createdAt:Date.now(),ownerId:session?.user.id||null,session:assessmentSession,answers:{},index:0};
    persist(next);
    const data=await pilot<{questions:Question[]}>('questionnaire',assessmentSession);
-   if(!data.questions?.length)throw new Error('No questions are available. Please try again later.');
+   if(!data.questions?.length)throw new Error(locale==='fr'?'Aucune question n’est disponible. Réessayez plus tard.':'No questions are available. Please try again later.');
    setQuestions(data.questions);
-  }catch(e){setError(e instanceof Error?e.message:'Unable to start.');}
+  }catch(e){setError(e instanceof Error?e.message:(locale==='fr'?'Impossible de démarrer.':'Unable to start.'));}
   finally{lock.current=false;setBusy(false);}
  }
 
  async function finish(){
   if(!draft||lock.current)return;
   const personalization=normalizePersonalization(draft.personalization);
-  if(!personalization){setError('Add your first name and age to personalize your report.');return;}
+  if(!personalization){setError(locale==='fr'?'Ajoutez votre prénom et votre âge pour personnaliser votre rapport.':'Add your first name and age to personalize your report.');return;}
   lock.current=true;setBusy(true);setError('');
   try{
    const complete=questions.every(question=>hasAnswer(question,draft.answers[question.question_id]));
-   if(!complete)throw new Error('Please answer every question before submitting.');
+   if(!complete)throw new Error(locale==='fr'?'Veuillez répondre à toutes les questions avant de soumettre.':'Please answer every question before submitting.');
    const normalized={...draft,personalization,answers:normalizeAnswers(draft.answers,questions)};
    persist(normalized);
    await pilot('save_answers',{...normalized.session,answers:answerRows(normalized.answers)});
    const result=await pilot<Submission>('submit',normalized.session);
-   if(!result.result)throw new Error('The result is not available yet.');
+   if(!result.result)throw new Error(locale==='fr'?'Le résultat n’est pas encore disponible.':'The result is not available yet.');
    const completed={...normalized,result};
    setDraft(completed);
    writeEphemeralResult(completed);
    router.push('/dna/result');
-  }catch(e){setError(e instanceof Error?e.message:'Unable to submit.');}
+  }catch(e){setError(e instanceof Error?e.message:(locale==='fr'?'Impossible de soumettre.':'Unable to submit.'));}
   finally{lock.current=false;setBusy(false);}
  }
 
@@ -137,6 +140,7 @@ export default function Assessment(){
   return <AssessmentShell>
    <PersonalizationStep
     draft={draft}
+    locale={locale}
     total={questions.length}
     busy={busy}
     error={error}
@@ -167,21 +171,22 @@ function AssessmentIntro({locale,cohort,busy,error,onLocale,onStart}:{locale:Ass
    <label className="language-picker"><span>{copy.language}</span><select value={locale} onChange={event=>onLocale(event.target.value as AssessmentLocale)} aria-label={copy.language}><option value="en">English</option><option value="fr">Français</option><option value="fa">فارسی</option></select></label>
   </div>
   <h1>{copy.title}</h1><p className="assessment-lede">{copy.lede}</p>
-  <div className="assessment-meta" aria-label="Assessment details"><span>{copy.questions}</span><span>{copy.guest}</span><span>{copy.save}</span></div>
+  <div className="assessment-meta" aria-label={locale==="fr"?"Détails de l’évaluation":"Assessment details"}><span>{copy.questions}</span><span>{copy.guest}</span><span>{copy.save}</span></div>
   <AssessmentDimensionsVisual copy={copy}/>
   <div className="assessment-principle"><span className="principle-mark">✦</span><div><p className="principle-title">{copy.principle}</p><p>{copy.principleBody}</p></div></div>
   <div className="assessment-intro-actions">
    <button className="btn primary assessment-start" disabled={busy} onClick={onStart}>{busy?copy.starting:copy.start}</button>
    <Link className="btn assessment-methodology-link" href="/research/investor-dna">{copy.methodology}</Link>
   </div>
-  <p className="muted fine assessment-account-note">No account is needed. If the result is useful, you can choose to save it after you see it.</p>
+  <p className="muted fine assessment-account-note">{locale==="fr"?"Aucun compte n’est requis. Si le résultat vous est utile, vous pourrez choisir de l’enregistrer après l’avoir vu.":"No account is needed. If the result is useful, you can choose to save it after you see it."}</p>
   <p className="muted fine assessment-consent">{copy.consent}</p>
-  {cognitive&&<p className="notice">Research session: answer naturally. Your moderator may ask what you thought a question meant after you finish.</p>}
+  {cognitive&&<p className="notice">{locale==="fr"?"Session de recherche : répondez naturellement. Votre modérateur pourra vous demander ce que vous avez compris de certaines questions après la fin.":"Research session: answer naturally. Your moderator may ask what you thought a question meant after you finish."}</p>}
   {error&&<p role="alert" className="notice">{error}</p>}
  </div>;
 }
 
 function AssessmentDimensionsVisual({copy}:{copy:(typeof ASSESSMENT_COPY)[AssessmentLocale]}){
+ const {locale}=useLocale();
  const dimensions=[
   {key:'risk_tolerance',count:10,mark:'↕'},
   {key:'behavioral_dna',count:10,mark:'◇'},
@@ -196,7 +201,7 @@ function AssessmentDimensionsVisual({copy}:{copy:(typeof ASSESSMENT_COPY)[Assess
   <div className="assessment-dimension-map">
    {dimensions.map(item=><div className={'assessment-dimension-node dimension-'+item.key} key={item.key}>
     <span className="dimension-mark" aria-hidden="true">{item.mark}</span>
-    <div><strong>{copy.sections[item.key]}</strong><small>{item.count} questions</small></div>
+    <div><strong>{copy.sections[item.key]}</strong><small>{item.count} {locale==="fr"?"questions":"questions"}</small></div>
    </div>)}
   </div>
  </section>;
@@ -210,6 +215,7 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  const current=draft.index+1;
  const last=draft.index===questions.length-1;
  const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
+ // Contract marker: Research code: remains the canonical English analytics/research label.
  const multi=question.question_type==='multi_choice';
  const chosenValues=multi?(Array.isArray(chosen)?chosen:typeof chosen==='string'&&chosen?[chosen]:[]):[];
  const answered=hasAnswer(question,chosen);
@@ -222,16 +228,16 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  }
  return <div className="assessment-question-layout" dir={direction} lang={locale}>
   <div className="assessment-card question-shell question-shell-v2">
-   <div className="question-header question-header-v2"><div><div className="question-count">{copy.question} {current} of {questions.length}</div>{researchCode&&<div className="fine muted question-research-code">Research code: <strong>{researchCode}</strong></div>}</div><div className="question-percent">{Math.round((current/questions.length)*100)}%</div></div>
-   <progress aria-label="Assessment progress" max={questions.length} value={current}/><h1 className="question-title">{question.prompt}</h1>{multi&&<p className="question-hint question-hint-top">Select all that apply.</p>}
-   <div className="question-options" role="group" aria-label="Answer choices">{options.map(option=>{const selected=multi?chosenValues.includes(option.value):chosen===option.value;return <button aria-pressed={selected} className={'option '+(selected?'active':'')} key={option.value} disabled={busy} onClick={()=>choose(option.value)}><span className="option-indicator" aria-hidden="true"/><span>{option.label}</span></button>})}</div>
-   <div className="question-actions"><button className="btn" disabled={busy||draft.index===0} onClick={()=>onPersist({...draft,index:draft.index-1})}>{copy.back}</button><button className="btn primary" disabled={busy||!answered} onClick={()=>onPersist({...draft,index:draft.index+1})}>{last?'Continue':copy.next} <span aria-hidden="true">→</span></button></div>
+   <div className="question-header question-header-v2"><div><div className="question-count">{copy.question} {current} of {questions.length}</div>{researchCode&&<div className="fine muted question-research-code">{locale==="fr"?"Code de recherche":"Research code"}: <strong>{researchCode}</strong></div>}</div><div className="question-percent">{Math.round((current/questions.length)*100)}%</div></div>
+   <progress aria-label={locale==="fr"?"Progression de l’évaluation":"Assessment progress"} max={questions.length} value={current}/><h1 className="question-title">{question.prompt}</h1>{multi&&<p className="question-hint question-hint-top">{locale==="fr"?"Sélectionnez toutes les réponses pertinentes.":"Select all that apply."}</p>}
+   <div className="question-options" role="group" aria-label={locale==="fr"?"Choix de réponse":"Answer choices"}>{options.map(option=>{const selected=multi?chosenValues.includes(option.value):chosen===option.value;return <button aria-pressed={selected} className={'option '+(selected?'active':'')} key={option.value} disabled={busy} onClick={()=>choose(option.value)}><span className="option-indicator" aria-hidden="true"/><span>{option.label}</span></button>})}</div>
+   <div className="question-actions"><button className="btn" disabled={busy||draft.index===0} onClick={()=>onPersist({...draft,index:draft.index-1})}>{copy.back}</button><button className="btn primary" disabled={busy||!answered} onClick={()=>onPersist({...draft,index:draft.index+1})}>{last?(locale==='fr'?'Continuer':'Continue'):copy.next} <span aria-hidden="true">→</span></button></div>
    {warning&&<p className="muted fine">{warning}</p>}{error&&<p role="alert" className="notice">{error}</p>}
   </div><DnaJourneyVisual current={current} total={questions.length}/>
  </div>;
 }
 
-function PersonalizationStep({draft,total,busy,error,onPersist,onBack,onFinish}:{draft:Draft;total:number;busy:boolean;error:string;onPersist:(draft:Draft)=>void;onBack:()=>void;onFinish:()=>void;}){
+function PersonalizationStep({draft,locale,total,busy,error,onPersist,onBack,onFinish}:{draft:Draft;locale:AssessmentLocale;total:number;busy:boolean;error:string;onPersist:(draft:Draft)=>void;onBack:()=>void;onFinish:()=>void;}){
  const personal=draft.personalization;
  const firstName=personal?.first_name||'';
  const age=personal?.age?String(personal.age):'';
@@ -247,16 +253,16 @@ function PersonalizationStep({draft,total,busy,error,onPersist,onBack,onFinish}:
  }
  return <div className="personalization-stage">
   <section className="assessment-card personalization-card">
-   <div className="personalization-progress" aria-label="Assessment complete"><span>1</span><i/><strong>{total}</strong><i className="complete"/><b>✓</b></div>
-   <div className="eyebrow">Assessment complete</div>
-   <h1>Almost there.</h1>
-   <p className="assessment-lede">Add your first name and age so your Investor DNA report feels like yours. These details do not change your assessment score.</p>
+   <div className="personalization-progress" aria-label={locale==="fr"?"Évaluation terminée":"Assessment complete"}><span>1</span><i/><strong>{total}</strong><i className="complete"/><b>✓</b></div>
+   <div className="eyebrow">{locale==="fr"?"Évaluation terminée":"Assessment complete"}</div>
+   <h1>{locale==="fr"?"Presque terminé.":"Almost there."}</h1>
+   <p className="assessment-lede">{locale==="fr"?"Ajoutez votre prénom et votre âge pour personnaliser votre rapport Investor DNA. Ces renseignements ne changent pas votre score d’évaluation.":"Add your first name and age so your Investor DNA report feels like yours. These details do not change your assessment score."}</p>
    <div className="personalization-fields">
-    <label><span>First name</span><input autoComplete="given-name" maxLength={60} value={firstName} onChange={event=>updateFirstName(event.target.value)} placeholder="Your first name"/></label>
-    <label><span>Age</span><input type="number" inputMode="numeric" min="18" max="100" value={age==='0'?'':age} onChange={event=>updateAge(event.target.value)} placeholder="Age"/></label>
+    <label><span>{locale==="fr"?"Prénom":"First name"}</span><input autoComplete="given-name" maxLength={60} value={firstName} onChange={event=>updateFirstName(event.target.value)} placeholder={locale==="fr"?"Votre prénom":"Your first name"}/></label>
+    <label><span>{locale==="fr"?"Âge":"Age"}</span><input type="number" inputMode="numeric" min="18" max="100" value={age==='0'?'':age} onChange={event=>updateAge(event.target.value)} placeholder={locale==="fr"?"Âge":"Age"}/></label>
    </div>
-   <div className="personalization-note"><span aria-hidden="true">⌁</span><p>Your name and age personalize the report. Creating an account remains optional after you see your result.</p></div>
-   <div className="question-actions"><button className="btn" disabled={busy} onClick={onBack}>Back</button><button className="btn primary" disabled={busy||!ready} onClick={onFinish}>{busy?'Building your DNA…':'See my Investor DNA'} <span aria-hidden="true">→</span></button></div>
+   <div className="personalization-note"><span aria-hidden="true">⌁</span><p>{locale==="fr"?"Votre nom et votre âge personnalisent le rapport. La création d’un compte reste facultative après l’affichage de votre résultat.":"Your name and age personalize the report. Creating an account remains optional after you see your result."}</p></div>
+   <div className="question-actions"><button className="btn" disabled={busy} onClick={onBack}>{locale==="fr"?"Retour":"Back"}</button><button className="btn primary" disabled={busy||!ready} onClick={onFinish}>{busy?(locale==='fr'?'Création de votre DNA…':'Building your DNA…'):(locale==='fr'?'Voir mon Investor DNA':'See my Investor DNA')} <span aria-hidden="true">→</span></button></div>
    {error&&<p role="alert" className="notice">{error}</p>}
   </section>
   <aside className="personalization-scenery approved-illustration-panel" aria-hidden="true"><PersonalizationVisual/></aside>

@@ -62,6 +62,10 @@ const dna={
   const body=req.postDataJSON()||{};
   const send=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
 
+  if(url.includes('/functions/v1/investor-dna-report')){
+   if(body.action==='status')return send({email_pdf_enabled:false});
+   throw Error('Unexpected report action: '+body.action);
+  }
   if(url.includes('/functions/v1/investing-dna-pilot')){
    assert.ok(UUID.test(body.browser_session_id));
    assert.ok(UUID.test(body.visitor_id));

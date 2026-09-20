@@ -129,7 +129,8 @@ export type MarketDataStatus={
 export async function marketDataStatus(ids:string[]){
  const unique=[...new Set(ids.filter(Boolean))];
  if(unique.length===0)return [] as MarketDataStatus[];
- return rpc<MarketDataStatus[]>('app_market_data_status',{p_investment_ids:unique});
+ const rows=await rpc<MarketDataStatus[]>('app_market_data_status',{p_investment_ids:unique});
+ return Array.isArray(rows)?rows:[];
 }
 
 function mergeMarketData(items:Instrument[],statuses:MarketDataStatus[]){

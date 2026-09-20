@@ -5,11 +5,13 @@ import {useState} from "react";
 import {useAccount} from "@/lib/use-account";
 import {supabase} from "@/lib/supabase";
 import {clearReturningWorkspaceCache} from "@/lib/returning-workspace";
+import {useLocale} from "@/lib/locale";
 
 export default function AccountPage(){
  const {user,loading}=useAccount();
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
+ const {pick}=useLocale();
 
  async function signOut(){
   if(!supabase||busy)return;
@@ -19,38 +21,38 @@ export default function AccountPage(){
    const {error:authError}=await supabase.auth.signOut({scope:"local"});
    if(authError)throw authError;
    clearReturningWorkspaceCache(currentUserId);
-  }catch(e){setError(e instanceof Error?e.message:"Unable to sign out.");}
+  }catch(e){setError(e instanceof Error?e.message:pick("Unable to sign out.","Impossible de se déconnecter."));}
   finally{setBusy(false);}
  }
 
- if(loading)return <main className="mobile-account-page"><div className="mobile-account-shell"><div className="mobile-account-card">Loading your profile…</div></div></main>;
+ if(loading)return <main className="mobile-account-page"><div className="mobile-account-shell"><div className="mobile-account-card">{pick("Loading your profile…","Chargement de votre profil…")}</div></div></main>;
 
  return <main className="mobile-account-page">
   <div className="mobile-account-shell">
    <header className="mobile-account-hero">
-    <div className="eyebrow">Profile</div>
-    <h1>Your Investing DNA account</h1>
-    <p>Keep account details separate from your research workspace.</p>
+    <div className="eyebrow">{pick("Profile","Profil")}</div>
+    <h1>{pick("Your Investing DNA account","Votre compte Investing DNA")}</h1>
+    <p>{pick("Keep account details separate from your research workspace.","Gardez les détails du compte séparés de votre espace de recherche.")}</p>
    </header>
 
    {user?<>
     <section className="mobile-account-card">
-     <span className="mobile-account-label">Signed in as</span>
-     <strong>{user.email||"Account"}</strong>
-     <p>Your saved DNA and watchlist stay connected to this account.</p>
+     <span className="mobile-account-label">{pick("Signed in as","Connecté comme")}</span>
+     <strong>{user.email||pick("Account","Compte")}</strong>
+     <p>{pick("Your saved DNA and watchlist stay connected to this account.","Votre DNA enregistré et votre liste de suivi restent associés à ce compte.")}</p>
     </section>
     <section className="mobile-account-menu">
-     <Link href="/profile"><span>My workspace</span><b>›</b></Link>
-     <Link href="/dna/result"><span>My Investor DNA</span><b>›</b></Link>
-     <Link href="/watchlist"><span>Saved research</span><b>›</b></Link>
-     <Link href="/privacy"><span>Privacy</span><b>›</b></Link>
-     <Link href="/research"><span>Research methodology</span><b>›</b></Link>
+     <Link href="/profile"><span>{pick("My workspace","Mon espace")}</span><b>›</b></Link>
+     <Link href="/dna/result"><span>{pick("My Investor DNA","Mon Investor DNA")}</span><b>›</b></Link>
+     <Link href="/watchlist"><span>{pick("Saved research","Recherche enregistrée")}</span><b>›</b></Link>
+     <Link href="/privacy"><span>{pick("Privacy","Confidentialité")}</span><b>›</b></Link>
+     <Link href="/research"><span>{pick("Research methodology","Méthodologie de recherche")}</span><b>›</b></Link>
     </section>
-    <button className="btn mobile-account-signout" disabled={busy} onClick={()=>void signOut()}>{busy?"Signing out…":"Sign out"}</button>
+    <button className="btn mobile-account-signout" disabled={busy} onClick={()=>void signOut()}>{busy?pick("Signing out…","Déconnexion…"):pick("Sign out","Se déconnecter")}</button>
    </>:<section className="mobile-account-card">
-    <h2>Save your DNA when it becomes useful.</h2>
-    <p>You can explore and complete the assessment before creating an account.</p>
-    <div className="actions"><Link className="btn primary" href="/profile">Sign in or create account</Link></div>
+    <h2>{pick("Save your DNA when it becomes useful.","Enregistrez votre DNA lorsque cela devient utile.")}</h2>
+    <p>{pick("You can explore and complete the assessment before creating an account.","Vous pouvez explorer et terminer l’évaluation avant de créer un compte.")}</p>
+    <div className="actions"><Link className="btn primary" href="/signup">{pick("Create free account","Créer un compte gratuit")}</Link><Link className="btn" href="/login">{pick("Sign in","Connexion")}</Link></div>
    </section>}
    {error&&<div className="notice" role="alert">{error}</div>}
   </div>

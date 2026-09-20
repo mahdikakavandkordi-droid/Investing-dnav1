@@ -12,3 +12,38 @@
 @media(max-width:980px){.bias-signal-grid{grid-template-columns:repeat(3,1fr)}.applied-context-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.personalization-stage{grid-template-columns:1fr}.personalization-scenery{min-height:250px;order:-1}.personalization-card{padding:24px 19px}.personalization-card h1{font-size:36px}.personalization-fields{grid-template-columns:1fr}.report-save-launch{display:grid}.report-save-launch .btn{width:100%}.save-modal{padding:22px 18px}.save-modal-fields{grid-template-columns:1fr}.save-modal-fields label{grid-column:1/-1}.bias-signal-grid{grid-template-columns:1fr 1fr}.applied-dna-heading{display:grid}.identity-chip{justify-self:start}.applied-context-grid{grid-template-columns:1fr 1fr}.context-identity{display:grid}}
 @media(max-width:480px){.bias-signal-grid,.applied-context-grid{grid-template-columns:1fr}.personalization-scenery{min-height:210px}.personalization-flag{bottom:70px}.save-modal-head h2{font-size:26px}}
+
+
+.report-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;background:#fff;border:1px solid #e0e8e9;border-radius:22px;padding:20px 22px;box-shadow:0 8px 26px rgba(7,26,52,.035)}
+.report-actions>div:first-child>strong{display:block;font-size:18px;color:#102f46;margin:4px 0 5px}
+.report-actions>div:first-child>p{margin:0;color:#687884;font-size:13px;line-height:1.5;max-width:680px}
+.report-actions-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.report-actions-buttons .btn{white-space:nowrap}
+.report-action-notice{grid-column:1/-1;margin:0}
+.report-email-modal form{display:grid;gap:14px;margin-top:20px}
+.report-email-modal .context-field input{min-height:48px;border:1px solid #d5e0e1;border-radius:12px;padding:11px 13px;font:inherit}
+.report-email-modal .btn.primary{width:100%}
+.report-email-unavailable{margin-top:20px;padding:16px;border:1px solid #e0e8e9;border-radius:16px;background:#f8fbfa}
+.report-email-unavailable p{margin:0 0 10px;color:#647782;line-height:1.55;font-size:13px}
+.report-email-unavailable p strong{color:#17364b}
+
+@media(max-width:760px){
+ .report-actions{grid-template-columns:1fr}
+ .report-actions-buttons{justify-content:flex-start}
+ .report-actions-buttons .btn{flex:1 1 140px}
+}
+
+@media print{
+ @page{size:auto;margin:12mm}
+ html,body{background:#fff!important}
+ body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .nav,.footer,.mobile-app-header,.mobile-app-nav,.no-print,.report-save-launch,.result-context-cta,.result-match-review,.matches-section,.result-next-card,.result-save-card{display:none!important}
+ .result-page{background:#fff!important;padding:0!important}
+ .result-container{max-width:none!important;padding:0!important}
+ .dna-report{gap:12px!important}
+ .dna-hero-v2,.report-overview-card,.report-section,.portfolio-scenario-card{box-shadow:none!important;break-inside:avoid}
+ .report-section,.portfolio-blueprint-section,.applied-dna-section{break-inside:avoid-page}
+ .portfolio-scenario-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .dna-hero-v2{min-height:0!important;grid-template-columns:minmax(0,1fr) 220px!important;padding:28px!important}
+ .dna-hero-v2 .dna-character img{width:190px!important;height:190px!important}
+}

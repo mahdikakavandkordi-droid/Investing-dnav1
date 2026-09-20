@@ -21,6 +21,7 @@ import {InvestmentDnaCard} from '@/components/InvestmentDnaCard';
 import {OfficialFundFactsCard,OfficialFundDocumentCard} from '@/components/OfficialFundFactsCard';
 import {ResearchContextCard} from '@/components/ResearchContextCard';
 import {ProductRiskCard} from '@/components/ProductRiskCard';
+import {useLocale} from '@/lib/locale';
 
 /** Generic cross-asset detail shell; ETF-only research is composed when eligible. */
 export default function Detail(){
@@ -32,6 +33,7 @@ export default function Detail(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');
  const [retry,setRetry]=useState(0);
+ const {pick}=useLocale();
 
  useEffect(()=>{
   let active=true;
@@ -39,7 +41,7 @@ export default function Detail(){
 
   if(!validId(id)){
    setLoading(false);
-   setError('This investment link is invalid.');
+   setError(pick('This investment link is invalid.','Ce lien de placement est invalide.'));
    return;
   }
 
@@ -65,27 +67,29 @@ export default function Detail(){
  },[id,retry]);
 
  if(loading){
-  return <PageShell><div className="detail-state-card"><h1>Loading investment research…</h1></div></PageShell>;
+  return <PageShell><div className="detail-state-card"><h1>{pick("Loading investment research…","Chargement de la recherche sur le placement…")}</h1></div></PageShell>;
  }
  if(error){
-  return <PageShell><div className="detail-state-card" role="alert"><h1>Could not load this investment</h1><p>{error}</p><button className="btn" onClick={()=>setRetry(value=>value+1)}>Try again</button></div></PageShell>;
+  return <PageShell><div className="detail-state-card" role="alert"><h1>{pick("Could not load this investment","Impossible de charger ce placement")}</h1><p>{error}</p><button className="btn" onClick={()=>setRetry(value=>value+1)}>{pick("Try again","Réessayer")}</button></div></PageShell>;
  }
  if(!item){
-  return <PageShell><div className="detail-state-card"><h1>Investment not found</h1><p>This investment is not available in the research catalog.</p><Link href="/explore">Browse available investments</Link></div></PageShell>;
+  return <PageShell><div className="detail-state-card"><h1>{pick("Investment not found","Placement introuvable")}</h1><p>{pick("This investment is not available in the research catalog.","Ce placement n’est pas disponible dans le catalogue de recherche.")}</p><Link href="/explore">{pick("Browse available investments","Parcourir les placements disponibles")}</Link></div></PageShell>;
  }
  return <InvestmentDetail item={item} dna={dna} facts={facts} research={research}/>;
 }
 
 function PageShell({children}:{children:React.ReactNode}){
+ const {pick}=useLocale();
  return <main className="investment-detail-page-v2">
   <div className="container investment-detail-container-v2">
-   <Link className="detail-back-link" href="/explore">← Explore investments</Link>
+   <Link className="detail-back-link" href="/explore">← {pick("Explore investments","Explorer les placements")}</Link>
    {children}
   </div>
  </main>;
 }
 
 function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:InvestmentDna|null;facts:OfficialFundFacts|null;research:ResearchContext|null}){
+ const {pick}=useLocale();
  const metrics=heroMetrics(item.asset_type)
   .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
   .filter(metric=>metric.value!==null)
@@ -103,10 +107,10 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
     </div>
     <h1>{item.name}</h1>
     {item.issuer_name&&<p className="detail-issuer-v2">{item.issuer_name}</p>}
-    <p className="detail-summary-v2">{facts?.summary||item.profile_summary||item.description||'A research description is not available yet.'}</p>
+    <p className="detail-summary-v2">{facts?.summary||item.profile_summary||item.description||pick('A research description is not available yet.','Aucune description de recherche n’est disponible pour le moment.')}</p>
    </div>
    <div className="detail-hero-actions-v2">
-    <Link className="btn" href={`/compare?ids=${item.id}`}>Compare</Link>
+    <Link className="btn" href={`/compare?ids=${item.id}`}>{pick("Compare","Comparer")}</Link>
    </div>
   </section>
 
@@ -116,38 +120,38 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
 
   <ResearchFreshness item={item} freshness={freshness}/>
 
-  <div className="mobile-detail-actions" aria-label="Investment actions"><Link className="btn" href={`/compare?ids=${item.id}`}>Compare</Link><Link className="btn primary" href={`/profile?mode=signup&investment=${item.id}`}>Save</Link></div>
+  <div className="mobile-detail-actions" aria-label={pick("Investment actions","Actions sur le placement")}><Link className="btn" href={`/compare?ids=${item.id}`}>{pick("Compare","Comparer")}</Link><Link className="btn primary" href={`/signup?investment=${item.id}`}>{pick("Save","Enregistrer")}</Link></div>
 
   <div className="detail-flow-v2">
    {isFund
     ? <>
-      <ResearchDisclosure title="Fund DNA & fees">
+      <ResearchDisclosure title={pick("Fund DNA & fees","DNA du fonds et frais")}>
        {facts&&<OfficialFundFactsCard facts={facts}/>}
        {dna&&<InvestmentDnaCard dna={dna}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title="Risk">
+      <ResearchDisclosure title={pick("Risk","Risque")}>
        <ProductRiskCard investmentId={item.id}/>
       </ResearchDisclosure>
-      <ResearchDisclosure title="Performance & holdings">
+      <ResearchDisclosure title={pick("Performance & holdings","Rendement et placements détenus")}>
        {research&&<ResearchContextCard context={research}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title="About this ETF">
+      <ResearchDisclosure title={pick("About this ETF","À propos de ce FNB")}>
        <FundResearchDetails item={item} facts={facts}/>
       </ResearchDisclosure>
-      <ResearchDisclosure title="Save & official documents">
+      <ResearchDisclosure title={pick("Save & official documents","Enregistrer et documents officiels")}>
        <InstrumentConnection id={item.id} assetType={item.asset_type}/>
        {facts&&<OfficialFundDocumentCard facts={facts}/>}
       </ResearchDisclosure>
      </>
     : <>
-      <ResearchDisclosure title="Structure & terms">
+      <ResearchDisclosure title={pick("Structure & terms","Structure et modalités")}>
        <InstrumentStructureCard instrument={item}/>
        <InstrumentTermsCard instrument={item}/>
       </ResearchDisclosure>
-      <ResearchDisclosure title="Risk">
+      <ResearchDisclosure title={pick("Risk","Risque")}>
        <ProductRiskCard investmentId={item.id}/>
       </ResearchDisclosure>
-      <ResearchDisclosure title="Save for later">
+      <ResearchDisclosure title={pick("Save for later","Enregistrer pour plus tard")}>
        <InstrumentConnection id={item.id} assetType={item.asset_type}/>
       </ResearchDisclosure>
      </>}
@@ -166,28 +170,29 @@ function ResearchDisclosure({title,children}:{title:string;children:React.ReactN
 }
 
 function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|null}){
+ const {locale,pick}=useLocale();
  const marketDate=item.market_price_date;
  const clearlyDelayed=marketDate?marketDataClearlyDelayed(marketDate):false;
  const sourceLabel=item.market_price_source_key==='yahoo_free'
-  ? 'Temporary market feed'
+  ? pick('Temporary market feed','Flux de marché temporaire')
   : item.market_price_source_name||item.market_price_source_key||null;
  const researchCopy=item.data_status==='identity_only'
-  ? 'Identity and structure profile only; unverified market figures are intentionally omitted.'
-  : freshness?`Other research inputs are reported as of ${formatResearchDate(freshness)}.`:'A source date is not reported for every optional research field.';
+  ? pick('Identity and structure profile only; unverified market figures are intentionally omitted.','Profil d’identité et de structure seulement; les données de marché non vérifiées sont volontairement omises.')
+  : freshness?(locale==='fr'?`Les autres données de recherche sont datées du ${formatResearchDate(freshness,locale)}.`:`Other research inputs are reported as of ${formatResearchDate(freshness,locale)}.`):pick('A source date is not reported for every optional research field.','Une date de source n’est pas indiquée pour chaque donnée de recherche facultative.');
 
  return <div className="detail-freshness-panel">
   {marketDate&&<span className={clearlyDelayed?"detail-freshness-chip delayed":"detail-freshness-chip"}>
-   {clearlyDelayed?'Market data may be delayed':'Market data after close'} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
+   {clearlyDelayed?pick('Market data may be delayed','Les données de marché peuvent être retardées'):pick('Market data after close','Données de marché après clôture')} · {formatResearchDate(marketDate,locale)}{sourceLabel?' · '+sourceLabel:''}
   </span>}
-  {!marketDate&&item.asset_type==='ETF'&&<span className="detail-freshness-chip delayed">Latest market-price date is not available</span>}
-  <p className="muted fine detail-freshness-note">{researchCopy} Missing figures are never shown as zero.</p>
+  {!marketDate&&item.asset_type==='ETF'&&<span className="detail-freshness-chip delayed">{pick("Latest market-price date is not available","La date du dernier prix de marché n’est pas disponible")}</span>}
+  <p className="muted fine detail-freshness-note">{researchCopy} {pick("Missing figures are never shown as zero.","Les données manquantes ne sont jamais affichées comme zéro.")}</p>
  </div>;
 }
 
-function formatResearchDate(value:string){
+function formatResearchDate(value:string,locale:"en"|"fr"="en"){
  const parsed=new Date(value+'T12:00:00Z');
  if(Number.isNaN(parsed.getTime()))return value;
- return new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(parsed);
+ return new Intl.DateTimeFormat(locale==='fr'?'fr-CA':'en-CA',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(parsed);
 }
 
 function marketDataClearlyDelayed(value:string){
@@ -197,19 +202,20 @@ function marketDataClearlyDelayed(value:string){
 }
 
 function FundResearchDetails({item,facts}:{item:Instrument;facts:OfficialFundFacts|null}){
+ const {pick}=useLocale();
  const hasObjective=!!(item.profile_objective||facts?.objective);
  const hasBenchmark=!!item.profile_benchmark;
  const hasRisks=!!item.profile_key_risks?.length;
  if(!hasObjective&&!hasBenchmark&&!hasRisks)return null;
 
  return <section className="fund-research-details-v2">
-  <div className="eyebrow">About this ETF</div>
+  <div className="eyebrow">{pick("About this ETF","À propos de ce FNB")}</div>
   <div className="fund-research-grid-v2">
    <div>
-    {hasObjective&&<><h2>Objective</h2><p>{item.profile_objective||facts?.objective}</p></>}
-    {hasBenchmark&&<><h3>Benchmark</h3><p>{item.profile_benchmark}</p></>}
+    {hasObjective&&<><h2>{pick("Objective","Objectif")}</h2><p>{item.profile_objective||facts?.objective}</p></>}
+    {hasBenchmark&&<><h3>{pick("Benchmark","Indice de référence")}</h3><p>{item.profile_benchmark}</p></>}
    </div>
-   {hasRisks&&<div><h2>Key risks</h2><ul>{item.profile_key_risks!.map(risk=><li key={risk}>{risk}</li>)}</ul></div>}
+   {hasRisks&&<div><h2>{pick("Key risks","Principaux risques")}</h2><ul>{item.profile_key_risks!.map(risk=><li key={risk}>{risk}</li>)}</ul></div>}
   </div>
  </section>;
 }

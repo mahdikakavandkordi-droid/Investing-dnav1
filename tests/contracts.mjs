@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as d from '../lib/dna.ts';
+import {buildPortfolioBlueprint} from '../lib/portfolio-blueprint.ts';
 
 const data=new Map();
 const sessionData=new Map();
@@ -16,6 +17,94 @@ assert.equal(d.score(undefined),'—');
 assert.equal(d.score(0),'0');
 assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y'}),false);
 assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y',liquidity_need:'low',principal_required:'no'}),true);
+
+const blueprintContext=(overrides={})=>({
+  goal:'growth',time_horizon:'5_10y',liquidity_need:'medium',principal_required:'no',...overrides
+});
+const balancedBlueprint=buildPortfolioBlueprint({risk_tolerance:62,risk_capacity:68},blueprintContext());
+assert.deepEqual(balancedBlueprint.scenarios.map(x=>x.allocation),[
+  {equity:45,fixedIncome:45,cash:10},
+  {equity:60,fixedIncome:35,cash:5},
+  {equity:70,fixedIncome:25,cash:5}
+]);
+const growthBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:92,risk_capacity:88},
+  blueprintContext({time_horizon:'gt_10y',liquidity_need:'low'})
+);
+assert.deepEqual(growthBlueprint.scenarios.map(x=>x.allocation),[
+  {equity:70,fixedIncome:20,cash:10},
+  {equity:85,fixedIncome:10,cash:5},
+  {equity:90,fixedIncome:5,cash:5}
+]);
+const capacityGuardBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:90,risk_capacity:34},
+  blueprintContext({time_horizon:'gt_10y',liquidity_need:'low'})
+);
+assert.equal(capacityGuardBlueprint.scenarios[1].allocation.equity,30);
+assert.ok(capacityGuardBlueprint.scenarios[1].allocation.equity<growthBlueprint.scenarios[1].allocation.equity);
+const protectionBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:85,risk_capacity:85},
+  blueprintContext({goal:'house_purchase',time_horizon:'1_3y',liquidity_need:'high',principal_required:'yes'})
+);
+assert.deepEqual(protectionBlueprint.scenarios[0].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.deepEqual(protectionBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.deepEqual(protectionBlueprint.scenarios[2].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.equal(protectionBlueprint.scenarios[0].constrained,true);
+assert.equal(protectionBlueprint.scenarios[2].constrained,true);
+const emergencyBlueprint=buildPortfolioBlueprint(
+  {risk_tolerance:80,risk_capacity:80},
+  blueprintContext({goal:'emergency_reserve',time_horizon:'lt_1y',liquidity_need:'high',principal_required:'yes'})
+);
+assert.deepEqual(emergencyBlueprint.scenarios[1].allocation,{equity:0,fixedIncome:0,cash:100});
+assert.equal(emergencyBlueprint.scenarios[0].constrained,true);
+assert.equal(emergencyBlueprint.scenarios[2].constrained,true);
+for(const bp of [balancedBlueprint,growthBlueprint,capacityGuardBlueprint,protectionBlueprint,emergencyBlueprint]){
+  for(const scenario of bp.scenarios){
+    const a=scenario.allocation;
+    assert.equal(a.equity+a.fixedIncome+a.cash,100);
+    assert.equal(a.equity%5,0);
+    assert.equal(a.fixedIncome%5,0);
+    assert.equal(a.cash%5,0);
+  }
+}
+assert.equal(buildPortfolioBlueprint({risk_tolerance:60,risk_capacity:60},{goal:'growth'}),null);
+assert.equal(buildPortfolioBlueprint({risk_tolerance:60},blueprintContext()),null);
+assert.equal(buildPortfolioBlueprint({risk_capacity:60},blueprintContext()),null);
+
+const blueprintSignatures=new Set();
+for(const risk_tolerance of [10,30,50,70,90]){
+ for(const risk_capacity of [10,30,50,70,90]){
+  for(const goal of ['growth','retirement','house_purchase','wealth_preservation','emergency_reserve']){
+   for(const time_horizon of ['lt_1y','1_3y','3_5y','5_10y','gt_10y']){
+    for(const liquidity_need of ['high','medium','low']){
+     for(const principal_required of ['yes','no','unsure']){
+      const bp=buildPortfolioBlueprint(
+       {risk_tolerance,risk_capacity},
+       {goal,time_horizon,liquidity_need,principal_required}
+      );
+      assert.ok(bp,'complete context must produce a blueprint when both risk scores exist');
+      const [defensive,core,growth]=bp.scenarios;
+      for(const scenario of bp.scenarios){
+       const a=scenario.allocation;
+       assert.equal(a.equity+a.fixedIncome+a.cash,100);
+       assert.ok(a.equity>=0&&a.fixedIncome>=0&&a.cash>=0);
+       assert.ok(a.equity<=100&&a.fixedIncome<=100&&a.cash<=100);
+       assert.equal(a.equity%5,0);assert.equal(a.fixedIncome%5,0);assert.equal(a.cash%5,0);
+      }
+      assert.ok(defensive.allocation.equity<=core.allocation.equity);
+      assert.ok(growth.allocation.equity>=core.allocation.equity);
+      assert.ok(defensive.allocation.cash>=core.allocation.cash);
+      if(principal_required==='yes'||goal==='emergency_reserve'){
+       for(const scenario of bp.scenarios)assert.deepEqual(scenario.allocation,{equity:0,fixedIncome:0,cash:100});
+      }
+      blueprintSignatures.add(bp.scenarios.map(x=>`${x.allocation.equity}/${x.allocation.fixedIncome}/${x.allocation.cash}`).join('|'));
+     }
+    }
+   }
+  }
+ }
+}
+assert.ok(blueprintSignatures.size>=20,'blueprint engine should produce materially different scenario sets across personas and goals');
 
 const draft={version:1,createdAt:Date.now(),ownerId:null,session:{assessment_id:'id',session_token:'token'},answers:{RC01:'A'},index:0};
 d.writeDraft(draft);
@@ -159,6 +248,14 @@ assert.match(homeAssetRailSource,/GIC/);
 assert.match(homeAssetRailSource,/BOND/);
 assert.match(homeAssetRailSource,/T_BILL/);
 assert.match(homeAssetRailSource,/COMMERCIAL_PAPER/);
+const sharedBlueprintSource=readFileSync(new URL('../lib/portfolio-blueprint.ts',import.meta.url),'utf8');
+const reportBlueprintSource=readFileSync(new URL('../supabase/functions/investor-dna-report/portfolio-blueprint.ts',import.meta.url),'utf8');
+assert.equal(reportBlueprintSource,sharedBlueprintSource,'PDF report service must use the exact same blueprint engine as the app');
+const reportEdgeSource=readFileSync(new URL('../supabase/functions/investor-dna-report/index.ts',import.meta.url),'utf8');
+assert.match(reportEdgeSource,/Guest report capability is required/);
+assert.match(reportEdgeSource,/This report is not owned by the signed-in account/);
+assert.match(reportEdgeSource,/report_delivery_events/);
+assert.doesNotMatch(reportEdgeSource,/insert\([\s\S]*email:/,'report delivery audit must not store raw email');
 const brandMarkSource=readFileSync(new URL('../components/BrandMark.tsx',import.meta.url),'utf8');
 assert.match(brandMarkSource,/investing-dna-lockup\.png/);
 

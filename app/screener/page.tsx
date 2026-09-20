@@ -9,6 +9,7 @@ import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import type {Fund} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
+import {useLocale} from '@/lib/locale';
 
 /**
  * ETF-only screener.
@@ -18,6 +19,7 @@ import type {AppState,MatchItem,MatchPayload} from '@/lib/dna';
  * if they shared fund metrics such as MER or historical fund returns.
  */
 export default function Screener(){
+ const {pick}=useLocale();
  const {user,loading:authLoading}=useAccount();
  const [rows,setRows]=useState<Fund[]>([]);
  const [query,setQuery]=useState('');
@@ -112,9 +114,9 @@ export default function Screener(){
 
  return <section className="section screener-page-v2">
   <div className="container">
-   <div className="eyebrow">ETF Screener · DNA-powered</div>
-   <h1><span className="desktop-screener-title">Find ETFs, then see how they relate to you</span><span className="mobile-screener-title">ETF Screener</span></h1>
-   <p className="muted"><span className="desktop-screener-copy">This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.</span><span className="mobile-screener-copy">Filter ETFs by the facts that matter, then add your DNA compatibility when it is available.</span></p>
+   <div className="eyebrow">{pick("ETF Screener · DNA-powered","Filtre FNB · alimenté par DNA")}</div>
+   <h1><span className="desktop-screener-title">{pick("Find ETFs, then see how they relate to you","Trouvez des FNB et voyez comment ils se rapportent à votre profil")}</span><span className="mobile-screener-title">{pick("ETF Screener","Filtre FNB")}</span></h1>
+   <p className="muted"><span className="desktop-screener-copy">{pick("This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.","Ce filtre reste volontairement limité aux FNB tandis qu’Investor DNA élargit son univers de recherche aux CPG, bons du Trésor, obligations et structures du marché monétaire. Les données du FNB passent d’abord; votre Investing DNA actuel ajoute ensuite la couche de compatibilité.")}</span><span className="mobile-screener-copy">{pick("Filter ETFs by the facts that matter, then add your DNA compatibility when it is available.","Filtrez les FNB selon les données importantes, puis ajoutez votre compatibilité DNA lorsqu’elle est disponible.")}</span></p>
 
    <MatchStatus
     matchReady={matchReady}
@@ -140,15 +142,15 @@ export default function Screener(){
 
    <div className="screener-summary">
     <p className="muted">{loading?'Loading…':`${displayed.length} ETF${displayed.length===1?'':'s'} shown`}</p>
-    <p className="fine muted">Select up to 3 ETFs to compare side by side. Use Explore for cross-asset research.</p>
+    <p className="fine muted">{pick("Select up to 3 ETFs to compare side by side. Use Explore for cross-asset research.","Sélectionnez jusqu’à 3 FNB à comparer côte à côte. Utilisez Explorer pour la recherche multi-actifs.")}</p>
    </div>
 
    {error&&<p className="notice" role="alert">{error}</p>}
 
    {loading
-    ? <p>Loading ETFs…</p>
+    ? <p>{pick("Loading ETFs…","Chargement des FNB…")}</p>
     : displayed.length===0&&!error
-      ? <p>No ETFs match these filters.</p>
+      ? <p>{pick("No ETFs match these filters.","Aucun FNB ne correspond à ces filtres.")}</p>
       : <ScreenerTable
          rows={displayed}
          matches={matches}
@@ -174,15 +176,16 @@ function MatchStatus({
  authLoading:boolean;
  userPresent:boolean;
 }){
+ const {pick}=useLocale();
  if(matchReady){
   const text=
    matchStatus==='available'
-    ? 'Eligible ETF matches are identified using your current context.'
+    ? pick('Eligible ETF matches are identified using your current context.','Les correspondances FNB admissibles sont identifiées selon votre contexte actuel.')
     : matchStatus==='context_required'
-      ? 'You are seeing DNA-only ETF comparisons until you add complete investment context. Numeric Match scores stay hidden until then.'
+      ? pick('You are seeing DNA-only ETF comparisons until you add complete investment context. Numeric Match scores stay hidden until then.','Vous voyez des comparaisons FNB basées uniquement sur le DNA jusqu’à ce que vous ajoutiez un contexte de placement complet. Les scores numériques restent masqués jusque-là.')
       : matchStatus==='no_suitable_options'
-        ? 'No ETF currently passes all fit limits; the screener still shows the research universe without forcing a match.'
-        : 'Your current Match is under review, so personalized rankings are paused.';
+        ? pick('No ETF currently passes all fit limits; the screener still shows the research universe without forcing a match.','Aucun FNB ne respecte actuellement toutes les limites de compatibilité; le filtre affiche tout de même l’univers de recherche sans forcer une correspondance.')
+        : pick('Your current Match is under review, so personalized rankings are paused.','Votre Match actuel est en révision; les classements personnalisés sont donc suspendus.');
   const statusClass=
    matchStatus==='available'
     ? 'match-status-card ok'
@@ -191,7 +194,7 @@ function MatchStatus({
       : 'match-status-card';
 
   return <div className={statusClass}>
-   <strong>Your DNA is connected.</strong>
+   <strong>{pick("Your DNA is connected.","Votre DNA est connecté.")}</strong>
    <p>{text}</p>
   </div>;
  }
@@ -199,8 +202,8 @@ function MatchStatus({
  if(authLoading)return null;
  return <div className="notice">
   <p>{userPresent
-   ? 'Complete or save your Investing DNA to add personal compatibility to the ETF screener.'
-   : 'You can screen ETFs without an account. Complete Investing DNA to add your same-session compatibility layer; create an account only if you want to keep it across visits.'}</p>
+   ? pick('Complete or save your Investing DNA to add personal compatibility to the ETF screener.','Terminez ou enregistrez votre Investing DNA pour ajouter une compatibilité personnelle au filtre FNB.')
+   : pick('You can screen ETFs without an account. Complete Investing DNA to add your same-session compatibility layer; create an account only if you want to keep it across visits.','Vous pouvez filtrer les FNB sans compte. Terminez Investing DNA pour ajouter la compatibilité pendant cette session; créez un compte seulement si vous souhaitez la conserver entre les visites.')}</p>
  </div>;
 }
 
@@ -221,41 +224,42 @@ function ScreenerToolbar({
  onToggleEligible:()=>void;
  onSubmit:()=>void;
 }){
+ const {pick}=useLocale();
  return <form className="dna-toolbar" onSubmit={event=>{event.preventDefault();onSubmit()}}>
   <label>
-   Search
-   <input className="field" placeholder="Symbol or name" value={query} onChange={event=>onQuery(event.target.value)}/>
+   {pick("Search","Rechercher")}
+   <input className="field" placeholder={pick("Symbol or name","Symbole ou nom")} value={query} onChange={event=>onQuery(event.target.value)}/>
   </label>
 
   <label>
-   Official risk
+   {pick("Official risk","Risque officiel")}
    <select className="field" value={risk} onChange={event=>onRisk(event.target.value)}>
-    <option value="">All risk levels</option>
-    <option>Low</option>
-    <option>Low to Medium</option>
-    <option>Medium</option>
-    <option>Medium to High</option>
-    <option>High</option>
+    <option value="">{pick("All risk levels","Tous les niveaux de risque")}</option>
+    <option value="Low">{pick("Low","Faible")}</option>
+    <option value="Low to Medium">{pick("Low to Medium","Faible à moyen")}</option>
+    <option value="Medium">{pick("Medium","Moyen")}</option>
+    <option value="Medium to High">{pick("Medium to High","Moyen à élevé")}</option>
+    <option value="High">{pick("High","Élevé")}</option>
    </select>
   </label>
 
   <label>
-   Sort
+   {pick("Sort","Trier")}
    <select className="field" value={sort} onChange={event=>onSort(event.target.value)}>
-    <option value="name">Name</option>
-    <option value="return_1y_desc">1-year return</option>
-    <option value="mer_asc">Lowest MER</option>
-    <option value="aum_desc">Largest AUM</option>
-    {matchReady&&matchStatus==='available'&&<option value="dna_desc">Closest DNA fit</option>}
+    <option value="name">{pick("Name","Nom")}</option>
+    <option value="return_1y_desc">{pick("1-year return","Rendement sur 1 an")}</option>
+    <option value="mer_asc">{pick("Lowest MER","RFG le plus faible")}</option>
+    <option value="aum_desc">{pick("Largest AUM","Actif sous gestion le plus élevé")}</option>
+    {matchReady&&matchStatus==='available'&&<option value="dna_desc">{pick("Closest DNA fit","Compatibilité DNA la plus proche")}</option>}
    </select>
   </label>
 
-  <button className="btn primary" disabled={loading}>Apply</button>
+  <button className="btn primary" disabled={loading}>{pick("Apply","Appliquer")}</button>
 
   {matchReady&&matchStatus==='available'&&<label>
-   <span>DNA filter</span>
+   <span>{pick("DNA filter","Filtre DNA")}</span>
    <button type="button" className="btn" aria-pressed={eligibleOnly} onClick={onToggleEligible}>
-    {eligibleOnly?'Showing eligible only':'Show eligible only'}
+    {eligibleOnly?pick('Showing eligible only','FNB admissibles seulement'):pick('Show eligible only','Afficher seulement les admissibles')}
    </button>
   </label>}
  </form>;
@@ -271,33 +275,34 @@ function ScreenerTable({
  selected:string[];
  onToggle:(id:string)=>void;
 }){
+ const {pick}=useLocale();
  return <table className="table">
   <thead><tr>
-   <th>Compare</th><th>ETF</th><th>Official risk</th><th>DNA fit</th><th>1-year return</th><th>MER</th><th>Details</th>
+   <th>{pick("Compare","Comparer")}</th><th>FNB</th><th>{pick("Official risk","Risque officiel")}</th><th>{pick("DNA fit","Compatibilité DNA")}</th><th>{pick("1-year return","Rendement 1 an")}</th><th>{pick("MER","RFG")}</th><th>{pick("Details","Détails")}</th>
   </tr></thead>
   <tbody>{rows.map(fund=>{
    const match=matches.get(fund.symbol);
    return <tr key={fund.id}>
     <td data-label="Compare"><input
-     aria-label={`Select ${fund.symbol} for comparison`}
+     aria-label={`${pick('Select','Sélectionner')} ${fund.symbol} ${pick('for comparison','pour comparaison')}`}
      type="checkbox"
      checked={selected.includes(fund.id)}
      disabled={!selected.includes(fund.id)&&selected.length>=3}
      onChange={()=>onToggle(fund.id)}
     /></td>
     <td data-label="ETF"><b>{fund.symbol}</b> · {fund.name}</td>
-    <td data-label="Official risk">{fund.risk_level||'Not available'}</td>
+    <td data-label="Official risk">{fund.risk_level||pick('Not available','Non disponible')}</td>
     <td data-label="DNA fit"><FitCell match={match} matchReady={matchReady} matchStatus={matchStatus}/></td>
     <td data-label="1-year return">{formatMetric(fund.return_1y_pct,'%')}</td>
     <td data-label="MER">{formatMetric(fund.mer_pct,'%')}</td>
-    <td data-label="Details"><Link className="btn" href={'/investment/'+fund.id}>View ETF</Link></td>
+    <td data-label="Details"><Link className="btn" href={'/investment/'+fund.id}>{pick("View details","Voir les détails")}</Link></td>
    </tr>;
   })}</tbody>
  </table>;
 }
 
-function FitCell({match,matchReady,matchStatus}:{match?:MatchItem;matchReady:boolean;matchStatus?:string}){
- if(!match)return <span className="muted">{matchReady?'Not ranked':'Add DNA'}</span>;
+function FitCell({match,matchReady,matchStatus}:{match?:MatchItem;matchReady:boolean;matchStatus?:string}){ const {pick}=useLocale();
+ if(!match)return <span className="muted">{matchReady?pick('Not ranked','Non classé'):pick('Add DNA','Ajouter DNA')}</span>;
  const score=matchScorePresentation(match,matchStatus);
  return <div className="dna-fit-cell">
   <strong>{score.text}</strong>
@@ -305,12 +310,12 @@ function FitCell({match,matchReady,matchStatus}:{match?:MatchItem;matchReady:boo
  </div>;
 }
 
-function SelectionBar({selected,onClear}:{selected:string[];onClear:()=>void}){
+function SelectionBar({selected,onClear}:{selected:string[];onClear:()=>void}){ const {locale,pick}=useLocale();
  return <div className="selection-bar">
-  <span>{selected.length} selected · choose up to 3</span>
+  <span>{locale==="fr"?`${selected.length} sélectionné${selected.length===1?"":"s"} · jusqu’à 3`:`${selected.length} selected · choose up to 3`}</span>
   <div className="actions" style={{margin:0}}>
-   {selected.length>=2&&<Link className="btn primary" href={`/compare?ids=${selected.join(',')}`}>Compare selected</Link>}
-   <button className="btn" onClick={onClear}>Clear</button>
+   {selected.length>=2&&<Link className="btn primary" href={`/compare?ids=${selected.join(',')}`}>{pick("Compare selected","Comparer la sélection")}</Link>}
+   <button className="btn" onClick={onClear}>{pick("Clear","Effacer")}</button>
   </div>
  </div>;
 }

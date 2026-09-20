@@ -6,6 +6,7 @@ import {readDraft} from '@/lib/dna';
 import type {AppState} from '@/lib/dna';
 import {rpc} from '@/lib/supabase';
 import {useAccount} from '@/lib/use-account';
+import {useLocale} from '@/lib/locale';
 
 type DnaAvailability='checking'|'current'|'saved'|'none';
 
@@ -17,6 +18,7 @@ type DnaAvailability='checking'|'current'|'saved'|'none';
 export function DnaEntryActions(){
  const {user,loading:authLoading}=useAccount();
  const [availability,setAvailability]=useState<DnaAvailability>('checking');
+ const {pick}=useLocale();
 
  useEffect(()=>{
   let active=true;
@@ -42,26 +44,26 @@ export function DnaEntryActions(){
 
  if(authLoading||availability==='checking'){
   return <div className="actions" aria-live="polite">
-   <span className="muted">Checking your Investor DNA…</span>
+   <span className="muted">{pick("Checking your Investor DNA…","Vérification de votre Investor DNA…")}</span>
   </div>;
  }
 
  if(availability==='current'){
   return <div className="actions">
-   <Link className="btn primary" href="/dna/result">View my current DNA</Link>
-   <Link className="btn" href="/dna/assessment?fresh=1">Start a new assessment</Link>
+   <Link className="btn primary" href="/dna/result">{pick("View my current DNA","Voir mon DNA actuel")}</Link>
+   <Link className="btn" href="/dna/assessment?fresh=1">{pick("Start a new assessment","Commencer une nouvelle évaluation")}</Link>
   </div>;
  }
 
  if(availability==='saved'){
   return <div className="actions">
-   <Link className="btn primary" href="/dna/result">View my saved DNA</Link>
-   <Link className="btn" href="/dna/assessment?fresh=1">Retake assessment</Link>
+   <Link className="btn primary" href="/dna/result">{pick("View my saved DNA","Voir mon DNA enregistré")}</Link>
+   <Link className="btn" href="/dna/assessment?fresh=1">{pick("Retake assessment","Refaire l’évaluation")}</Link>
   </div>;
  }
 
  return <div className="actions">
-  <Link className="btn primary" href="/dna/assessment">Start as guest</Link>
-  <Link className="btn" href="/profile">I already have an account</Link>
+  <Link className="btn primary" href="/dna/assessment">{pick("Start as guest","Commencer sans compte")}</Link>
+  <Link className="btn" href="/profile">{pick("I already have an account","J’ai déjà un compte")}</Link>
  </div>;
 }

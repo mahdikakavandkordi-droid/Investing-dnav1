@@ -172,6 +172,7 @@ async function installMocks(ctx){
    {id:'3e295468-5d29-4e43-8de8-0089d3736382',symbol:'CA-CP-REF',name:'Canadian Commercial Paper — Research Reference',asset_type:'COMMERCIAL_PAPER',currency:'CAD',capital_protection:'conditional',liquidity_level:'medium',price_volatility:'very_low',description:'Educational reference for Canadian commercial paper. It is not a live quoted issue and intentionally does not display an invented current yield.'}
   ]);
   if(url.includes('/rest/v1/rpc/get_current_investor_app_state'))return send({has_profile:true,assessment_id:assessmentId,dna,report:report(),matches:matchPayload()});
+  if(url.includes('/rest/v1/rpc/app_market_data_status'))return send([]);
   if(url.includes('/rest/v1/rpc/app_watchlist'))return send({items:[{investment_id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio'}]});
   if(url.includes('/rest/v1/rpc/app_get_instrument_dna'))return send(vbalDna);
   if(url.includes('/rest/v1/rpc/app_get_official_fund_facts'))return send(vbalFacts);
@@ -206,6 +207,25 @@ async function runViewport(browser,label,viewport){
  page.on('pageerror',e=>errors.push(String(e)));
 
  await page.goto(ORIGIN+'/',{waitUntil:'networkidle'});
+ if(mobile){
+  await page.getByRole('heading',{name:'Know your investor DNA.',exact:true}).waitFor();
+  assert.ok(await page.locator('.mobile-home-landing').isVisible());
+  assert.equal(await page.locator('.desktop-home-experience:visible').count(),0);
+  await assertMobileShell(page,'Home');
+
+  // Global Canadian bilingual shell: switch to French, persist across reload,
+  // then return to English so the remaining regression keeps stable selectors.
+  await page.getByRole('button',{name:'FR',exact:true}).first().click();
+  await page.getByRole('heading',{name:'Comprenez votre profil d’investisseur.',exact:true}).waitFor();
+  await page.getByRole('link',{name:'Accueil',exact:true}).waitFor();
+  await page.reload({waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Comprenez votre profil d’investisseur.',exact:true}).waitFor();
+  await page.getByRole('button',{name:'EN',exact:true}).first().click();
+  await page.getByRole('heading',{name:'Know your investor DNA.',exact:true}).waitFor();
+ }else{
+  assert.ok((await page.locator('.desktop-home-experience:visible').count())>0);
+  assert.equal(await page.locator('.mobile-home-landing:visible').count(),0);
+ }
  await shot(page,label+'-01-home');
 
  await page.goto(ORIGIN+'/explore',{waitUntil:'networkidle'});
@@ -346,8 +366,25 @@ async function runViewport(browser,label,viewport){
   await page.goto(ORIGIN+'/account',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:'Your Investing DNA account',exact:true}).waitFor();
   await page.getByRole('heading',{name:'Save your DNA when it becomes useful.',exact:true}).waitFor();
+  await page.getByRole('link',{name:'Create free account',exact:true}).waitFor();
+  await page.getByRole('link',{name:'Sign in',exact:true}).waitFor();
   await assertMobileShell(page,'Profile');
   await shot(page,label+'-14c-account-signed-out');
+
+  await page.goto(ORIGIN+'/signup',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Create your Investing DNA account',exact:true}).waitFor();
+  assert.ok(await page.locator('.mobile-app-header').isVisible());
+  assert.equal(await page.locator('.mobile-app-nav').count(),0);
+  await page.getByLabel('First name').waitFor();
+  await page.getByLabel('Email address').waitFor();
+  await shot(page,label+'-14c2-signup');
+
+  await page.goto(ORIGIN+'/login',{waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Sign in to Investing DNA',exact:true}).waitFor();
+  assert.ok(await page.locator('.mobile-app-header').isVisible());
+  assert.equal(await page.locator('.mobile-app-nav').count(),0);
+  await page.getByLabel('Email address').waitFor();
+  await shot(page,label+'-14c3-login');
 
   await page.goto(ORIGIN+'/profile',{waitUntil:'networkidle'});
   await page.getByRole('heading',{name:/Save your Investor DNA|Create your free account or sign in/}).waitFor();

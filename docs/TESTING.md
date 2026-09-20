@@ -13,7 +13,7 @@ npm test
 
 Source: `tests/contracts.mjs`.
 
-Purpose includes assessment envelopes, scale behavior, zero-vs-missing semantics, guest/account isolation, storage expiry/cleanup and the narrow public questionnaire DTO.
+Purpose includes assessment envelopes, scale behavior, zero-vs-missing semantics, guest/account isolation, storage expiry/cleanup and the narrow public questionnaire DTO. It also exercises `portfolio-blueprint-v1` across named personas plus a combinatorial grid of risk, goal, horizon, liquidity and protection inputs; allocations must remain bounded, total 100%, use five-point increments and respect hard protection constraints.
 
 These are deterministic and do not start a browser.
 
@@ -96,7 +96,7 @@ Covers research/limitations wording, privacy contract, global disclosure and mob
 
 Covers cross-asset Explore taxonomy, GIC terms/protection context, T-Bill yield/discount semantics, cross-asset Compare, disabled non-ETF Match, missing-value semantics and mobile/runtime health.
 
-Browser mocks do **not** prove production migrations, live RLS, real email delivery, deployment success, user comprehension or scientific validity.
+Browser mocks do **not** prove production migrations, live RLS, real email delivery, deployment success, user comprehension or scientific validity. The result flow additionally checks guest-safe PDF actions and distinct Portfolio Blueprint rendering under materially different contexts; that proves UI/contract behavior, not investment suitability.
 
 ## 5. Database regressions
 
@@ -111,6 +111,8 @@ Important suites:
 - `m4_cross_asset_research.sql`
 - `m4_security_hardening.sql`
 - `m4_match_hard_stress.sql`
+- `pilot_readiness.sql`
+- `report_delivery.sql`
 
 ### `milestone_1_engine_trust.sql`
 
@@ -127,6 +129,9 @@ Current canonical engine regression. It verifies:
 - long-horizon low-tolerance Education preserves a zero-equity path after calibration;
 - one-item Investor DNA sensitivity remains bounded.
 
+### `report_delivery.sql`
+
+Verifies the PDF email-delivery audit remains service-only and has no raw recipient-email column. The live report Edge Function separately checks signed-in ownership or the guest assessment capability before reading report data.
 ### `m4_match_hard_stress.sql`
 
 A deliberately adversarial Match v7 suite. It exercises 18 named scenarios covering:

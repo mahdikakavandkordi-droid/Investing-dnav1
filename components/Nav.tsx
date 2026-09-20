@@ -3,21 +3,23 @@
 import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {BrandMark} from '@/components/BrandMark';
+import {LanguageToggle,useLocale} from '@/lib/locale';
 
 export function Nav(){
  const {user,loading}=useAccount();
+ const {pick}=useLocale();
  return <header className="nav platform-nav">
   <div className="navin">
    <BrandMark/>
    <nav className="links platform-nav-links" aria-label="Main navigation">
-    <Link href="/#how-it-works">How it works</Link>
-    <Link href="/explore">Explore</Link>
-    <Link href="/compare">Compare</Link>
-    <Link href="/research">Research</Link>
+    <Link href="/#how-it-works">{pick("How it works","Comment ça marche")}</Link>
+    <Link href="/explore">{pick("Explore","Explorer")}</Link>
+    <Link href="/compare">{pick("Compare","Comparer")}</Link>
+    <Link href="/research">{pick("Research","Recherche")}</Link>
    </nav>
    <div className="account-links platform-account-links">
-    <Link className="profile-link" href="/profile">{user?'Dashboard':loading?'Account':'Sign in'}</Link>
-    <Link className="btn primary platform-nav-cta" href="/dna/assessment">Start your DNA</Link>
+    <LanguageToggle/>{user?<Link className="profile-link" href="/profile">{pick("Dashboard","Tableau de bord")}</Link>:loading?<span className="profile-link">{pick("Account","Compte")}</span>:<><Link className="profile-link" href="/login">{pick("Sign in","Connexion")}</Link><Link className="profile-link create-account-link" href="/signup">{pick("Create account","Créer un compte")}</Link></>}
+    <Link className="btn primary platform-nav-cta" href="/dna/assessment">{pick("Start your DNA","Découvrir mon DNA")}</Link>
    </div>
   </div>
  </header>;
