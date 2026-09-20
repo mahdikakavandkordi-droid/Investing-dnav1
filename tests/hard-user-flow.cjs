@@ -241,7 +241,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/DNA Match paused/i);
  assert.doesNotMatch(text,/91\/100|84\/100/);
  await page.goto(ORIGIN+'/match');
- await page.getByRole('heading',{name:'Review this money before ranking ETFs'}).waitFor();
+ await page.getByRole('heading',{name:'Review this money before ranking funds'}).waitFor();
  text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/);
  assert.equal(await page.locator('.match-dna-card').count(),0);
