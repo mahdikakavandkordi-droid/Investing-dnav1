@@ -152,7 +152,7 @@ function ReturnUpdate({summary,locale}:{summary:ReturningWorkspaceSummary;locale
  if(changed){
   return <div className="home-returning-update">
    <div className="home-returning-update-copy">
-    <span className="home-returning-update-kicker">Since your last visit</span>
+    <span className="home-returning-update-kicker">{pick("Since your last visit","Depuis votre dernière visite")}</span>
     <strong>{pick("Your saved research context has changed.","Le contexte de votre recherche enregistrée a changé.")}</strong>
     <p>{summary.assessment_changed?pick("Your current Investor DNA changed. ","Votre Investor DNA actuel a changé. "):""}{summary.match_updated?pick("Your Match inputs changed and the compatibility view may be different. ","Les données de votre Match ont changé et la vue de compatibilité peut être différente. "):""}{pick("Review the current state before comparing investments.","Revoyez l’état actuel avant de comparer des placements.")}</p>
    </div>
@@ -161,7 +161,7 @@ function ReturnUpdate({summary,locale}:{summary:ReturningWorkspaceSummary;locale
 
  return <div className="home-returning-update quiet">
   <div className="home-returning-update-copy">
-   <span className="home-returning-update-kicker">Since your last visit</span>
+   <span className="home-returning-update-kicker">{pick("Since your last visit","Depuis votre dernière visite")}</span>
    <strong>{pick("You’re caught up.","Vous êtes à jour.")}</strong>
    <p>{previous?pick("Previous workspace visit: ","Visite précédente : ")+previous+". ":""}{pick("No newer saved-investment market data needs your attention.","Aucune donnée de marché plus récente ne nécessite votre attention.")}</p>
   </div>
