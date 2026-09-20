@@ -19,7 +19,7 @@ export function HomeWorkspaceReturn(){
  const [state,setState]=useState<AppState|null>(null);
  const [saved,setSaved]=useState<SavedInstrument[]>([]);
  const [retention,setRetention]=useState<ReturningWorkspaceSummary|null>(null);
- const [loading,setLoading]=useState(false);
+ const [loading,setLoading]=useState(true);
  const trackedUser=useRef<string|null>(null);
  const {locale,pick}=useLocale();
 
