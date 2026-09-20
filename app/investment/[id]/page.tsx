@@ -137,7 +137,7 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
       </ResearchDisclosure>
       <ResearchDisclosure title="Save & official documents">
        <InstrumentConnection id={item.id} assetType={item.asset_type}/>
-       {facts&&<OfficialFundDocumentCard facts={facts}/>}
+       {facts&&<OfficialFundDocumentCard facts={facts} assetType={item.asset_type}/>}
       </ResearchDisclosure>
      </>
     : <>
