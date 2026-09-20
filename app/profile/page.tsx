@@ -94,7 +94,7 @@ function MobileDashboardHome({personal,state,items,closest,intent,intentSaved,bu
    </div>
    <div className="mobile-home-intent-actions">
     {!intentSaved&&<button className="btn primary" disabled={busy} onClick={onSaveIntent}>{busy?pick('Saving…','Enregistrement…'):pick('Save to watchlist','Enregistrer dans la liste')}</button>}
-    <Link className="btn" href={'/investment/'+intent.id}>View details</Link>
+    <Link className="btn" href={'/investment/'+intent.id}>{pick("View details","Voir les détails")}</Link>
    </div>
   </section>}
 
