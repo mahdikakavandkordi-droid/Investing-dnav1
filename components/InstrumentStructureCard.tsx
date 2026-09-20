@@ -1,7 +1,7 @@
 "use client";
 
 import type {Instrument} from '@/lib/instruments';
-import {assetLabel,researchMatchNote} from '@/lib/instrument-model';
+import {researchMatchNote} from '@/lib/instrument-model';
 import {useLocale} from '@/lib/locale';
 
 const DIMENSIONS:[keyof Instrument,string,string][]=[
@@ -46,8 +46,8 @@ export function InstrumentStructureCard({instrument}:{instrument:Instrument}){
 
   {available.length<DIMENSIONS.length&&<p className="fine muted structure-coverage-note">{pick("Structural coverage","Couverture structurelle")}: {available.length} {pick("of","sur")} {DIMENSIONS.length} {pick("optional traits available. Missing traits are hidden rather than shown as repeated placeholders.","caractéristiques facultatives disponibles. Les caractéristiques manquantes sont masquées plutôt qu’affichées comme valeurs répétitives.")}</p>}
   <p className="fine muted">
-   {researchMatchNote(instrument.asset_type)}
-   {instrument.structure_as_of_date?` · Structure profile as of ${instrument.structure_as_of_date}.`:''}
+   {locale==="fr"?pick("Structural research only; personalized DNA Match is not enabled for this asset type in this phase.","Recherche structurelle seulement; DNA Match personnalisé n’est pas activé pour ce type d’actif à cette étape."):researchMatchNote(instrument.asset_type)}
+   {instrument.structure_as_of_date?locale==='fr'?` · Profil structurel en date du ${instrument.structure_as_of_date}.`:` · Structure profile as of ${instrument.structure_as_of_date}.`:''}
   </p>
  </section>;
 }
