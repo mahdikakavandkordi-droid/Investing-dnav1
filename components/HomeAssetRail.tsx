@@ -31,7 +31,7 @@ export function HomeAssetRail(){
   return()=>{active=false};
  },[]);
 
- const cards=useMemo(()=>ORDER.map(type=>pick(items,type)).filter(Boolean) as Instrument[],[items]);
+ const cards=useMemo(()=>ORDER.map(type=>pickInstrument(items,type)).filter(Boolean) as Instrument[],[items]);
 
  if(loading)return <div className="home-asset-rail" aria-label={pick("Loading investment examples","Chargement des exemples de placement")}>
   {ORDER.map(type=><div className="home-asset-card home-asset-skeleton" key={type}><div/><div/><div/><div/></div>)}
@@ -60,7 +60,7 @@ export function HomeAssetRail(){
  </div>;
 }
 
-function pick(items:Instrument[],assetType:string){
+function pickInstrument(items:Instrument[],assetType:string){
  const candidates=items.filter(item=>item.asset_type===assetType);
  const preferred=PREFERRED[assetType]||[];
  for(const symbol of preferred){
