@@ -141,7 +141,7 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
  const rowContextOnly=match?.eligibility==='context_required'||match?.recommendation_tier==='consider';
  const showExplanation=matchStatus!=='review_required'&&(!contextOnly||rowContextOnly);
 
- return <article className="compare-card">
+ return <article className={'compare-card compare-card-'+String(item.asset_type||'unknown').toLowerCase()}>
   <div className="actions compact"><span className="pill">{assetLabel(item.asset_type)}</span>{item.symbol&&<span className="pill">{item.symbol}</span>}</div>
   <h2>{item.name}</h2>
   <FitSummary canMatch={canMatch} match={match} matchStatus={matchStatus} dnaPresent={dnaPresent}/>
