@@ -211,6 +211,16 @@ async function runViewport(browser,label,viewport){
   assert.ok(await page.locator('.mobile-home-landing').isVisible());
   assert.equal(await page.locator('.desktop-home-experience:visible').count(),0);
   await assertMobileShell(page,'Home');
+
+  // Global Canadian bilingual shell: switch to French, persist across reload,
+  // then return to English so the remaining regression keeps stable selectors.
+  await page.getByRole('button',{name:'FR',exact:true}).first().click();
+  await page.getByRole('heading',{name:'Comprenez votre profil d’investisseur.',exact:true}).waitFor();
+  await page.getByRole('link',{name:'Accueil',exact:true}).waitFor();
+  await page.reload({waitUntil:'networkidle'});
+  await page.getByRole('heading',{name:'Comprenez votre profil d’investisseur.',exact:true}).waitFor();
+  await page.getByRole('button',{name:'EN',exact:true}).first().click();
+  await page.getByRole('heading',{name:'Know your investor DNA.',exact:true}).waitFor();
  }else{
   assert.ok(await page.locator('.desktop-home-experience').isVisible());
   assert.equal(await page.locator('.mobile-home-landing:visible').count(),0);
