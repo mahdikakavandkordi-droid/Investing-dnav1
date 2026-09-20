@@ -1417,3 +1417,9 @@
  body:has(.home-returning-workspace) .mobile-home-path-card,
  body:has(.home-returning-workspace) .mobile-home-value-card{display:none}
 }
+
+
+@media(max-width:760px){
+ .mobile-app-header-actions{display:flex;align-items:center;gap:7px}
+ .mobile-app-header-actions .locale-switch{flex:0 0 auto}
+}
