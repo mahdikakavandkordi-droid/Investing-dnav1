@@ -104,10 +104,24 @@ No synthetic price-history freshness date is written in advance.
 - new batch structure profiles: 17 / 17
 - new batch research profiles: 17 / 17
 
-Historical return coverage remains 40 until sourced return/performance data is separately added for the new batch.
+A second enrichment migration then added issuer-verified performance, income, characteristics, holdings and exposure evidence where the official source exposed a dated value.
+
+Coverage after enrichment:
+- 1-year return coverage: 48 instruments (up from 40)
+- 3-year return coverage: 47
+- 5-year return coverage: 45
+- sourced income coverage: 43
+- portfolio-characteristics coverage: 45
+- complete exposure-set coverage: 16
+- full-holdings-detail coverage: 10
+
+New verified performance rows include CASH, CBIL, HXT, HXS, HXQ, AIQ, PSA and TQCD. Fund-age gaps stay null (for example AIQ has no 3-year or 5-year figure yet).
+
+TD current portfolio evidence was also added for TTP, TPU, TDB, TCSH, TGRO, TEQT, TEC, TQCD and THE where the official fund card exposed it. Complex TCOM remains deliberately sparse where no comparable clean statistic was available rather than forcing a synthetic field.
 
 ## Migration
 
 Live migration:
 
 `20260920192840_canada_etf_catalog_expansion_v1.sql`
+`20260920200107_canada_etf_research_enrichment_v1.sql`
