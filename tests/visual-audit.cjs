@@ -172,6 +172,7 @@ async function installMocks(ctx){
    {id:'3e295468-5d29-4e43-8de8-0089d3736382',symbol:'CA-CP-REF',name:'Canadian Commercial Paper — Research Reference',asset_type:'COMMERCIAL_PAPER',currency:'CAD',capital_protection:'conditional',liquidity_level:'medium',price_volatility:'very_low',description:'Educational reference for Canadian commercial paper. It is not a live quoted issue and intentionally does not display an invented current yield.'}
   ]);
   if(url.includes('/rest/v1/rpc/get_current_investor_app_state'))return send({has_profile:true,assessment_id:assessmentId,dna,report:report(),matches:matchPayload()});
+  if(url.includes('/rest/v1/rpc/app_market_data_status'))return send([]);
   if(url.includes('/rest/v1/rpc/app_watchlist'))return send({items:[{investment_id:matchItem.investment_id,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio'}]});
   if(url.includes('/rest/v1/rpc/app_get_instrument_dna'))return send(vbalDna);
   if(url.includes('/rest/v1/rpc/app_get_official_fund_facts'))return send(vbalFacts);
