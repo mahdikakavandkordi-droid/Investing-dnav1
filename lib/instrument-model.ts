@@ -3,15 +3,13 @@ import type {Investment} from '@/lib/types';
 /**
  * Canonical asset taxonomy for Investor DNA.
  *
- * Keep page components dumb: they should ask this module how to label/group an
- * instrument instead of duplicating asset-type conditionals across Explore,
- * Detail and Compare.
- *
- * Any new public asset class must be added here as part of the extension
- * checklist in `docs/INVESTOR-DNA-ASSET-ARCHITECTURE.md`.
+ * V1 intentionally exposes only ETFs, mutual funds and GICs. The broader
+ * research taxonomy stays in the code/database so later versions can re-enable
+ * individual bonds and money-market instruments without a data migration.
  */
 export const ASSET_TYPES = [
  'ETF',
+ 'MUTUAL_FUND',
  'GIC',
  'T_BILL',
  'BOND',
@@ -19,9 +17,13 @@ export const ASSET_TYPES = [
  'ABCP'
 ] as const;
 
+export const PUBLIC_V1_ASSET_TYPES = ['ETF','MUTUAL_FUND','GIC'] as const;
+
 export type AssetType = typeof ASSET_TYPES[number];
+export type PublicV1AssetType = typeof PUBLIC_V1_ASSET_TYPES[number];
 export type InstrumentFamily =
- | 'funds'
+ | 'etfs'
+ | 'mutual_funds'
  | 'deposits'
  | 'bonds'
  | 'government_money_market'
@@ -49,13 +51,26 @@ const DEFINITIONS:Record<AssetType,AssetDefinition> = {
  ETF:{
   label:'ETF',
   plural:'ETFs',
-  family:'funds',
+  family:'etfs',
   familyLabel:'ETFs',
   matchEligible:true,
   fundResearch:true,
   heroMetrics:[
    {key:'price',label:'Price'},
    {key:'return_1y_pct',label:'1-year return',suffix:'%'},
+   {key:'mer_pct',label:'MER',suffix:'%'}
+  ]
+ },
+ MUTUAL_FUND:{
+  label:'Mutual Fund',
+  plural:'Mutual Funds',
+  family:'mutual_funds',
+  familyLabel:'Mutual Funds',
+  matchEligible:true,
+  fundResearch:true,
+  heroMetrics:[
+   {key:'price',label:'NAV'},
+   {key:'risk_level',label:'Risk'},
    {key:'mer_pct',label:'MER',suffix:'%'}
   ]
  },
@@ -157,25 +172,28 @@ export function assetFamilyLabel(value?:string|null){return assetDefinition(valu
 export function matchEligible(value?:string|null){return assetDefinition(value).matchEligible;}
 export function usesFundResearch(value?:string|null){return assetDefinition(value).fundResearch;}
 export function heroMetrics(value?:string|null){return assetDefinition(value).heroMetrics;}
+export function isPublicV1AssetType(value?:string|null):value is PublicV1AssetType{
+ return PUBLIC_V1_ASSET_TYPES.includes((value||'').toUpperCase() as PublicV1AssetType);
+}
 
 export const EXPLORE_TABS = [
  {key:'all',label:'All'},
- {key:'funds',label:'ETFs'},
- {key:'deposits',label:'GICs'},
- {key:'government_money_market',label:'T-Bills'},
- {key:'bonds',label:'Bonds'},
- {key:'money_market',label:'Money Market'}
+ {key:'etfs',label:'ETFs'},
+ {key:'mutual_funds',label:'Mutual Funds'},
+ {key:'deposits',label:'GICs'}
 ] as const;
 
 export type ExploreTab = typeof EXPLORE_TABS[number]['key'];
 
 export function inExploreTab(assetType:string|undefined,tab:ExploreTab){
+ if(!isPublicV1AssetType(assetType))return false;
  return tab==='all'||assetFamily(assetType)===tab;
 }
 
 /** Explain current Match scope without implying that missing Match is an error. */
 export function researchMatchNote(assetType?:string|null){
- return matchEligible(assetType)
-  ? 'Personalized DNA Match is available for this ETF when you have a saved Investor DNA and investment context.'
-  : 'Research profile — personalized DNA Match is not enabled for this asset type yet.';
+ if(assetType==='ETF'||assetType==='MUTUAL_FUND'){
+  return 'Personalized DNA Match is available for this fund when you have a saved Investor DNA and investment context.';
+ }
+ return 'Research profile — personalized Match is not enabled for this asset type yet.';
 }
