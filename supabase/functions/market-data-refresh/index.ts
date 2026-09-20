@@ -196,13 +196,26 @@ async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
     const high = Number(quote?.high?.[index]);
     const low = Number(quote?.low?.[index]);
     const volume = Number(quote?.volume?.[index]);
+    const validOpen = Number.isFinite(open) && open > 0 ? open : null;
+    const validHigh = Number.isFinite(high) && high > 0 ? high : null;
+    const validLow = Number.isFinite(low) && low > 0 ? low : null;
+
+    // Some Yahoo Cboe Canada bars differ by a few floating-point ticks between
+    // close/high or close/low. Preserve the provider values while normalizing
+    // the OHLC envelope so canonical ingestion does not reject harmless
+    // floating precision noise.
+    const envelope = [validOpen, validHigh, validLow, close].filter(
+      (value): value is number => value !== null && Number.isFinite(value),
+    );
+    const normalizedHigh = envelope.length > 0 ? Math.max(...envelope) : close;
+    const normalizedLow = envelope.length > 0 ? Math.min(...envelope) : close;
 
     rows.push({
       symbol: item.symbol,
       price_date: priceDate,
-      open: Number.isFinite(open) && open > 0 ? open : null,
-      high: Number.isFinite(high) && high > 0 ? high : null,
-      low: Number.isFinite(low) && low > 0 ? low : null,
+      open: validOpen,
+      high: normalizedHigh,
+      low: normalizedLow,
       close,
       nav: null,
       volume: Number.isFinite(volume) && volume >= 0 ? volume : null,
@@ -367,6 +380,7 @@ Deno.serve(async (req: Request) => {
       } else {
         const result = data as Record<string, unknown>;
         ingestedCount += Number(result?.records_inserted ?? 0) + Number(result?.records_updated ?? 0);
+        ingestionErrors += Number(result?.error_count ?? 0);
         ingestionResults.push(result);
       }
     }
