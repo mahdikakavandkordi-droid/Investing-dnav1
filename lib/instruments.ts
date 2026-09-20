@@ -90,6 +90,20 @@ export type Instrument=Investment&{
  fixed_income_source_url?:string|null;
  fixed_income_as_of_date?:string|null;
 
+ // Mutual-fund series / dealing terms. Null for unrelated asset classes.
+ series_name?:string|null;
+ fund_code?:string|null;
+ cifsc_category?:string|null;
+ load_structure?:string|null;
+ sales_status?:string|null;
+ minimum_initial_investment?:number|null;
+ minimum_additional_investment?:number|null;
+ mf_income_distribution_frequency?:string|null;
+ capital_gains_distribution_frequency?:string|null;
+ mutual_fund_source_name?:string|null;
+ mutual_fund_source_url?:string|null;
+ mutual_fund_as_of_date?:string|null;
+
  // GIC/deposit fields. Null for unrelated asset classes.
  deposit_rate_pct?:number|null;
  term_months?:number|null;
