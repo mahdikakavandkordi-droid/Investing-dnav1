@@ -18,7 +18,7 @@ export function Nav(){
     <Link href="/research">{pick("Research","Recherche")}</Link>
    </nav>
    <div className="account-links platform-account-links">
-    <LanguageToggle/><Link className="profile-link" href="/profile">{user?pick("Dashboard","Tableau de bord"):loading?pick("Account","Compte"):pick("Sign in","Connexion")}</Link>
+    <LanguageToggle/>{user?<Link className="profile-link" href="/profile">{pick("Dashboard","Tableau de bord")}</Link>:loading?<span className="profile-link">{pick("Account","Compte")}</span>:<><Link className="profile-link" href="/login">{pick("Sign in","Connexion")}</Link><Link className="profile-link create-account-link" href="/signup">{pick("Create account","Créer un compte")}</Link></>}
     <Link className="btn primary platform-nav-cta" href="/dna/assessment">{pick("Start your DNA","Découvrir mon DNA")}</Link>
    </div>
   </div>
