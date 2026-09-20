@@ -55,7 +55,7 @@ function FixedIncomeTerms({instrument,type,locale}:{instrument:Instrument;type:s
   <div className="eyebrow">{pick("Fixed-income terms","Modalités de revenu fixe")}</div>
   <h2>{pick("Yield, maturity and credit structure","Rendement, échéance et structure de crédit")}</h2>
   <div className="terms-grid-v2">{rows.map(row=><Row key={row.label} {...row}/>)}</div>
-  {rows.length<4&&<p className="fine muted">Limited term coverage is available for this research profile. Missing optional fields are hidden.</p>}
+  {rows.length<4&&<p className="fine muted">{pick("Limited term coverage is available for this research profile. Missing optional fields are hidden.","La couverture des modalités est limitée pour ce profil de recherche. Les champs facultatifs manquants sont masqués.")}</p>}
   {instrument.market_access_note&&<p className="terms-note-v2">{instrument.market_access_note}</p>}
   <SourceLine url={instrument.fixed_income_source_url} name={instrument.fixed_income_source_name||pick('Official source','Source officielle')} asOf={instrument.fixed_income_as_of_date} locale={locale}/>
  </section>;
