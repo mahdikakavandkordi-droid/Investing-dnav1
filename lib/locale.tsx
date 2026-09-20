@@ -54,7 +54,7 @@ export function useLocale(){
 
 export function LanguageToggle({compact=false}:{compact?:boolean}){
  const {locale,setLocale}=useLocale();
- return <div className={compact?"locale-switch compact":"locale-switch"} role="group" aria-label={locale==="fr"?"Langue":"Language"}>
+ return <div className={compact?"locale-switch compact":"locale-switch"} role="group" aria-label={locale==="fr"?"Langue du site":"Site locale"}>
   <button type="button" className={locale==="en"?"active":""} aria-pressed={locale==="en"} onClick={()=>setLocale("en")}>EN</button>
   <button type="button" className={locale==="fr"?"active":""} aria-pressed={locale==="fr"} onClick={()=>setLocale("fr")}>FR</button>
  </div>;
