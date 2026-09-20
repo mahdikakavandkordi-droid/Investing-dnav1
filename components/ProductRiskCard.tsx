@@ -64,7 +64,7 @@ export function ProductRiskCard({investmentId}:{investmentId:string}){
       <span>{label}</span>
       <strong>{dimension.level}</strong>
      </div>
-     <p className="product-risk-direction-v1">{directionCopy(dimension)}</p>
+     <p className="product-risk-direction-v1">{directionCopy(dimension,locale)}</p>
      <small>{pick("Evidence confidence","Confiance des preuves")}: {dimension.confidence}</small>
      <button
       type="button"
@@ -112,7 +112,7 @@ function ProductRiskDialog({dimension,onClose}:{dimension:ProductRiskDimension;o
    <p>{dimension.explanation||definition?.shortDefinition||pick('This dimension describes one part of the investment’s risk profile.','Cette dimension décrit une partie du profil de risque du placement.')}</p>
    <h3>{pick("Why it matters","Pourquoi c’est important")}</h3>
    <p>{dimension.why_it_matters||definition?.whyItMatters}</p>
-   <p className="muted fine">{directionCopy(dimension)} . {pick("Evidence confidence","Confiance des preuves")}: {dimension.confidence}.</p>
+   <p className="muted fine">{directionCopy(dimension,locale)}. {pick("Evidence confidence","Confiance des preuves")}: {dimension.confidence}.</p>
   </div>
  </div>;
 }
