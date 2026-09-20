@@ -4,7 +4,8 @@ import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
-import type {Fund} from '@/lib/investments';
+import {searchInstruments} from '@/lib/instruments';
+import type {Instrument} from '@/lib/instruments';
 import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import {formatInvestmentContext} from '@/lib/dna-presentation';
 import {effectiveMatchStatus,matchFitLabel,matchScorePresentation} from '@/lib/match-presentation';
@@ -31,7 +32,7 @@ type GoalAwareExplanation=NonNullable<MatchItem['explanation']>&{
 export default function Matches(){
  const {user,loading:authLoading}=useAccount();
  const [state,setState]=useState<AppState|null>(null);
- const [funds,setFunds]=useState<Fund[]>([]);
+ const [funds,setFunds]=useState<Instrument[]>([]);
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState('');
 
@@ -57,8 +58,8 @@ export default function Matches(){
    });
    setLoading(true);
    Promise.all([
-    rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100}),
-    rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
+    searchInstruments({assetType:'ETF',limit:100}),
+    searchInstruments({assetType:'MUTUAL_FUND',limit:100})
    ]).then(([etfs,mutualFunds])=>{if(active)setFunds([...etfs,...mutualFunds])})
     .catch(e=>{if(active)setError(e.message)})
     .finally(()=>{if(active)setLoading(false)});
@@ -69,8 +70,8 @@ export default function Matches(){
   Promise.all([
    rpc<AppState>('get_current_investor_app_state'),
    Promise.all([
-    rpc<Fund[]>('app_search_investments',{p_asset_type:'ETF',p_limit:100}),
-    rpc<Fund[]>('app_search_investments',{p_asset_type:'MUTUAL_FUND',p_limit:100})
+    searchInstruments({assetType:'ETF',limit:100}),
+    searchInstruments({assetType:'MUTUAL_FUND',limit:100})
    ]).then(([etfs,mutualFunds])=>[...etfs,...mutualFunds])
   ])
    .then(([appState,fundRows])=>{
