@@ -131,7 +131,7 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
       <ResearchDisclosure title="Performance & holdings">
        {research&&<ResearchContextCard context={research}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title="About this ETF">
+      <ResearchDisclosure title={`About this ${assetLabel(item.asset_type)}`}>
        <FundResearchDetails item={item} facts={facts}/>
       </ResearchDisclosure>
       <ResearchDisclosure title="Save & official documents">
@@ -179,7 +179,7 @@ function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|n
   {marketDate&&<span className={clearlyDelayed?"detail-freshness-chip delayed":"detail-freshness-chip"}>
    {clearlyDelayed?'Market data may be delayed':'Market data after close'} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
   </span>}
-  {!marketDate&&item.asset_type==='ETF'&&<span className="detail-freshness-chip delayed">Latest market-price date is not available</span>}
+  {!marketDate&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<span className="detail-freshness-chip delayed">Latest {item.asset_type==='MUTUAL_FUND'?'NAV':'market-price'} date is not available</span>}
   <p className="muted fine detail-freshness-note">{researchCopy} Missing figures are never shown as zero.</p>
  </div>;
 }
@@ -203,7 +203,7 @@ function FundResearchDetails({item,facts}:{item:Instrument;facts:OfficialFundFac
  if(!hasObjective&&!hasBenchmark&&!hasRisks)return null;
 
  return <section className="fund-research-details-v2">
-  <div className="eyebrow">About this ETF</div>
+  <div className="eyebrow">About this {assetLabel(item.asset_type)}</div>
   <div className="fund-research-grid-v2">
    <div>
     {hasObjective&&<><h2>Objective</h2><p>{item.profile_objective||facts?.objective}</p></>}
