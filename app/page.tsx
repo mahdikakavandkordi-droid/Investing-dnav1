@@ -23,6 +23,8 @@ function MobileHomeLanding(){
    </div>
   </div>
 
+  <HomeWorkspaceReturn/>
+
   <section className="mobile-home-path-card">
    <div className="mobile-home-section-head"><div><span className="mobile-card-kicker">Your path</span><h2>Three steps. One connected flow.</h2></div></div>
    <div className="mobile-home-path-list">
