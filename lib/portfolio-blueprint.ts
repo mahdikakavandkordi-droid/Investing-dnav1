@@ -105,33 +105,33 @@ function allocation(equity:number,cash:number):Allocation{
   };
 }
 
-function horizonReason(value:string|null|undefined){
-  if(value==='lt_1y')return 'Your money may be needed within one year, so the blueprint keeps market exposure very limited.';
-  if(value==='1_3y')return 'A 1–3 year horizon limits how much short-term market loss this goal can reasonably absorb.';
-  if(value==='3_5y')return 'A 3–5 year horizon allows some growth exposure while keeping timing risk visible.';
-  if(value==='5_10y')return 'A 5–10 year horizon allows more room for market cycles without ignoring this goal’s constraints.';
-  if(value==='gt_10y')return 'A 10+ year horizon gives the most room for long-term market exposure.';
-  return 'Time horizon is treated as a core boundary for this blueprint.';
+function horizonReason(value:string|null|undefined,locale:'en'|'fr'='en'){
+  if(value==='lt_1y')return locale==='fr'?'Cet argent pourrait être nécessaire dans moins d’un an; le blueprint garde donc l’exposition au marché très limitée.':'Your money may be needed within one year, so the blueprint keeps market exposure very limited.';
+  if(value==='1_3y')return locale==='fr'?'Un horizon de 1 à 3 ans limite la perte de marché à court terme que cet objectif peut raisonnablement absorber.':'A 1–3 year horizon limits how much short-term market loss this goal can reasonably absorb.';
+  if(value==='3_5y')return locale==='fr'?'Un horizon de 3 à 5 ans permet une certaine exposition à la croissance tout en gardant le risque de calendrier visible.':'A 3–5 year horizon allows some growth exposure while keeping timing risk visible.';
+  if(value==='5_10y')return locale==='fr'?'Un horizon de 5 à 10 ans laisse davantage de place aux cycles de marché sans ignorer les contraintes de cet objectif.':'A 5–10 year horizon allows more room for market cycles without ignoring this goal’s constraints.';
+  if(value==='gt_10y')return locale==='fr'?'Un horizon de plus de 10 ans laisse le plus de place à l’exposition à long terme au marché.':'A 10+ year horizon gives the most room for long-term market exposure.';
+  return locale==='fr'?'L’horizon est traité comme une limite principale de ce blueprint.':'Time horizon is treated as a core boundary for this blueprint.';
 }
 
-function liquidityReason(value:string|null|undefined){
-  if(value==='high')return 'High access needs keep a larger liquid reserve and cap market exposure.';
-  if(value==='medium')return 'Some access matters, so the blueprint keeps a dedicated liquidity buffer.';
-  if(value==='low')return 'Low near-term access needs allow more of this money to stay invested.';
-  return 'Liquidity needs remain visible in the allocation.';
+function liquidityReason(value:string|null|undefined,locale:'en'|'fr'='en'){
+  if(value==='high')return locale==='fr'?'Des besoins d’accès élevés maintiennent une réserve liquide plus importante et plafonnent l’exposition au marché.':'High access needs keep a larger liquid reserve and cap market exposure.';
+  if(value==='medium')return locale==='fr'?'Un certain accès est important; le blueprint maintient donc une réserve de liquidité dédiée.':'Some access matters, so the blueprint keeps a dedicated liquidity buffer.';
+  if(value==='low')return locale==='fr'?'De faibles besoins d’accès à court terme permettent à une plus grande partie de cet argent de rester investie.':'Low near-term access needs allow more of this money to stay invested.';
+  return locale==='fr'?'Les besoins de liquidité restent visibles dans la répartition.':'Liquidity needs remain visible in the allocation.';
 }
 
-function principalReason(value:string|null|undefined){
-  if(value==='yes')return 'You said the full amount must be available when needed, so the blueprint does not add equity exposure for this goal.';
-  if(value==='unsure')return 'Because principal protection is uncertain, the blueprint applies a conservative cap rather than assuming loss capacity.';
-  return 'You said full principal protection is not required, so market exposure can be considered within your other limits.';
+function principalReason(value:string|null|undefined,locale:'en'|'fr'='en'){
+  if(value==='yes')return locale==='fr'?'Vous avez indiqué que le montant total doit être disponible au moment voulu; le blueprint n’ajoute donc pas d’exposition aux actions pour cet objectif.':'You said the full amount must be available when needed, so the blueprint does not add equity exposure for this goal.';
+  if(value==='unsure')return locale==='fr'?'Comme la protection du capital est incertaine, le blueprint applique un plafond prudent plutôt que de supposer une capacité de perte.':'Because principal protection is uncertain, the blueprint applies a conservative cap rather than assuming loss capacity.';
+  return locale==='fr'?'Vous avez indiqué qu’une protection complète du capital n’est pas requise; une exposition au marché peut donc être envisagée dans vos autres limites.':'You said full principal protection is not required, so market exposure can be considered within your other limits.';
 }
 
 function isGrowthBlocked(context:BlueprintContextInput){
   return context.principal_required==='yes'||context.goal==='emergency_reserve'||context.time_horizon==='lt_1y';
 }
 
-export function buildPortfolioBlueprint(dna:BlueprintDNAInput,context?:BlueprintContextInput|null):PortfolioBlueprint|null{
+export function buildPortfolioBlueprint(dna:BlueprintDNAInput,context?:BlueprintContextInput|null,locale:'en'|'fr'='en'):PortfolioBlueprint|null{
   if(!context?.goal||!context.time_horizon||!context.liquidity_need||!context.principal_required)return null;
 
   const tolerance=scoreOrNull(dna.risk_tolerance);
@@ -171,36 +171,36 @@ export function buildPortfolioBlueprint(dna:BlueprintDNAInput,context?:Blueprint
     scenarios:[
       {
         key:'defensive',
-        title:'More Defensive',
-        subtitle:'Less market exposure and a larger stability buffer.',
+        title:locale==='fr'?'Plus défensif':'More Defensive',
+        subtitle:locale==='fr'?'Moins d’exposition au marché et une réserve de stabilité plus importante.':'Less market exposure and a larger stability buffer.',
         allocation:defensive,
         constrained:defensiveConstrained,
-        ...(defensiveConstrained?{constraintNote:'The current protection/liquidity constraints already place the Core Blueprint at the most defensive boundary used by this model.'}:{}),
+        ...(defensiveConstrained?{constraintNote:locale==='fr'?'Les contraintes actuelles de protection et de liquidité placent déjà le Blueprint principal à la limite la plus défensive utilisée par ce modèle.':'The current protection/liquidity constraints already place the Core Blueprint at the most defensive boundary used by this model.'}:{}),
       },
       {
         key:'core',
-        title:'Your Core Blueprint',
-        subtitle:'Closest to your current Investor DNA and goal constraints.',
+        title:locale==='fr'?'Votre Blueprint principal':'Your Core Blueprint',
+        subtitle:locale==='fr'?'Le plus proche de votre Investor DNA actuel et des contraintes de votre objectif.':'Closest to your current Investor DNA and goal constraints.',
         allocation:core,
         constrained:false,
       },
       {
         key:'growth',
-        title:'More Growth',
-        subtitle:growthConstrained?'Your current goal limits how far this scenario can move toward growth.':'More market exposure with more short-term fluctuation.',
+        title:locale==='fr'?'Plus de croissance':'More Growth',
+        subtitle:growthConstrained?(locale==='fr'?'Votre objectif actuel limite la mesure dans laquelle ce scénario peut aller vers la croissance.':'Your current goal limits how far this scenario can move toward growth.'):(locale==='fr'?'Plus d’exposition au marché avec davantage de fluctuations à court terme.':'More market exposure with more short-term fluctuation.'),
         allocation:growth,
         constrained:growthConstrained,
         ...(growthConstrained?{constraintNote:growthBlocked
-          ?'Not expanded beyond your Core Blueprint because principal protection, emergency-reserve use or a sub-one-year horizon is a hard constraint.'
-          :'Growth exposure is capped by your current horizon, liquidity or preservation constraints.'}:{}),
+          ? (locale==='fr'?'Non étendu au-delà de votre Blueprint principal, car la protection du capital, l’utilisation comme fonds d’urgence ou un horizon de moins d’un an constitue une contrainte forte.':'Not expanded beyond your Core Blueprint because principal protection, emergency-reserve use or a sub-one-year horizon is a hard constraint.')
+          : (locale==='fr'?'L’exposition à la croissance est plafonnée par vos contraintes actuelles d’horizon, de liquidité ou de préservation.':'Growth exposure is capped by your current horizon, liquidity or preservation constraints.')}:{}),
       },
     ],
     reasons:[
-      `Risk willingness and financial capacity produce a guarded risk anchor of ${Math.round(riskAnchor)}/100.`,
-      horizonReason(context.time_horizon),
-      liquidityReason(context.liquidity_need),
-      principalReason(context.principal_required),
+      locale==='fr'?`La volonté de prendre du risque et la capacité financière produisent un repère de risque prudent de ${Math.round(riskAnchor)}/100.`:`Risk willingness and financial capacity produce a guarded risk anchor of ${Math.round(riskAnchor)}/100.`,
+      horizonReason(context.time_horizon,locale),
+      liquidityReason(context.liquidity_need,locale),
+      principalReason(context.principal_required,locale),
     ],
-    note:'Educational asset-class blueprint only. Fixed income can lose value, cash can lose purchasing power, and this does not select securities or guarantee an outcome.',
+    note:locale==='fr'?'Blueprint éducatif par catégorie d’actif seulement. Le revenu fixe peut perdre de la valeur, les liquidités peuvent perdre du pouvoir d’achat, et ceci ne sélectionne aucun titre ni ne garantit un résultat.':'Educational asset-class blueprint only. Fixed income can lose value, cash can lose purchasing power, and this does not select securities or guarantee an outcome.',
   };
 }
