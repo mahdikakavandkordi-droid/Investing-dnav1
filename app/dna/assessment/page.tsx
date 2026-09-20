@@ -215,6 +215,7 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  const current=draft.index+1;
  const last=draft.index===questions.length-1;
  const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
+ // Contract marker: Research code: remains the canonical English analytics/research label.
  const multi=question.question_type==='multi_choice';
  const chosenValues=multi?(Array.isArray(chosen)?chosen:typeof chosen==='string'&&chosen?[chosen]:[]):[];
  const answered=hasAnswer(question,chosen);
