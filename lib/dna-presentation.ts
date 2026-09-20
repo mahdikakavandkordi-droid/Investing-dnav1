@@ -62,8 +62,6 @@ export const BEHAVIOR:Record<string,{label:string;help:string;high:string;mid:st
  emotional_decision_control:{label:'Emotional decision control',help:'How well you keep stress and regret from taking over the decision.',high:'Composed',mid:'Mixed',low:'More emotion-sensitive'}
 };
 
-};
-
 export const BEHAVIOR_FR:Record<string,{label:string;help:string;high:string;mid:string;low:string}>={
  decision_independence:{label:'Indépendance décisionnelle',help:'Dans quelle mesure vous séparez l’enthousiasme des autres de votre propre décision.',high:'Indépendant',mid:'Mixte',low:'Plus influencé socialement'},
  long_term_orientation:{label:'Orientation long terme',help:'Dans quelle mesure vous gardez les rendements récents en perspective.',high:'Axé long terme',mid:'Mixte',low:'Plus sensible au rendement récent'},
