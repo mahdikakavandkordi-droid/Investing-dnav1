@@ -134,15 +134,26 @@ function unixSecondsAtUtcStart(date: string) {
 }
 
 async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
-  if (item.country_code !== "CA" || item.exchange !== "TSX") {
-    throw new Error("yahoo_free_route_is_tsx_canada_only");
+  if (item.country_code !== "CA") {
+    throw new Error("yahoo_free_route_is_canada_only");
+  }
+
+  const exchangeSuffix =
+    item.exchange === "TSX"
+      ? ".TO"
+      : item.exchange === "Cboe CA"
+        ? ".NE"
+        : null;
+
+  if (!exchangeSuffix) {
+    throw new Error("yahoo_free_route_exchange_not_supported");
   }
 
   const fallbackFrom = addUtcDays(item.target_price_date, -14);
   const from = item.latest_price_date
     ? laterDate(addUtcDays(item.latest_price_date, 1), fallbackFrom)
     : fallbackFrom;
-  const yahooSymbol = item.symbol.toUpperCase() + ".TO";
+  const yahooSymbol = item.symbol.toUpperCase() + exchangeSuffix;
 
   const url = new URL(
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`,
