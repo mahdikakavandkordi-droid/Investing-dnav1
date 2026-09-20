@@ -135,7 +135,7 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
   {item.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(item.time_structure)}</strong></div>}
   {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':'Why this ETF may fit'}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
-  <Link className="btn" href={`/investment/${item.id}`}>Open research</Link>
+  <Link className="btn" href={`/investment/${item.id}`}>View details</Link>
  </article>;
 }
 

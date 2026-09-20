@@ -290,7 +290,7 @@ function ScreenerTable({
     <td data-label="DNA fit"><FitCell match={match} matchReady={matchReady} matchStatus={matchStatus}/></td>
     <td data-label="1-year return">{formatMetric(fund.return_1y_pct,'%')}</td>
     <td data-label="MER">{formatMetric(fund.mer_pct,'%')}</td>
-    <td data-label="Details"><Link className="btn" href={'/investment/'+fund.id}>View ETF</Link></td>
+    <td data-label="Details"><Link className="btn" href={'/investment/'+fund.id}>View details</Link></td>
    </tr>;
   })}</tbody>
  </table>;

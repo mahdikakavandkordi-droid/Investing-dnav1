@@ -56,7 +56,7 @@ export default function Explore(){
     <div className="explore-hero-row">
      <div>
       <h1><span className="desktop-explore-title">Research different structures without the jargon.</span><span className="mobile-explore-title">Explore</span></h1>
-      <p><span className="desktop-explore-copy">Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</span><span className="mobile-explore-copy">Find investments, scan the key facts and open the research that matters to you.</span></p>
+      <p><span className="desktop-explore-copy">Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</span><span className="mobile-explore-copy">Find investments, scan the key facts and view the details that matter to you.</span></p>
      </div>
      <Link className="btn" href="/compare">Compare investments</Link><Link className="mobile-explore-compare" href="/compare">Compare</Link>
     </div>
@@ -149,7 +149,7 @@ function InvestmentCard({item}:{item:Instrument}){
 
   <div className="investment-card-footer">
    <span>{canMatch?'DNA Match available':'Structural research'}</span>
-   <Link aria-label="Open research" href={'/investment/'+item.id}>Open research →</Link>
+   <Link aria-label="View details" href={'/investment/'+item.id}>View details →</Link>
   </div>
  </article>;
 }

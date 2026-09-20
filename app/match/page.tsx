@@ -376,7 +376,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
   </p>
 
   {investmentId
-   ? <Link className="btn primary" href={'/investment/'+investmentId}>Open ETF research</Link>
+   ? <Link className="btn primary" href={'/investment/'+investmentId}>View ETF details</Link>
    : <Link className="btn" href="/explore">Find in Explore</Link>}
  </article>;
 }
@@ -397,7 +397,7 @@ function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPaylo
       <p>{matchFitLabel(item,match?.status)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
      </div>
      <div className="match-mini-score">{score.text}</div>
-     {id&&<Link href={'/investment/'+id}>Open research →</Link>}
+     {id&&<Link href={'/investment/'+id}>View details →</Link>}
     </article>;
    })}
   </div>
