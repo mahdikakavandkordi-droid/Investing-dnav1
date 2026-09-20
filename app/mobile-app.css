@@ -1413,7 +1413,7 @@
  .mobile-home-landing .home-returning-workspace{padding:0;background:transparent}
  .mobile-home-landing .home-returning-workspace>.container{padding:0!important}
  .mobile-home-landing .home-returning-card{border-radius:18px;padding:16px}
- .mobile-home-landing:has(.home-returning-workspace) .mobile-home-landing-hero,
- .mobile-home-landing:has(.home-returning-workspace) .mobile-home-path-card,
- .mobile-home-landing:has(.home-returning-workspace) .mobile-home-value-card{display:none}
+ body:has(.home-returning-workspace) .mobile-home-landing-hero,
+ body:has(.home-returning-workspace) .mobile-home-path-card,
+ body:has(.home-returning-workspace) .mobile-home-value-card{display:none}
 }
