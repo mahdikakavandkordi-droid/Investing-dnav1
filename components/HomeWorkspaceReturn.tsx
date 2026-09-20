@@ -12,6 +12,7 @@ import {displayArchetype} from "@/lib/dna-presentation";
 import {openReturningWorkspace} from "@/lib/returning-workspace";
 import type {ReturningWorkspaceSummary} from "@/lib/returning-workspace";
 import {trackProductEvent} from "@/lib/analytics";
+import {useLocale} from "@/lib/locale";
 
 export function HomeWorkspaceReturn(){
  const {user,loading:authLoading}=useAccount();
@@ -20,6 +21,7 @@ export function HomeWorkspaceReturn(){
  const [retention,setRetention]=useState<ReturningWorkspaceSummary|null>(null);
  const [loading,setLoading]=useState(false);
  const trackedUser=useRef<string|null>(null);
+ const {locale,pick}=useLocale();
 
  useEffect(()=>{
   let active=true;
@@ -74,49 +76,49 @@ export function HomeWorkspaceReturn(){
   state?.matches?.results?.find(item=>item.eligibility==="eligible");
  const matchReady=state?.matches?.status==="available"&&closest?.match_score!=null;
  const archetype=dna?.archetype?displayArchetype(dna.archetype):null;
- const welcome=firstName?"Welcome back, "+firstName:"Welcome back";
+ const welcome=firstName?pick("Welcome back, ","Bon retour, ")+firstName:pick("Welcome back","Bon retour");
  const matchLabel=matchReady&&closest
   ? closest.symbol+" · "+Math.round(closest.match_score||0)+"/100"
-  : contextReady?"Ready to calculate":"Context required";
+  : contextReady?pick("Ready to calculate","Prêt à calculer"):pick("Context required","Contexte requis");
  const resume=(target:string)=>void trackProductEvent("workspace_resume_clicked",{metadata:{target}});
 
- return <section className="home-returning-workspace" aria-label="Your Investor DNA workspace">
+ return <section className="home-returning-workspace" aria-label={pick("Your Investor DNA workspace","Votre espace Investor DNA")}>
   <div className="container">
    <div className="home-returning-card">
     <div className="home-returning-head">
      <div>
-      <span className="eyebrow">Your workspace</span>
+      <span className="eyebrow">{pick("Your workspace","Votre espace")}</span>
       <h2>{welcome}</h2>
-      <p>{loading?"Loading your saved research…":"Pick up where you left off. Your DNA, goal and saved investments stay connected."}</p>
+      <p>{loading?pick("Loading your saved research…","Chargement de votre recherche enregistrée…"):pick("Pick up where you left off. Your DNA, goal and saved investments stay connected.","Reprenez là où vous vous êtes arrêté. Votre DNA, votre objectif et vos placements enregistrés restent connectés.")}</p>
      </div>
-     <Link className="btn primary" href="/profile" onClick={()=>resume("dashboard")}>Open dashboard <span aria-hidden>→</span></Link>
+     <Link className="btn primary" href="/profile" onClick={()=>resume("dashboard")}>{pick("Open dashboard","Ouvrir le tableau de bord")} <span aria-hidden>→</span></Link>
     </div>
 
-    {!loading&&retention?.returning&&<ReturnUpdate summary={retention}/>}
+    {!loading&&retention?.returning&&<ReturnUpdate summary={retention} locale={locale}/>}
 
     {!loading&&<div className="home-returning-grid">
      <Link className="home-returning-tile" href="/dna/result" onClick={()=>resume("dna")}>
       <span>Investor DNA</span>
-      <strong>{archetype||"Not saved yet"}</strong>
-      <small>{dna?"View your current profile":"Complete the assessment"}</small>
+      <strong>{archetype||pick("Not saved yet","Pas encore enregistré")}</strong>
+      <small>{dna?pick("View your current profile","Voir votre profil actuel"):pick("Complete the assessment","Terminer l’évaluation")}</small>
      </Link>
 
      <Link className="home-returning-tile" href="/dna/context?returnTo=/profile" onClick={()=>resume("context")}>
-      <span>Investment context</span>
-      <strong>{contextReady?"Ready":"Needs context"}</strong>
-      <small>{contextReady?"Goal, horizon and access needs saved":"Add the purpose of this money"}</small>
+      <span>{pick("Investment context","Contexte du placement")}</span>
+      <strong>{contextReady?pick("Ready","Prêt"):pick("Needs context","Contexte requis")}</strong>
+      <small>{contextReady?pick("Goal, horizon and access needs saved","Objectif, horizon et besoins d’accès enregistrés"):pick("Add the purpose of this money","Ajouter l’objectif de cet argent")}</small>
      </Link>
 
      <Link className="home-returning-tile" href="/watchlist" onClick={()=>resume("watchlist")}>
-      <span>Watchlist</span>
-      <strong>{saved.length} saved</strong>
-      <small>{saved.length?"Revisit your research":"Save investments to compare later"}</small>
+      <span>{pick("Watchlist","Liste de suivi")}</span>
+      <strong>{locale==="fr"?`${saved.length} enregistré${saved.length===1?"":"s"}`:`${saved.length} saved`}</strong>
+      <small>{saved.length?pick("Revisit your research","Revoir votre recherche"):pick("Save investments to compare later","Enregistrer des placements pour les comparer plus tard")}</small>
      </Link>
 
      <Link className="home-returning-tile" href={matchReady?"/match":contextReady?"/match":"/dna/context?returnTo=/match"} onClick={()=>resume("match")}>
       <span>DNA Match</span>
       <strong>{matchLabel}</strong>
-      <small>{matchReady?"Review why it fits":contextReady?"Open your current Match":"Add context before numeric matching"}</small>
+      <small>{matchReady?pick("Review why it fits","Comprendre la compatibilité"):contextReady?pick("Open your current Match","Ouvrir votre Match actuel"):pick("Add context before numeric matching","Ajouter le contexte avant le score numérique")}</small>
      </Link>
     </div>}
    </div>
@@ -124,25 +126,26 @@ export function HomeWorkspaceReturn(){
  </section>;
 }
 
-function ReturnUpdate({summary}:{summary:ReturningWorkspaceSummary}){
+function ReturnUpdate({summary,locale}:{summary:ReturningWorkspaceSummary;locale:"en"|"fr"}){
+ const pick=(en:string,fr:string)=>locale==="fr"?fr:en;
  const newData=summary.new_market_data_count||0;
  const changed=summary.match_updated||summary.assessment_changed;
- const previous=summary.previous_seen_at?formatDateTime(summary.previous_seen_at):null;
+ const previous=summary.previous_seen_at?formatDateTime(summary.previous_seen_at,locale):null;
 
  if(newData>0){
-  return <div className="home-returning-update" aria-label="Updates since your last visit">
+  return <div className="home-returning-update" aria-label={pick("Updates since your last visit","Mises à jour depuis votre dernière visite")}>
    <div className="home-returning-update-copy">
-    <span className="home-returning-update-kicker">Since your last visit</span>
-    <strong>New market data is ready for {newData} saved investment{newData===1?"":"s"}.</strong>
-    <p>{previous?"Previous workspace visit: "+previous+". ":""}Open your watchlist to review the latest sourced post-close data.</p>
+    <span className="home-returning-update-kicker">{pick("Since your last visit","Depuis votre dernière visite")}</span>
+    <strong>{locale==="fr"?`De nouvelles données de marché sont disponibles pour ${newData} placement${newData===1?"":"s"} enregistré${newData===1?"":"s"}.`:`New market data is ready for ${newData} saved investment${newData===1?"":"s"}.`}</strong>
+    <p>{previous?pick("Previous workspace visit: ","Visite précédente : ")+previous+". ":""}{pick("Open your watchlist to review the latest sourced post-close data.","Ouvrez votre liste de suivi pour consulter les plus récentes données sourcées après clôture.")}</p>
    </div>
    {summary.updated_saved_items?.length>0&&<div className="home-returning-update-items">
     {summary.updated_saved_items.slice(0,3).map(item=><span key={item.investment_id}>
      <b>{item.symbol}</b>
-     <small>{item.price_date?formatDate(item.price_date):"New data"}</small>
+     <small>{item.price_date?formatDate(item.price_date,locale):pick("New data","Nouvelles données")}</small>
     </span>)}
    </div>}
-   <Link href="/watchlist" className="text-link" onClick={()=>void trackProductEvent("workspace_resume_clicked",{metadata:{target:"market_updates"}})}>Review updates →</Link>
+   <Link href="/watchlist" className="text-link" onClick={()=>void trackProductEvent("workspace_resume_clicked",{metadata:{target:"market_updates"}})}>{pick("Review updates →","Voir les mises à jour →")}</Link>
   </div>;
  }
 
@@ -150,8 +153,8 @@ function ReturnUpdate({summary}:{summary:ReturningWorkspaceSummary}){
   return <div className="home-returning-update">
    <div className="home-returning-update-copy">
     <span className="home-returning-update-kicker">Since your last visit</span>
-    <strong>Your saved research context has changed.</strong>
-    <p>{summary.assessment_changed?"Your current Investor DNA changed. ":""}{summary.match_updated?"Your Match inputs changed and the compatibility view may be different. ":""}Review the current state before comparing investments.</p>
+    <strong>{pick("Your saved research context has changed.","Le contexte de votre recherche enregistrée a changé.")}</strong>
+    <p>{summary.assessment_changed?pick("Your current Investor DNA changed. ","Votre Investor DNA actuel a changé. "):""}{summary.match_updated?pick("Your Match inputs changed and the compatibility view may be different. ","Les données de votre Match ont changé et la vue de compatibilité peut être différente. "):""}{pick("Review the current state before comparing investments.","Revoyez l’état actuel avant de comparer des placements.")}</p>
    </div>
   </div>;
  }
@@ -159,20 +162,20 @@ function ReturnUpdate({summary}:{summary:ReturningWorkspaceSummary}){
  return <div className="home-returning-update quiet">
   <div className="home-returning-update-copy">
    <span className="home-returning-update-kicker">Since your last visit</span>
-   <strong>You’re caught up.</strong>
-   <p>{previous?"Previous workspace visit: "+previous+". ":""}No newer saved-investment market data needs your attention.</p>
+   <strong>{pick("You’re caught up.","Vous êtes à jour.")}</strong>
+   <p>{previous?pick("Previous workspace visit: ","Visite précédente : ")+previous+". ":""}{pick("No newer saved-investment market data needs your attention.","Aucune donnée de marché plus récente ne nécessite votre attention.")}</p>
   </div>
  </div>;
 }
 
-function formatDate(value:string){
+function formatDate(value:string,locale:"en"|"fr"="en"){
  const parsed=new Date(value+"T12:00:00Z");
  if(Number.isNaN(parsed.getTime()))return value;
- return new Intl.DateTimeFormat("en-CA",{year:"numeric",month:"short",day:"numeric",timeZone:"UTC"}).format(parsed);
+ return new Intl.DateTimeFormat(locale==="fr"?"fr-CA":"en-CA",{year:"numeric",month:"short",day:"numeric",timeZone:"UTC"}).format(parsed);
 }
 
-function formatDateTime(value:string){
+function formatDateTime(value:string,locale:"en"|"fr"="en"){
  const parsed=new Date(value);
  if(Number.isNaN(parsed.getTime()))return value;
- return new Intl.DateTimeFormat("en-CA",{year:"numeric",month:"short",day:"numeric"}).format(parsed);
+ return new Intl.DateTimeFormat(locale==="fr"?"fr-CA":"en-CA",{year:"numeric",month:"short",day:"numeric"}).format(parsed);
 }
