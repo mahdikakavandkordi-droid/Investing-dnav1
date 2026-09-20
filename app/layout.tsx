@@ -26,10 +26,11 @@ import {Footer} from "@/components/Footer";
 import {ProductAnalytics} from "@/components/ProductAnalytics";
 import {MobileAppNav} from "@/components/MobileAppNav";
 import {MobileAppHeader} from "@/components/MobileAppHeader";
+import {LocaleProvider} from "@/lib/locale";
 
 export const metadata={title:"Investor DNA",description:"Know yourself. Understand your investments."};
 export const viewport:Viewport={width:"device-width",initialScale:1,viewportFit:"cover",themeColor:"#f5f8f8"};
 
 export default function RootLayout({children}:{children:ReactNode}){
- return <html lang="en"><body><Nav/><MobileAppHeader/><ProductAnalytics/><main>{children}</main><Footer/><MobileAppNav/></body></html>;
+ return <html lang="en"><body><LocaleProvider><Nav/><MobileAppHeader/><ProductAnalytics/><main>{children}</main><Footer/><MobileAppNav/></LocaleProvider></body></html>;
 }
