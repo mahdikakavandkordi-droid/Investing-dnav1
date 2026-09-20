@@ -1407,3 +1407,13 @@
  .mobile-home-explore-card>.btn{width:100%;justify-content:center;background:#102f46;color:#fff}
  .mobile-home-disclaimer{margin:1px 0 0;text-align:center;color:#81919a;font-size:10.5px}
 }
+
+
+@media(max-width:760px){
+ .mobile-home-landing .home-returning-workspace{padding:0;background:transparent}
+ .mobile-home-landing .home-returning-workspace>.container{padding:0!important}
+ .mobile-home-landing .home-returning-card{border-radius:18px;padding:16px}
+ .mobile-home-landing:has(.home-returning-workspace) .mobile-home-landing-hero,
+ .mobile-home-landing:has(.home-returning-workspace) .mobile-home-path-card,
+ .mobile-home-landing:has(.home-returning-workspace) .mobile-home-value-card{display:none}
+}
