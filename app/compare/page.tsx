@@ -91,7 +91,7 @@ export default function Compare(){
   <div className="container">
    <div className="eyebrow">{pick("Compare","Comparer")}</div>
    <h1><span className="desktop-compare-title">{pick("Compare Investment DNA side by side","Comparer les Investment DNA côte à côte")}</span><span className="mobile-compare-title">{pick("Compare investments","Comparer les placements")}</span></h1>
-   <p className="muted"><span className="desktop-compare-copy">Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.</span><span className="mobile-compare-copy">Choose two or three investments and swipe through the key differences.</span></p>
+   <p className="muted"><span className="desktop-compare-copy">{pick("Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.","Comparez deux ou trois structures de placement. Les caractéristiques structurelles communes apparaissent d’abord; les données propres à chaque catégorie d’actif restent séparées. DNA Match pour les FNB s’ajoute lorsque votre Investor DNA de la session ou enregistré est disponible.")}</span><span className="mobile-compare-copy">{pick("Choose two or three investments and swipe through the key differences.","Choisissez deux ou trois placements et parcourez les principales différences.")}</span></p>
 
    {loading?<p>{pick("Loading comparison tools…","Chargement des outils de comparaison…")}</p>:<ComparisonPicker items={items} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
    {error&&<p className="notice" role="alert">{error}</p>}
@@ -137,8 +137,8 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
   {metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
   {item.credit_exposure&&<div className="compare-metric"><span>{pick("Credit exposure","Exposition au crédit")}</span><strong>{pretty(item.credit_exposure)}</strong></div>}
   {item.time_structure&&<div className="compare-metric"><span>{pick("Time structure","Structure temporelle")}</span><strong>{pretty(item.time_structure)}</strong></div>}
-  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':'Why this ETF may fit'}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
-  {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
+  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?pick('DNA-only alignment','Alignement DNA seulement'):pick('Why this ETF may fit','Pourquoi ce FNB peut convenir')}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
+  {showExplanation&&match?.explanation?.watchouts?.length?<><strong>{pick("What conflicts","Points de conflit")}</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   <Link className="btn" href={`/investment/${item.id}`}>{pick("View details","Voir les détails")}</Link>
  </article>;
 }
@@ -148,7 +148,7 @@ function FitSummary({canMatch,match,matchStatus,dnaPresent}:{canMatch:boolean;ma
  if(!canMatch)return <div className="notice"><span>{pick("Research profile · personalized Match not enabled for this asset type yet","Profil de recherche · Match personnalisé non activé pour ce type d’actif")}</span></div>;
  if(!match)return <div className="notice"><span>{dnaPresent?pick('No ETF compatibility row is available for this item','Aucune donnée de compatibilité FNB n’est disponible pour ce placement'):pick('Complete Investing DNA to add an ETF compatibility layer','Terminez Investing DNA pour ajouter une couche de compatibilité FNB')}</span></div>;
  const score=matchScorePresentation(match,matchStatus);
- const layerCopy=matchStatus==='context_required'?'DNA-only ETF compatibility layer':matchStatus==='review_required'?'Personalized ranking paused':'Personal ETF compatibility layer';
+ const layerCopy=matchStatus==='context_required'?pick('DNA-only ETF compatibility layer','Couche de compatibilité FNB basée seulement sur le DNA'):matchStatus==='review_required'?pick('Personalized ranking paused','Classement personnalisé en pause'):pick('Personal ETF compatibility layer','Couche de compatibilité FNB personnelle');
  return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match,matchStatus)}</strong><p className="fine muted">{layerCopy}</p></div>;
 }
 
