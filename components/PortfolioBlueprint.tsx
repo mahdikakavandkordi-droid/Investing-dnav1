@@ -12,9 +12,9 @@ export function PortfolioBlueprint({dna,context}:{dna:DNA;context:InvestmentCont
   return <section className="report-section report-section-v2 portfolio-blueprint-section">
     <div className="portfolio-blueprint-head">
       <div>
-        <div className="eyebrow">Part 3 · Portfolio Blueprint</div>
-        <h2>See the trade-offs before choosing investments.</h2>
-        <p className="report-lede">These three asset-class scenarios use the same Investor DNA and goal context. They change only the balance between equity, fixed income and cash — not which specific fund or security to buy.</p>
+        <div className="eyebrow">Part 3 · Asset mix scenarios</div>
+        <h2>Three ways to balance growth, stability and liquidity.</h2>
+        <p className="report-lede">These three scenarios use the same Investor DNA and goal context. They change only the balance between equity, fixed income and cash / capital preservation — not how much to put into an ETF, mutual fund or GIC.</p>
       </div>
       {core&&<div className="blueprint-core-summary">
         <span>Your current centre</span>
@@ -29,7 +29,7 @@ export function PortfolioBlueprint({dna,context}:{dna:DNA;context:InvestmentCont
 
     <div className="blueprint-why">
       <div>
-        <div className="eyebrow">Why the Core Blueprint lands here</div>
+        <div className="eyebrow">Why your Core scenario lands here</div>
         <h3>Your capacity and goal constraints act as guardrails.</h3>
       </div>
       <ul>{blueprint.reasons.map(reason=><li key={reason}>{reason}</li>)}</ul>
@@ -37,7 +37,10 @@ export function PortfolioBlueprint({dna,context}:{dna:DNA;context:InvestmentCont
 
     <div className="blueprint-boundary">
       <span aria-hidden="true">i</span>
-      <p><strong>Asset-class blueprint, not a portfolio recommendation.</strong> {blueprint.note} Geographic, sector and security-level allocations are intentionally not inferred here. <Link href="/research/portfolio-blueprint">See how this blueprint is built →</Link></p>
+      <div>
+       <p><strong>Asset-class scenarios, not product percentages.</strong> {blueprint.note} Equity and fixed income can be researched through ETFs and mutual funds; GICs can support the capital-preservation sleeve when their term and access rules fit the goal.</p>
+       <div className="actions compact"><Link className="btn primary" href="/explore">Explore investments for this mix</Link><Link href="/research/portfolio-blueprint">See how the scenarios are built →</Link></div>
+      </div>
     </div>
   </section>;
 }
