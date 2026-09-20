@@ -222,7 +222,7 @@ async function runViewport(browser,label,viewport){
   await page.getByRole('button',{name:'EN',exact:true}).first().click();
   await page.getByRole('heading',{name:'Know your investor DNA.',exact:true}).waitFor();
  }else{
-  assert.ok(await page.locator('.desktop-home-experience').isVisible());
+  assert.ok((await page.locator('.desktop-home-experience:visible').count())>0);
   assert.equal(await page.locator('.mobile-home-landing:visible').count(),0);
  }
  await shot(page,label+'-01-home');
