@@ -7,10 +7,32 @@ export function InstrumentTermsCard({instrument}:{instrument:Instrument}){
  const type=assetTypeOf(instrument);
 
  if(type==='GIC')return <DepositTerms instrument={instrument}/>;
+ if(type==='MUTUAL_FUND')return <MutualFundTerms instrument={instrument}/>;
  if(type==='BOND'||type==='T_BILL'||type==='COMMERCIAL_PAPER'||type==='ABCP'){
   return <FixedIncomeTerms instrument={instrument} type={type}/>;
  }
  return null;
+}
+
+function MutualFundTerms({instrument}:{instrument:Instrument}){
+ const rows=[
+  present(instrument.series_name)?{label:'Series',value:String(instrument.series_name)}:null,
+  present(instrument.fund_code)?{label:'Fund code',value:String(instrument.fund_code)}:null,
+  present(instrument.cifsc_category)?{label:'Category',value:String(instrument.cifsc_category)}:null,
+  present(instrument.load_structure)?{label:'Load structure',value:String(instrument.load_structure)}:null,
+  present(instrument.sales_status)?{label:'Sales status',value:String(instrument.sales_status)}:null,
+  instrument.minimum_initial_investment==null?null:{label:'Minimum initial',value:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(instrument.minimum_initial_investment)},
+  instrument.minimum_additional_investment==null?null:{label:'Minimum additional',value:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(instrument.minimum_additional_investment)},
+  present(instrument.mf_income_distribution_frequency)?{label:'Income distributions',value:String(instrument.mf_income_distribution_frequency)}:null,
+  present(instrument.capital_gains_distribution_frequency)?{label:'Capital gains',value:String(instrument.capital_gains_distribution_frequency)}:null
+ ].filter((row):row is {label:string;value:string}=>!!row);
+
+ return <section className="card instrument-terms-v2">
+  <div className="eyebrow">Mutual fund terms</div>
+  <h2>Series, access and dealing details</h2>
+  <div className="terms-grid-v2">{rows.map(row=><Row key={row.label} {...row}/>)}</div>
+  <SourceLine url={instrument.mutual_fund_source_url} name={instrument.mutual_fund_source_name||'Official issuer'} asOf={instrument.mutual_fund_as_of_date}/>
+ </section>;
 }
 
 function DepositTerms({instrument}:{instrument:Instrument}){
