@@ -234,7 +234,7 @@ function MatchContent({
 }
 
 function MoneyContextSummary({context,goalLens}:{context:InvestmentContextProfile;goalLens?:string}){
- const {locale,pick}=useLocale();
+ const {pick}=useLocale();
  const [open,setOpen]=useState(false);
  const rows=[
   [pick('Goal','Objectif'),formatInvestmentContext('goal',context.goal)],
