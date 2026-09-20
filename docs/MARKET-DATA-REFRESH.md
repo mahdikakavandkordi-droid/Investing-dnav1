@@ -1,7 +1,7 @@
 # Daily market-data refresh
 
-Status: infrastructure implemented; Canadian provider activation pending  
-Last reviewed: 2026-09-19
+Status: Canadian ETF daily research feed active on TSX and Cboe Canada  
+Last reviewed: 2026-09-20
 
 ## Purpose
 
@@ -85,9 +85,13 @@ A market holiday can legitimately produce no new bar. The next run can retry wit
 The worker now has two provider paths:
 
 - `massive` for the configured U.S. route;
-- `yahoo_free` / `yahoo_finance_unofficial` as a temporary zero-cost TSX ETF bridge.
+- `yahoo_free` / `yahoo_finance_unofficial` as a temporary zero-cost Canadian ETF bridge.
 
-The free TSX route transforms symbols to Yahoo's Toronto convention (`VFV` → `VFV.TO`), fetches daily OHLC/volume after close and writes through the same canonical audited ingestion path.
+The free Canadian route resolves exchange-specific Yahoo symbols:
+- TSX: `VFV` -> `VFV.TO`
+- Cboe Canada: `FEQT` -> `FEQT.NE`
+
+It fetches daily OHLC/volume after close and writes through the same canonical audited ingestion path. Yahoo Cboe bars can contain tiny floating-point differences between close and the reported high/low envelope, so the worker normalizes the OHLC envelope before canonical validation instead of dropping an otherwise valid bar.
 
 This source is deliberately priority `90`, below verified issuer/internal sources. If a verified row already exists for the same instrument/date, the free row is skipped instead of replacing it.
 
@@ -95,9 +99,18 @@ Yahoo Finance is not being treated as an official issuer source or as a permanen
 
 ## Activation / current state
 
-The temporary free TSX bridge is active without any paid credential or GitHub secret. Supabase Cron owns the recurring schedule.
+The temporary Canadian ETF bridge is active without any paid credential or GitHub secret. Supabase Cron owns the recurring schedule.
 
-A controlled canary on 2026-09-19 completed successfully for `VFV`: 4 rows fetched, 4 inserted, 0 errors. A full catch-up then completed for all 40 current Canadian ETFs: 200 rows fetched, 200 inserted, 0 errors. After that run, all 40 ETFs had a latest price-history date of 2026-09-18.
+The live `market-data-refresh` Edge Function is ACTIVE and supports both TSX and Cboe Canada instruments.
+
+Verified catch-up history:
+
+- original 40 Canadian ETFs: catch-up completed through 2026-09-18;
+- FEQT Cboe canary after OHLC normalization: **9 fetched / 9 ingested / 0 errors**;
+- remaining seven Fidelity Cboe ETFs: **63 / 63 / 0 errors**;
+- latest Mackenzie + RBC TSX batch: **54 / 54 / 0 errors** across 14 instruments.
+
+The active Canadian ETF research universe is now **79 ETFs** across nine issuers. Newly added instruments enter the same audited daily worker according to their exchange route.
 
 The source remains explicitly temporary and low priority. After funding, replace it with a licensed Canadian provider, give that provider a higher source priority, run a source-overlap canary, and only then retire `yahoo_free`.
 
