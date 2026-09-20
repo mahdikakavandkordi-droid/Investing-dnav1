@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useState} from "react";
+import {useEffect,useState} from "react";
 import type {FormEvent,ReactNode} from "react";
 import Link from "next/link";
 import {supabase} from "@/lib/supabase";
@@ -27,11 +27,12 @@ export function AuthEntry({mode}:{mode:Mode}){
   return()=>window.clearInterval(timer);
  },[cooldown]);
 
- const intent=useMemo(()=>{
-  if(typeof window==="undefined")return {investment:null as string|null,saveDna:false};
+ const [intent,setIntent]=useState<{investment:string|null;saveDna:boolean}>({investment:null,saveDna:false});
+
+ useEffect(()=>{
   const params=new URLSearchParams(window.location.search);
   const investment=params.get("investment");
-  return {investment:validId(investment)?investment:null,saveDna:params.get("save")==="dna"};
+  setIntent({investment:validId(investment)?investment:null,saveDna:params.get("save")==="dna"});
  },[]);
 
  const switchHref=buildAuthHref(mode==="signup"?"/login":"/signup",intent.investment,intent.saveDna);
