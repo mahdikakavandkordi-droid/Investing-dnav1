@@ -6,7 +6,7 @@ import {UserRound} from "lucide-react";
 import {BrandMark} from "@/components/BrandMark";
 import {LanguageToggle,useLocale} from "@/lib/locale";
 
-const APP_ROUTES=["/","/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account"];
+const APP_ROUTES=["/","/profile","/dashboard","/dna","/explore","/investment","/match","/screener","/compare","/watchlist","/account","/signup","/login"];
 
 export function MobileAppHeader(){
  const pathname=usePathname()||"/";
