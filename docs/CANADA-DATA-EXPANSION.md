@@ -1,28 +1,32 @@
-# Canada ETF data expansion v1
+# Canada ETF data expansion
 
-Status: live data migration applied; branch verification in progress  
+Status: live migrations applied; exact-head verification in progress  
 Date: 2026-09-20
 
 ## Goal
 
-Broaden Investor DNA's Canadian-listed ETF research catalog without turning missing data into estimates and without silently promoting newly added products into a validated DNA Match universe.
+Broaden Investor DNA's Canadian-listed ETF research catalog with issuer-backed evidence without inventing missing fields and without silently promoting new products into a validated DNA Match universe.
 
 ## Universe change
 
-The active ETF catalog increased from **40 to 73** Canadian-listed ETFs. The full active cross-asset catalog increased from **55 to 88** instruments.
+The active ETF catalog increased from **40 to 79** Canadian-listed ETFs. The full active cross-asset catalog increased from **55 to 94** instruments.
 
-New issuer coverage:
+The ETF catalog now spans **9 issuers**:
 
-| Issuer | Added ETFs |
+| Issuer | Active ETFs |
 | --- | ---: |
+| BlackRock Canada | 17 |
+| Vanguard Canada | 15 |
 | TD Asset Management Inc. | 10 |
-| Global X Investments Canada Inc. | 6 |
-| Purpose Investments Inc. | 1 |
+| BMO Global Asset Management | 8 |
 | Fidelity Investments Canada ULC | 8 |
 | Mackenzie Investments | 8 |
-| **Total** | **33** |
+| Global X Investments Canada Inc. | 6 |
+| RBC Global Asset Management Inc. | 6 |
+| Purpose Investments Inc. | 1 |
+| **Total** | **79** |
 
-The ETF catalog now spans eight represented ETF issuers rather than three.
+The Sprint 6 Canada work added **39 ETFs** to the original 40-ETF universe.
 
 ## Added symbols
 
@@ -69,107 +73,130 @@ Mackenzie:
 - MGRW — Mackenzie Growth Allocation ETF
 - MEQT — Mackenzie All-Equity Allocation ETF
 
+RBC Global Asset Management:
+- RCAN — RBC Canadian Equity ETF
+- RUSA — RBC U.S. Large-Cap Equity ETF
+- RCD — RBC Quant Canadian Dividend Leaders ETF
+- RID — RBC Quant EAFE Dividend Leaders ETF
+- RBNK — RBC Canadian Bank Yield Index ETF
+- RUST — RBC Canadian Ultra Short Term Bond ETF
+
 ## Source policy
 
-For every added ETF the migration stores:
+Every added ETF has a canonical investment identity, issuer provenance, official issuer source, official risk classification, an Investment DNA structural research profile, and an Explore / Detail / Compare research profile.
 
-- issuer identity;
-- dated official ETF Facts URL;
-- issuer-disclosed official risk category;
-- current issuer-page price/MER/AUM where a dated value was captured;
-- Investment DNA structural research profile;
-- research profile for Explore / Detail / Compare;
-- explicit source and source date.
+Dated performance, fees, holdings, exposures, portfolio characteristics and income are stored only when the official issuer source supports the field. Missing values stay null. Fund-age gaps are not extrapolated.
 
-Missing performance, holdings, exposure or portfolio-characteristic fields remain missing. They are not backfilled with estimates.
+Current issuer-page observations and dated regulatory / fund-profile evidence are kept as separate provenance layers so a newer current metric never rewrites the date of an older regulatory snapshot.
 
-Current product-page metrics and regulatory ETF Facts are kept as separate provenance layers so a newer current MER or price does not overwrite the date of an older regulatory snapshot.
+## Research coverage after all Canada waves
 
-## Important cash-product disclosures
+Current live coverage across the 94-instrument catalog:
 
-CASH and PSA are ETF securities rather than insured bank-deposit accounts. Their research profiles explicitly preserve the issuer disclosure that ETF units are not CDIC insured.
+- official source/facts coverage: **79**
+- official risk coverage: **79**
+- 1-year return coverage: **64**
+- 3-year return coverage: **58**
+- 5-year return coverage: **54**
+- sourced income coverage: **44**
+- portfolio-characteristics coverage: **55**
+- complete exposure-set coverage: **36**
+- full-holdings-detail coverage: **20**
 
-CBIL owns short Government of Canada Treasury bills, but the ETF units themselves are still market-traded fund securities rather than a guaranteed deposit.
+The lower historical-return counts are intentional. Newer funds such as AIQ, FFIX, FCCA, FCAM, FCIN, RCAN, RUSA and RUST do not receive synthetic 3-year or 5-year histories.
 
-## Complex-product disclosures
+## Important product disclosures
 
-HXT and HXS retain explicit total-return-swap / counterparty-risk structure in the research layer.
+CASH and PSA are ETF securities rather than insured bank deposits. Their research profiles preserve the issuer disclosure that ETF units are not CDIC insured.
 
-HXQ is represented using its current physical-replication structure rather than its older historical swap structure.
+CBIL owns short Government of Canada Treasury bills, but the ETF units remain market-traded fund securities rather than guaranteed deposits.
 
-TCOM is marked high complexity at the structural layer because its strategy can use derivatives, short selling and permitted leverage.
+HXT and HXS retain total-return-swap / counterparty-risk structure in the research layer. HXQ is represented using its current physical-replication structure. TCOM remains high complexity because its strategy can use derivatives, short selling and permitted leverage.
 
-## DNA Match boundary
+Fidelity all-in-one ETFs retain their small cryptocurrency sleeves explicitly in the research layer rather than being simplified into equity / fixed-income only.
 
-This migration expands **research discovery**, not scientific Match validation.
-
-The new ETFs can appear in Explore / Detail / Compare immediately. They intentionally do not receive fabricated Investment Intelligence, data-quality verification or complexity scores merely to make them rankable.
-
-Until those evidence layers are populated and reviewed, Match treats them as requiring review rather than as validated eligible choices.
-
-## Market-data refresh
-
-The existing post-close Canadian ETF worker remains the price-history mechanism.
-
-The original 40 ETFs completed a 2026-09-19 catch-up. The first 17-ETF TSX expansion and the later 8-ETF Mackenzie TSX wave use the existing `.TO` Yahoo bridge.
-
-Fidelity added eight Cboe Canada ETFs. The worker now resolves `Cboe CA` symbols through Yahoo's `.NE` convention while preserving the same low-priority research-feed boundary. A live FEQT canary fetched and ingested 9/9 bars with zero errors after OHLC precision normalization, and the remaining seven Fidelity ETFs then ingested 63/63 bars with zero errors. The Mackenzie wave ingested 72/72 bars with zero errors.
-
-No synthetic price-history freshness date is written in advance.
-
-## Live verification after migration
-
-- active ETFs: 73
-- active catalog instruments: 88
-- represented ETF issuers: 8
-- official source/facts records: 73
-- official risk coverage: 73
-- new batch official facts: 17 / 17
-- new batch official risk: 17 / 17
-- new batch structure profiles: 17 / 17
-- new batch research profiles: 17 / 17
-
-A second enrichment migration then added issuer-verified performance, income, characteristics, holdings and exposure evidence where the official source exposed a dated value.
-
-Coverage after the TD / Global X / Purpose enrichment, Fidelity wave, and Mackenzie wave:
-- 1-year return coverage: 64 instruments
-- 3-year return coverage: 58
-- 5-year return coverage: 54
-- sourced income coverage: 44
-- portfolio-characteristics coverage: 50
-- complete exposure-set coverage: 28
-- full-holdings-detail coverage: 18
-
-New verified performance rows include CASH, CBIL, HXT, HXS, HXQ, AIQ, PSA and TQCD. Fund-age gaps stay null (for example AIQ has no 3-year or 5-year figure yet).
-
-TD current portfolio evidence was also added for TTP, TPU, TDB, TCSH, TGRO, TEQT, TEC, TQCD and THE where the official fund card exposed it. Complex TCOM remains deliberately sparse where no comparable clean statistic was available rather than forcing a synthetic field.
-
-## Migration
-
-Live migration:
-
-`20260920192840_canada_etf_catalog_expansion_v1.sql`
-`20260920200107_canada_etf_research_enrichment_v1.sql`
-
+RBNK is explicitly treated as a concentrated six-bank Canadian equity ETF. RUST is treated as ultra-short corporate fixed income, not as cash or a guaranteed principal product.
 
 ## Fidelity Canada wave
 
-Eight Cboe Canada ETFs were added with official Fidelity identity, current issuer-page metrics, official risk classification, standard-period NAV performance, complete strategic allocation evidence, and underlying-fund holdings where exposed by Fidelity. Fund-age gaps remain null instead of being extrapolated.
+Eight Cboe Canada ETFs were added from official Fidelity sources with issuer risk, standard-period NAV performance, strategic allocation evidence and underlying holdings where exposed.
 
-The Fidelity all-in-one products retain their small cryptocurrency sleeves explicitly in the research layer. That exposure does not disappear inside an equity/fixed-income simplification.
+The market worker was extended from TSX-only symbols to support Cboe Canada using the low-priority Yahoo research bridge:
+- TSX -> `.TO`
+- Cboe Canada -> `.NE`
+
+A live FEQT canary initially exposed a harmless Yahoo OHLC floating-point envelope mismatch. The worker now normalizes the OHLC envelope and propagates ingestion row errors correctly.
+
+Verification after the fix:
+- FEQT: **9 fetched / 9 ingested / 0 errors**
+- remaining seven Fidelity ETFs: **63 fetched / 63 ingested / 0 errors**
 
 ## Mackenzie wave
 
-Eight Mackenzie TSX ETFs were added from two groups:
+Eight Mackenzie ETFs were added: four core index exposures and four one-ticket allocation ETFs.
 
-- core index exposure: QCN, QUU, QDX, QBB;
-- allocation suite: MCON, MBAL, MGRW, MEQT.
+The official Mackenzie August 2026 roadmap is the current risk / management-fee reference. The official August 31, 2026 performance table provides the current historical-return evidence. Dated official fund profiles provide portfolio characteristics and exposure evidence.
 
-The August 2026 official Mackenzie ETF roadmap supplies current management-fee, distribution-frequency and standardized risk labels. Mackenzie's official August 31, 2026 performance table supplies historical returns. Dated official fund profiles supply portfolio characteristics and complete exposure sets for the four core ETFs. The allocation suite stores issuer-published target allocations as target allocations, rather than pretending target weights are current holdings.
+An overlapping migration temporarily created a duplicate legal-name issuer row. A normalization migration moved all eight ETFs back to the canonical **Mackenzie Investments** issuer identity, removed the unused duplicate issuer, and restored the current August 2026 risk provenance.
 
-## Additional live migrations
+## RBC GAM wave
 
-`20260920203737_canada_fidelity_core_etf_wave_v1.sql`  
-`20260920203821_canada_fidelity_core_etf_enrichment_v1.sql`  
-`20260920204052_extend_free_market_data_to_cboe_ca.sql`  
-`20260920204655_canada_mackenzie_core_allocation_wave_v1.sql`
+Six RBC GAM ETFs were added from official RBC ETF Facts and product pages.
+
+Key evidence boundaries:
+- RCAN and RUSA are new 2026 ETFs. Their ETF Facts identify the published risk rating as an estimate for a new fund; missing long history remains null.
+- RCD and RID retain their current issuer risk, sector evidence and sourced long-run performance evidence.
+- RBNK has full six-bank holdings coverage and a **Medium to High** official risk classification.
+- RUST is a **Low** risk ultra-short corporate bond ETF, but its units are not treated as principal-guaranteed.
+
+## Market-data refresh
+
+The temporary zero-cost Yahoo route remains a low-priority research feed. It cannot overwrite a higher-priority verified issuer/internal price row.
+
+The original 40 TSX ETFs completed their catch-up before this Sprint 6 expansion. New waves then entered the same audited worker.
+
+Latest Mackenzie + RBC backfill:
+- due instruments: **14**
+- bars fetched: **54**
+- bars ingested: **54**
+- skipped: **0**
+- errors: **0**
+
+The live `market-data-refresh` Edge Function is ACTIVE with TSX and Cboe Canada support.
+
+No synthetic market-history freshness date is written before the worker actually succeeds.
+
+## DNA Match boundary
+
+This expansion strengthens **research discovery**, not scientific Match validation.
+
+The new ETFs can appear in Explore / Detail / Compare with sourced research fields. They do not receive fabricated Investment Intelligence, data-quality verification or compatibility scores merely to make them rankable.
+
+Match eligibility remains a separate evidence-review step.
+
+## Live migrations
+
+- `20260920192840_canada_etf_catalog_expansion_v1.sql`
+- `20260920200107_canada_etf_research_enrichment_v1.sql`
+- `20260920203737_canada_fidelity_core_etf_wave_v1.sql`
+- `20260920203821_canada_fidelity_core_etf_enrichment_v1.sql`
+- `20260920204052_extend_free_market_data_to_cboe_ca.sql`
+- `20260920204655_canada_mackenzie_core_allocation_wave_v1.sql`
+- `20260920214232_canada_mackenzie_core_etf_wave_v1.sql`
+- `20260920214411_canada_rbc_core_etf_wave_v1.sql`
+- `20260920214539_normalize_mackenzie_issuer_and_risk_provenance.sql`
+
+## Regression
+
+`supabase/tests/canada_etf_catalog_expansion.sql` now verifies:
+
+- 79 active ETFs / 94 active instruments / 9 ETF issuers;
+- the original TD / Global X / Purpose evidence;
+- Fidelity, Mackenzie and RBC evidence-layer completeness;
+- canonical Mackenzie issuer normalization;
+- RBNK concentration / official risk evidence;
+- Cboe Canada market routing;
+- actual market-history presence for all 22 Fidelity + Mackenzie + RBC additions;
+- current research coverage floors.
+
+The live SQL regression completes without error.
