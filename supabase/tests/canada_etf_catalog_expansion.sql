@@ -314,5 +314,70 @@ begin
     raise exception 'FEQT browser-facing canonical price/fee/risk fields are incomplete';
   end if;
 
-  raise notice 'PASS: Canadian ETF expansion has 79 ETFs / 94 active instruments across 9 issuers with sourced enrichment coverage';
+  if (
+    select count(*)
+    from public.app_search_instruments('ETF',null,120)
+  ) <> 79 then
+    raise exception 'Browser-facing ETF catalog does not expose all 79 active ETFs';
+  end if;
+
+  if exists (
+    select 1
+    from public.app_search_instruments('ETF',null,120)
+    where price is null or risk_level is null
+  ) then
+    raise exception 'At least one browser-facing ETF is missing canonical price or risk';
+  end if;
+
+  if (
+    select count(*)
+    from public.investment_official_facts f
+    join public.investments i on i.id=f.investment_id
+    where i.is_active and i.asset_type='ETF'
+  ) <> 79 then
+    raise exception 'Official facts coverage is not 79/79 ETFs';
+  end if;
+
+  if (
+    select count(*)
+    from public.investment_official_risk_ratings r
+    join public.investments i on i.id=r.investment_id
+    where i.is_active and i.asset_type='ETF'
+  ) <> 79 then
+    raise exception 'Official risk coverage is not 79/79 ETFs';
+  end if;
+
+  if exists (
+    select 1
+    from public.investment_profiles p
+    join public.investments i on i.id=p.investment_id
+    where i.is_active and i.asset_type='ETF'
+      and p.model_version='profile-v1.0'
+      and p.source_id is null
+  ) then
+    raise exception 'At least one active ETF research profile lacks source provenance';
+  end if;
+
+  if exists (
+    select 1
+    from public.investment_performance_history p
+    join public.investments i on i.id=p.investment_id
+    where i.is_active and i.asset_type='ETF'
+      and p.verification_status='issuer_verified'
+      and p.source_id is null
+  ) then
+    raise exception 'At least one issuer-verified ETF performance row lacks source provenance';
+  end if;
+
+  if (
+    select count(distinct i.id)
+    from public.investments i
+    join public.investment_price_history h on h.investment_id=i.id
+    where i.is_active and i.asset_type='ETF'
+      and h.price_date='2026-09-18'
+  ) <> 79 then
+    raise exception 'Price history is not current through the last trading day for all 79 ETFs';
+  end if;
+
+  raise notice 'PASS: Canadian ETF expansion has 79 ETFs / 94 active instruments across 9 issuers with sourced enrichment coverage and current browser contracts';
 end $$;
