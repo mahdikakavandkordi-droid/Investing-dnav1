@@ -116,7 +116,7 @@ export default function Screener(){
   <div className="container">
    <div className="eyebrow">{pick("ETF Screener · DNA-powered","Filtre FNB · alimenté par DNA")}</div>
    <h1><span className="desktop-screener-title">{pick("Find ETFs, then see how they relate to you","Trouvez des FNB et voyez comment ils se rapportent à votre profil")}</span><span className="mobile-screener-title">{pick("ETF Screener","Filtre FNB")}</span></h1>
-   <p className="muted"><span className="desktop-screener-copy">This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.</span><span className="mobile-screener-copy">Filter ETFs by the facts that matter, then add your DNA compatibility when it is available.</span></p>
+   <p className="muted"><span className="desktop-screener-copy">{pick("This screener intentionally remains ETF-only while Investor DNA expands its research universe to GICs, T-Bills, bonds and money-market structures. ETF facts come first; your current Investing DNA adds compatibility on top.","Ce filtre reste volontairement limité aux FNB tandis qu’Investor DNA élargit son univers de recherche aux CPG, bons du Trésor, obligations et structures du marché monétaire. Les données du FNB passent d’abord; votre Investing DNA actuel ajoute ensuite la couche de compatibilité.")}</span><span className="mobile-screener-copy">{pick("Filter ETFs by the facts that matter, then add your DNA compatibility when it is available.","Filtrez les FNB selon les données importantes, puis ajoutez votre compatibilité DNA lorsqu’elle est disponible.")}</span></p>
 
    <MatchStatus
     matchReady={matchReady}
@@ -142,7 +142,7 @@ export default function Screener(){
 
    <div className="screener-summary">
     <p className="muted">{loading?'Loading…':`${displayed.length} ETF${displayed.length===1?'':'s'} shown`}</p>
-    <p className="fine muted">Select up to 3 ETFs to compare side by side. Use Explore for cross-asset research.</p>
+    <p className="fine muted">{pick("Select up to 3 ETFs to compare side by side. Use Explore for cross-asset research.","Sélectionnez jusqu’à 3 FNB à comparer côte à côte. Utilisez Explorer pour la recherche multi-actifs.")}</p>
    </div>
 
    {error&&<p className="notice" role="alert">{error}</p>}
@@ -235,11 +235,11 @@ function ScreenerToolbar({
    {pick("Official risk","Risque officiel")}
    <select className="field" value={risk} onChange={event=>onRisk(event.target.value)}>
     <option value="">{pick("All risk levels","Tous les niveaux de risque")}</option>
-    <option>Low</option>
-    <option>Low to Medium</option>
-    <option>Medium</option>
-    <option>Medium to High</option>
-    <option>High</option>
+    <option value="Low">{pick("Low","Faible")}</option>
+    <option value="Low to Medium">{pick("Low to Medium","Faible à moyen")}</option>
+    <option value="Medium">{pick("Medium","Moyen")}</option>
+    <option value="Medium to High">{pick("Medium to High","Moyen à élevé")}</option>
+    <option value="High">{pick("High","Élevé")}</option>
    </select>
   </label>
 
