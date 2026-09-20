@@ -291,5 +291,28 @@ begin
     raise exception 'New Canadian ETF market-history canaries are incomplete';
   end if;
 
+  if not exists (
+    select 1
+    from public.app_search_instruments('ETF',null,120)
+    where symbol='RBNK'
+      and price is not null
+      and risk_level='Medium to High'
+      and mer_pct=0.32
+      and distribution_frequency='Monthly'
+  ) then
+    raise exception 'RBNK browser-facing canonical price/fee/risk fields are incomplete';
+  end if;
+
+  if not exists (
+    select 1
+    from public.app_search_instruments('ETF',null,120)
+    where symbol='FEQT'
+      and price is not null
+      and risk_level='Medium'
+      and mer_pct=0.43
+  ) then
+    raise exception 'FEQT browser-facing canonical price/fee/risk fields are incomplete';
+  end if;
+
   raise notice 'PASS: Canadian ETF expansion has 79 ETFs / 94 active instruments across 9 issuers with sourced enrichment coverage';
 end $$;
