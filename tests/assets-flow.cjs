@@ -97,9 +97,12 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  assert.equal(await page.getByRole('heading',{name:gic.name,exact:true}).count(),0);
  const mfCard=page.locator('.investment-card-mutual_fund').filter({hasText:'RBF460'});
  assert.equal(await mfCard.count(),1);
- assert.match(await mfCard.innerText(),/NAV/);
- assert.match(await mfCard.innerText(),/1\.94%/);
- assert.match(await mfCard.innerText(),/NAV updated/i);
+ const mfCardText=await mfCard.innerText();
+ assert.match(mfCardText,/Series A/);
+ assert.match(mfCardText,/Low to Medium/);
+ assert.match(mfCardText,/1\.94%/);
+ assert.match(mfCardText,/\$500/);
+ assert.doesNotMatch(mfCardText,/NAV updated/i);
 
  await Promise.all([page.waitForURL(`**/investment/${ids.mf}`),mfCard.getByRole('link',{name:/View details for/}).click()]);
  await page.getByRole('button',{name:'Fund profile & fees',exact:true}).click();
@@ -117,7 +120,9 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
 
  await page.goto(origin+`/investment/${ids.mfIncomplete}`);
  await page.getByRole('button',{name:'Fund profile & fees',exact:true}).click();
+ await page.getByText('Investment DNA signals',{exact:true}).click();
  text=await page.locator('body').innerText();
+ assert.match(text,/Investment DNA/);
  assert.match(text,/Allocation data is incomplete/);
  assert.match(text,/Allocation data is not available yet/);
  assert.doesNotMatch(text,/0% equity/i);
@@ -145,10 +150,15 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  await page.goto(origin+'/explore');
  await page.getByRole('tab',{name:'GICs',exact:true}).click();
  const gicCard=page.locator('.investment-card-gic').filter({hasText:'BMO-GIC-NR'});
- assert.match(await gicCard.innerText(),/2\.70%–3\.10%/);
- assert.match(await gicCard.innerText(),/1 year–5 years/);
+ const gicCardText=await gicCard.innerText();
+ assert.match(gicCardText,/1-year annual rate/i);
+ assert.match(gicCardText,/2\.70%/);
+ assert.match(gicCardText,/Locked until maturity/i);
+ assert.match(gicCardText,/\$1,000/);
+ assert.match(gicCardText,/One term shown/i);
+ assert.doesNotMatch(gicCardText,/3\.10%/);
  await Promise.all([page.waitForURL(`**/investment/${ids.gic}`),gicCard.getByRole('link',{name:/View details for/}).click()]);
- await page.getByRole('button',{name:'Structure & terms',exact:true}).click();
+ await page.getByRole('button',{name:'Rate & access',exact:true}).click();
  text=await page.locator('body').innerText();
  assert.match(text,/Available terms/);assert.match(text,/2\.70%/);assert.match(text,/3\.10%/);assert.match(text,/5 years/);assert.match(text,/CDIC/);
  check('GIC family detail exposes a source-dated multi-term curve');

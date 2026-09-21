@@ -35,7 +35,7 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
 
   return <section className="investment-dna-card">
     <div className="investment-dna-head">
-      <div><div className="eyebrow">Fund risk and structure</div><h2>What this investment is built to do</h2><p>Start with the fund manager’s official Canadian risk rating. Then use a small set of transparent profile signals to understand the fund’s role and trade-offs.</p></div>
+      <div><div className="eyebrow">Investment DNA</div><h2>What this investment is built to do</h2><p>Start with the fund manager’s official Canadian risk rating. Then open the Investment DNA signals for our transparent structural interpretation of the fund’s role and trade-offs.</p></div>
     </div>
 
     <div className="official-risk-card">
@@ -51,8 +51,8 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
     </div>
     <p className="official-risk-method">This is the issuer-disclosed Canadian risk classification. It is not an Investing DNA score and it does not predict future losses or returns.</p>
 
-    <details className="investment-dna-methodology"><summary>Investment structure explained</summary>
-    <div className="investment-dna-subhead"><h3>Our interpretation of the structure</h3><p>These are broad research labels, not regulatory ratings or precise 0–100 measurements. Each label is generated from a fixed rule set using fund-structure data.</p></div>
+    <details className="investment-dna-methodology"><summary>Investment DNA signals</summary>
+    <div className="investment-dna-subhead"><h3>How we interpret this investment’s structure</h3><p>These are broad research labels, not regulatory ratings or precise 0–100 measurements. Each label is generated from a fixed rule set using fund-structure data.</p></div>
     {allocationMissing&&<div className="notice investment-dna-missing">
       <strong>Allocation data is incomplete</strong>
       <p>We do not treat missing allocation as 0%. Growth, income, stability and diversification labels are withheld until enough sourced fund-structure data is available.</p>
