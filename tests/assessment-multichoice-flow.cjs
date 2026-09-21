@@ -47,6 +47,7 @@ const dna={
   executablePath:process.env.CHROME_BIN||undefined,
   args:['--no-sandbox','--disable-dev-shm-usage']
  });
+ for(const personalization of ['both','name','age','neither']){
  const ctx=await browser.newContext({viewport:{width:390,height:844}});
  const page=await ctx.newPage();
  page.setDefaultTimeout(15000);
@@ -72,17 +73,18 @@ const dna={
 
    if(body.action==='track_event')return send({tracked:true});
    if(body.action==='start'){
+    assert.equal(body.cohort_code,'DEV_V1_10_CLARITY');
     return send({
      assessment_id:'assessment-multi-1',
      session_token:'guest-capability',
      account_linked:false,
-     questionnaire_version:'v1.10-cognitive-candidate',
+     questionnaire_version:'v1.10-clarity-1',
      model_version:'dna-v1.10-research',
      language_code:'en'
     });
    }
    if(body.action==='questionnaire'){
-    return send({questions,questionnaire_version:'v1.10-cognitive-candidate'});
+    return send({questions,questionnaire_version:'v1.10-clarity-1'});
    }
    if(body.action==='save_answers'){
     saveCalls++;
@@ -110,11 +112,16 @@ const dna={
  await page.goto(ORIGIN+'/dna/assessment');
  await page.getByRole('button',{name:'Start as guest'}).click();
 
+ await page.getByRole('heading',{name:'Which balance feels most comfortable?'}).waitFor();
+ assert.equal(await page.locator('progress').getAttribute('value'),'0');
  await page.getByRole('button',{name:'Moderate ups and downs',exact:true}).click();
+ assert.equal(await page.locator('progress').getAttribute('value'),'1');
  await page.getByRole('button',{name:'Next',exact:true}).click();
  await page.getByRole('heading',{name:/Which types of investments/}).waitFor();
 
+ assert.equal(await page.locator('progress').getAttribute('value'),'1');
  await page.getByRole('button',{name:'I have not invested before',exact:true}).click();
+ assert.equal(await page.locator('progress').getAttribute('value'),'2');
  assert.equal(await page.getByRole('button',{name:'I have not invested before',exact:true}).getAttribute('aria-pressed'),'true');
 
  await page.getByRole('button',{name:'Cash, savings, or GICs',exact:true}).click();
@@ -127,17 +134,23 @@ const dna={
 
  await page.getByRole('button',{name:/Continue/}).click();
  await page.getByRole('heading',{name:'Almost there.'}).waitFor();
- await page.getByLabel('First name').fill('Mahdi');
- await page.getByLabel('Age').fill('35');
+ assert.equal(await page.getByRole('button',{name:/See my Investor DNA/}).isEnabled(),true);
+ await page.getByLabel('Age').fill('17');
+ assert.equal(await page.getByRole('button',{name:/See my Investor DNA/}).isEnabled(),false);
+ await page.getByLabel('Age').fill('');
+ if(personalization==='both'||personalization==='name')await page.getByLabel('First name').fill('Mahdi');
+ if(personalization==='both'||personalization==='age')await page.getByLabel('Age').fill('35');
  await page.getByRole('button',{name:/See my Investor DNA/}).click();
  await page.waitForURL('**/dna/result');
  await page.getByRole('heading',{name:'MAVERICK'}).waitFor();
- assert.match(await page.locator('body').innerText(),/Mahdi/);
+ if(personalization==='both'||personalization==='name')assert.match(await page.locator('body').innerText(),/Mahdi/);
 
  assert.equal(saveCalls,1);
  assert.equal(submitCalls,1);
  assert.deepEqual(runtimeErrors,[]);
- console.log('PASS multi-choice assessment submits arrays, captures personalization, and opens the DNA report');
+ console.log('PASS answered progress, exclusive multi-choice, optional personalization: '+personalization);
+ await ctx.close();
+ }
 
  await browser.close();
 })().catch(error=>{

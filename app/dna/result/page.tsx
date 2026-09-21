@@ -101,7 +101,7 @@ function MissingResult({error}:{error:string}){return <main className="result-pa
 
 function ContextCallout({hasContext,matchStatus}:{hasContext:boolean;matchStatus?:string}){
  if(!hasContext){
-  return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Next · put your DNA into action</div><h2>Tell us what this money is for.</h2><p>Your personal report is complete. Add a goal, time horizon, access needs and principal-protection requirement when you want context-aware DNA Match research.</p></div><Link className="btn primary" href="/dna/context?returnTo=/dna/result">Set an investment goal</Link></section>;
+  return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Next · put your DNA into action</div><h2>Tell us what this money is for.</h2><p>Your personal report is complete. Risk tolerance describes the uncertainty you feel comfortable with; financial capacity describes the loss your finances can absorb. Goal fit is separate: add this money’s purpose, time horizon, access needs and principal-protection requirement for context-aware DNA Match research.</p></div><Link className="btn primary" href="/dna/context?returnTo=/dna/result">Set an investment goal</Link></section>;
  }
  if(matchStatus==='review_required'){
   return <section className="result-next-card result-context-cta"><div><div className="eyebrow">Your DNA in action</div><h2>This goal is connected, but Match is paused.</h2><p>Your personal DNA is unchanged and the money context is saved. A safety or data-review gate is preventing ranked fund results for this context.</p></div><div className="actions compact"><Link className="btn primary" href="/match">Review Match status</Link><Link className="btn" href="/dna/context?returnTo=/dna/result">Edit this goal</Link></div></section>;
@@ -118,7 +118,7 @@ function GuestSaveCard({personal,sending,message,onSubmit}:{personal:Personaliza
  const [firstName,setFirstName]=useState(personal?.first_name||'');
  const [lastName,setLastName]=useState(personal?.last_name||'');
  const [phone,setPhone]=useState(personal?.phone||'');
- const age=personal?.age||0;
+ const age=personal?.age;
  function submit(event:FormEvent){event.preventDefault();const profile=normalizePersonalization({first_name:firstName,age,last_name:lastName,phone});if(!profile)return;void onSubmit(email,profile);}
  return <>
   <section className="report-save-launch"><div><div className="eyebrow">Optional account</div><strong>Save your Investor DNA</strong><p>Keep this report in your dashboard and receive a secure email link to reopen it later.</p><div className="report-save-benefits"><span>Dashboard access</span><span>Secure email link</span><span>DNA Match continuity</span></div></div><button className="btn primary" onClick={()=>setOpen(true)}>Save my report</button></section>

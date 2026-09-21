@@ -58,8 +58,8 @@ export type NarrativeProfile = {
 };
 
 export type PersonalizationProfile = {
-  first_name: string;
-  age: number;
+  first_name?: string;
+  age?: number;
   last_name?: string|null;
   phone?: string|null;
 };
@@ -264,12 +264,13 @@ export function normalizePersonalization(value:unknown):PersonalizationProfile|n
   const input=value as Record<string,unknown>;
   const firstName=typeof input.first_name==='string'?input.first_name.trim().slice(0,60):'';
   const age=typeof input.age==='number'?input.age:Number(input.age);
-  if(!firstName||!Number.isInteger(age)||age<18||age>100)return null;
+  const validAge=Number.isInteger(age)&&age>=18&&age<=100;
+  if(!firstName&&!validAge)return null;
   const lastName=typeof input.last_name==='string'?input.last_name.trim().slice(0,80):'';
   const phone=typeof input.phone==='string'?input.phone.trim().slice(0,40):'';
   return {
-    first_name:firstName,
-    age,
+    ...(firstName?{first_name:firstName}:{}),
+    ...(validAge?{age}:{}),
     ...(lastName?{last_name:lastName}:{}),
     ...(phone?{phone}:{}),
   };

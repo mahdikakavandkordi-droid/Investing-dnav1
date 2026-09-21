@@ -31,7 +31,7 @@ export default function Assessment(){
  const [error,setError]=useState("");
  const [warning,setWarning]=useState("");
  const [locale,setLocale]=useState<AssessmentLocale>('en');
- const [cohort,setCohort]=useState<AssessmentCohort>('DEV_V1_10');
+ const [cohort,setCohort]=useState<AssessmentCohort>('DEV_V1_10_CLARITY');
  const lock=useRef(false);
  const copy=ASSESSMENT_COPY[locale];
 
@@ -96,7 +96,7 @@ export default function Assessment(){
    const assessmentSession=await pilot<Draft['session']>('start',{
     cohort_code:cohort,
     language_code:locale,
-    consent_version:`${cohort==='COGNITIVE_V1_10'?'cognitive':'prepilot'}-v1.10-${locale}`,
+    consent_version:`${cohort==='COGNITIVE_V1_10'?'cognitive-v1.10':'prepilot-v1.10-clarity-1'}-${locale}`,
     ...(cohortAccessCode?{cohort_access_code:cohortAccessCode}:{})
    });
    if(cohort==='COGNITIVE_V1_10')sessionStorage.removeItem(COGNITIVE_ACCESS_KEY);
@@ -112,12 +112,11 @@ export default function Assessment(){
  async function finish(){
   if(!draft||lock.current)return;
   const personalization=normalizePersonalization(draft.personalization);
-  if(!personalization){setError('Add your first name and age to personalize your report.');return;}
   lock.current=true;setBusy(true);setError('');
   try{
    const complete=questions.every(question=>hasAnswer(question,draft.answers[question.question_id]));
    if(!complete)throw new Error('Please answer every question before submitting.');
-   const normalized={...draft,personalization,answers:normalizeAnswers(draft.answers,questions)};
+   const normalized={...draft,personalization:personalization||undefined,answers:normalizeAnswers(draft.answers,questions)};
    persist(normalized);
    await pilot('save_answers',{...normalized.session,answers:answerRows(normalized.answers)});
    const result=await pilot<Submission>('submit',normalized.session);
@@ -136,6 +135,7 @@ export default function Assessment(){
  if(questions.length&&draft.index===questions.length){
   return <AssessmentShell>
    <PersonalizationStep
+    locale={locale}
     draft={draft}
     total={questions.length}
     busy={busy}
@@ -208,6 +208,7 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  const chosen=draft.answers[question.question_id];
  const options=optionsFor(question);
  const current=draft.index+1;
+ const completed=questions.filter(item=>hasAnswer(item,draft.answers[item.question_id])).length;
  const last=draft.index===questions.length-1;
  const researchCode=cohort==='COGNITIVE_V1_10'?draft.session.anonymous_code:null;
  const multi=question.question_type==='multi_choice';
@@ -222,41 +223,43 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  }
  return <div className="assessment-question-layout" dir={direction} lang={locale}>
   <div className="assessment-card question-shell question-shell-v2">
-   <div className="question-header question-header-v2"><div><div className="question-count">{copy.question} {current} of {questions.length}</div>{researchCode&&<div className="fine muted question-research-code">Research code: <strong>{researchCode}</strong></div>}</div><div className="question-percent">{Math.round((current/questions.length)*100)}%</div></div>
-   <progress aria-label="Assessment progress" max={questions.length} value={current}/><h1 className="question-title">{question.prompt}</h1>{multi&&<p className="question-hint question-hint-top">Select all that apply.</p>}
+   <div className="question-header question-header-v2"><div><div className="question-count">{copy.question} {current} {copy.of} {questions.length}</div>{researchCode&&<div className="fine muted question-research-code">Research code: <strong>{researchCode}</strong></div>}</div><div className="question-percent">{Math.round((completed/questions.length)*100)}%</div></div>
+   <progress aria-label={copy.progress} max={questions.length} value={completed}/><h1 className="question-title">{question.prompt}</h1>{multi&&<p className="question-hint question-hint-top">{copy.multiple}</p>}
    <div className="question-options" role="group" aria-label="Answer choices">{options.map(option=>{const selected=multi?chosenValues.includes(option.value):chosen===option.value;return <button aria-pressed={selected} className={'option '+(selected?'active':'')} key={option.value} disabled={busy} onClick={()=>choose(option.value)}><span className="option-indicator" aria-hidden="true"/><span>{option.label}</span></button>})}</div>
-   <div className="question-actions"><button className="btn" disabled={busy||draft.index===0} onClick={()=>onPersist({...draft,index:draft.index-1})}>{copy.back}</button><button className="btn primary" disabled={busy||!answered} onClick={()=>onPersist({...draft,index:draft.index+1})}>{last?'Continue':copy.next} <span aria-hidden="true">→</span></button></div>
+   <div className="question-actions"><button className="btn" disabled={busy||draft.index===0} onClick={()=>onPersist({...draft,index:draft.index-1})}>{copy.back}</button><button className="btn primary" disabled={busy||!answered} onClick={()=>onPersist({...draft,index:draft.index+1})}>{last?copy.continue:copy.next} <span aria-hidden="true">→</span></button></div>
    {warning&&<p className="muted fine">{warning}</p>}{error&&<p role="alert" className="notice">{error}</p>}
   </div><DnaJourneyVisual current={current} total={questions.length}/>
  </div>;
 }
 
-function PersonalizationStep({draft,total,busy,error,onPersist,onBack,onFinish}:{draft:Draft;total:number;busy:boolean;error:string;onPersist:(draft:Draft)=>void;onBack:()=>void;onFinish:()=>void;}){
+function PersonalizationStep({locale,draft,total,busy,error,onPersist,onBack,onFinish}:{locale:AssessmentLocale;draft:Draft;total:number;busy:boolean;error:string;onPersist:(draft:Draft)=>void;onBack:()=>void;onFinish:()=>void;}){
+ const copy=ASSESSMENT_COPY[locale];
  const personal=draft.personalization;
  const firstName=personal?.first_name||'';
- const age=personal?.age?String(personal.age):'';
+ const age=personal?.age==null?'':String(personal.age);
  const ageNumber=Number(age);
- const ready=!!firstName.trim()&&Number.isInteger(ageNumber)&&ageNumber>=18&&ageNumber<=100;
+ const ready=age===''||(Number.isInteger(ageNumber)&&ageNumber>=18&&ageNumber<=100);
  function updateFirstName(value:string){
-  const currentAge=personal?.age||0;
+  const currentAge=personal?.age;
   onPersist({...draft,personalization:{first_name:value,age:currentAge,last_name:personal?.last_name,phone:personal?.phone}});
  }
  function updateAge(value:string){
   const numeric=Number(value);
-  onPersist({...draft,personalization:{first_name:firstName,age:Number.isFinite(numeric)?numeric:0,last_name:personal?.last_name,phone:personal?.phone}});
+  onPersist({...draft,personalization:{first_name:firstName,age:value===''?undefined:Number.isFinite(numeric)?numeric:0,last_name:personal?.last_name,phone:personal?.phone}});
  }
- return <div className="personalization-stage">
+ return <div className="personalization-stage" lang={locale} dir={locale==='fa'?'rtl':'ltr'}>
   <section className="assessment-card personalization-card">
    <div className="personalization-progress" aria-label="Assessment complete"><span>1</span><i/><strong>{total}</strong><i className="complete"/><b>✓</b></div>
-   <div className="eyebrow">Assessment complete</div>
-   <h1>Almost there.</h1>
-   <p className="assessment-lede">Add your first name and age so your Investor DNA report feels like yours. These details do not change your assessment score.</p>
+   <div className="eyebrow">{copy.complete}</div>
+   <h1>{copy.personalTitle}</h1>
+   <p className="assessment-lede">{copy.personalBody}</p>
    <div className="personalization-fields">
-    <label><span>First name</span><input autoComplete="given-name" maxLength={60} value={firstName} onChange={event=>updateFirstName(event.target.value)} placeholder="Your first name"/></label>
-    <label><span>Age</span><input type="number" inputMode="numeric" min="18" max="100" value={age==='0'?'':age} onChange={event=>updateAge(event.target.value)} placeholder="Age"/></label>
+    <label><span>{copy.firstName}</span><input autoComplete="given-name" maxLength={60} value={firstName} onChange={event=>updateFirstName(event.target.value)}/></label>
+    <label><span>{copy.age}</span><input type="number" inputMode="numeric" min="18" max="100" value={age} onChange={event=>updateAge(event.target.value)} aria-invalid={!ready}/></label>
    </div>
-   <div className="personalization-note"><span aria-hidden="true">⌁</span><p>Your name and age personalize the report. Creating an account remains optional after you see your result.</p></div>
-   <div className="question-actions"><button className="btn" disabled={busy} onClick={onBack}>Back</button><button className="btn primary" disabled={busy||!ready} onClick={onFinish}>{busy?'Building your DNA…':'See my Investor DNA'} <span aria-hidden="true">→</span></button></div>
+   {!ready&&<p role="alert" className="notice">{copy.ageError}</p>}
+   <div className="personalization-note"><span aria-hidden="true">⌁</span><p>{copy.personalNote}</p></div>
+   <div className="question-actions"><button className="btn" disabled={busy} onClick={onBack}>{copy.back}</button><button className="btn primary" disabled={busy||!ready} onClick={onFinish}>{busy?copy.calculating:copy.personalResult} <span aria-hidden="true">→</span></button></div>
    {error&&<p role="alert" className="notice">{error}</p>}
   </section>
   <aside className="personalization-scenery approved-illustration-panel" aria-hidden="true"><PersonalizationVisual/></aside>

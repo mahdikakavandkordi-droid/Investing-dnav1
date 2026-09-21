@@ -13,6 +13,11 @@ assert.deepEqual(d.answerRows({RC01:'A',RT01:'7'}),[
   {question_id:'RT01',answer_value:{value:'7'}}
 ]);
 assert.equal(d.optionsFor({question_id:'RT01',prompt:'Example',question_type:'scale',options:[]}).length,11);
+assert.deepEqual(d.normalizePersonalization({first_name:' Mahdi '}),{first_name:'Mahdi'});
+assert.deepEqual(d.normalizePersonalization({age:35}),{age:35});
+assert.equal(d.normalizePersonalization({first_name:'',age:''}),null);
+assert.equal(d.normalizePersonalization({age:17}),null);
+assert.equal(d.normalizePersonalization({age:35.5}),null);
 assert.equal(d.score(undefined),'—');
 assert.equal(d.score(0),'0');
 assert.equal(d.hasCompleteInvestmentContext({goal:'growth',time_horizon:'5_10y'}),false);
