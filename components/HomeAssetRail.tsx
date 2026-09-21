@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
-import {searchInstruments} from "@/lib/instruments";
+import {instrumentDisplayName,searchInstruments} from "@/lib/instruments";
 import type {Instrument} from "@/lib/instruments";
 
 const ORDER=["ETF","MUTUAL_FUND","GIC"] as const;
@@ -78,7 +78,7 @@ function AssetCard({item}:{item:Instrument}){
   </div>
 
   <div className="home-asset-copy">
-   <h3>{item.name}</h3>
+   <h3>{instrumentDisplayName(item)}</h3>
    {item.issuer_name&&<p className="home-asset-issuer">{item.issuer_name}</p>}
    <p>{item.profile_summary||item.description||"Source-backed research profile available."}</p>
   </div>
