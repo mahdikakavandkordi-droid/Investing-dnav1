@@ -5,10 +5,15 @@
  * versioned server questionnaire and must not be moved or edited here.
  */
 export type AssessmentLocale='en'|'fr'|'fa';
-export type AssessmentCohort='DEV_V1_10'|'COGNITIVE_V1_10';
+export type AssessmentCohort='DEV_V1_10_CLARITY'|'COGNITIVE_V1_10';
 
 export const ASSESSMENT_COPY={
  en:{
+  of:'of',progress:'Answered questions',multiple:'Select all that apply.',continue:'Continue',
+  complete:'Assessment complete',personalTitle:'Almost there.',firstName:'First name (optional)',age:'Age (optional)',
+  personalBody:'You can add your first name, your age, both, or neither. These details personalize your report and do not change your assessment score.',
+  personalNote:'Leave both fields blank to go straight to your result. Saving your report to an account is optional afterward.',
+  ageError:'Enter a whole-number age from 18 to 100, or leave it blank.',personalResult:'See my Investor DNA',
   eyebrow:'Investing DNA assessment',
   title:'Understand how you invest.',
   lede:'A short, research-stage assessment of your risk tolerance, decision patterns, financial capacity and investing experience.',
@@ -27,6 +32,11 @@ export const ASSESSMENT_COPY={
   sections:{risk_tolerance:'Risk tolerance',behavioral_dna:'Behavioral DNA',risk_capacity:'Financial capacity',investment_experience:'Investment experience'}
  },
  fr:{
+  of:'sur',progress:'Questions répondues',multiple:'Sélectionnez toutes les réponses qui s’appliquent.',continue:'Continuer',
+  complete:'Évaluation terminée',personalTitle:'Vous y êtes presque.',firstName:'Prénom (facultatif)',age:'Âge (facultatif)',
+  personalBody:'Vous pouvez ajouter votre prénom, votre âge, les deux ou aucun. Ces renseignements personnalisent le rapport sans modifier votre score.',
+  personalNote:'Laissez les deux champs vides pour voir votre résultat. Vous pourrez ensuite choisir de sauvegarder votre rapport dans un compte.',
+  ageError:'Entrez un âge entier de 18 à 100 ans, ou laissez ce champ vide.',personalResult:'Voir mon Investor DNA',
   eyebrow:'Évaluation Investing DNA',title:'Comprenez votre façon d’investir.',
   lede:'Une courte évaluation, encore au stade de la recherche, de votre tolérance au risque, de vos habitudes de décision, de votre capacité financière et de votre expérience en investissement.',
   questions:'28 questions',guest:'Aucun compte requis',save:'Sauvegardez si vous le souhaitez',
@@ -44,6 +54,11 @@ export const ASSESSMENT_COPY={
   sections:{risk_tolerance:'Tolérance au risque',behavioral_dna:'DNA comportemental',risk_capacity:'Capacité financière',investment_experience:'Expérience en investissement'}
  },
  fa:{
+  of:'از',progress:'سؤال‌های پاسخ‌داده‌شده',multiple:'همه گزینه‌های مرتبط را انتخاب کن.',continue:'ادامه',
+  complete:'ارزیابی تکمیل شد',personalTitle:'نتیجه‌ات آماده است.',firstName:'نام (اختیاری)',age:'سن (اختیاری)',
+  personalBody:'می‌توانی نام، سن، هر دو یا هیچ‌کدام را وارد کنی. این اطلاعات فقط گزارش را شخصی می‌کنند و امتیاز ارزیابی را تغییر نمی‌دهند.',
+  personalNote:'برای دیدن نتیجه می‌توانی هر دو کادر را خالی بگذاری. بعد از دیدن گزارش، ذخیره آن در حساب هم اختیاری است.',
+  ageError:'سن را به‌صورت عدد صحیح بین ۱۸ تا ۱۰۰ وارد کن یا کادر را خالی بگذار.',personalResult:'مشاهده Investor DNA من',
   eyebrow:'ارزیابی Investing DNA',title:'روش سرمایه‌گذاری خودت را بهتر بشناس.',
   lede:'یک ارزیابی کوتاه و در مرحله پژوهش از میزان تحمل ریسک، الگوهای تصمیم‌گیری، توان مالی و تجربه سرمایه‌گذاری تو.',
   questions:'۲۸ سؤال',guest:'بدون نیاز به حساب',save:'در صورت تمایل ذخیره کن',

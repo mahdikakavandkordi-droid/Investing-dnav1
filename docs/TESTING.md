@@ -278,3 +278,6 @@ npm run test:all
 ```
 
 Keep `test:all` synchronized with CI whenever CI changes.
+## Questionnaire clarity regression
+
+`npm run test:assessment` covers answered-count progress and completion with both, either or neither optional personalization field. `tests/assessment-clarity.sql` runs 12 old/new scoring comparisons in a rollback transaction on a privileged database connection. It verifies unchanged scores, capacity guards, dimension weights and response-quality checks. See [assessment clarity](ASSESSMENT-CLARITY.md).

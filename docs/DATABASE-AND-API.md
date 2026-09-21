@@ -312,3 +312,7 @@ Signed-in return continuity is server-owned rather than inferred from browser id
 - the browser caches that one summary for the current session so navigating away and back does not redefine the baseline.
 
 Market-price browser reads follow the same split-boundary pattern as the rest of the app: `public.app_market_data_status(...)` is SECURITY INVOKER and delegates to the private SECURITY DEFINER implementation. This keeps the exposed wrapper narrow while operational price-history tables remain inaccessible.
+
+## Questionnaire clarity revision
+
+New ordinary frontend sessions use `DEV_V1_10_CLARITY` / `v1.10-clarity-1`, with unchanged `dna-v1.10-research` scoring. Older drafts and cognitive sessions retain their original version. See [assessment clarity](ASSESSMENT-CLARITY.md) for wording scope, deployment order and comparability limits.
