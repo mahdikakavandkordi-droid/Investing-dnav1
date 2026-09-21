@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {instrumentDisplayName,searchInstruments,compareInstruments} from '@/lib/instruments';
+import {depositTermOptions,gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments,compareInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {assetLabel,matchEligible,heroMetrics,isPublicV1AssetType} from '@/lib/instrument-model';
 import {formatMetric,validId} from '@/lib/investments';
@@ -136,7 +136,7 @@ function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instru
 
 function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dnaPresent:boolean;matchStatus?:string;match?:MatchItem;}){
  const canMatch=matchEligible(item.asset_type);
- const metrics=heroMetrics(item.asset_type);
+ const metrics=item.asset_type==='GIC'?[]:heroMetrics(item.asset_type);
  const contextOnly=matchStatus==='context_required';
  const rowContextOnly=match?.eligibility==='context_required'||match?.recommendation_tier==='consider';
  const showExplanation=matchStatus!=='review_required'&&(!contextOnly||rowContextOnly);
@@ -148,13 +148,33 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
   <h3>Shared Investment DNA</h3>
   {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}><span>{label}</span><strong>{pretty(item[key])}</strong></div>)}
   <h3>{assetLabel(item.asset_type)} facts</h3>
-  {metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
+  {item.asset_type==='GIC'?<GicCompareFacts item={item}/>:metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
   {item.credit_exposure&&<div className="compare-metric"><span>Credit exposure</span><strong>{pretty(item.credit_exposure)}</strong></div>}
   {item.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(item.time_structure)}</strong></div>}
   {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':`Why this ${assetLabel(item.asset_type)} may fit`}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   <Link className="btn" href={`/investment/${item.id}`}>Open research</Link>
  </article>;
+}
+
+function GicCompareFacts({item}:{item:Instrument}){
+ const options=depositTermOptions(item);
+ const rate=gicRateRange(item);
+ const terms=gicTermRange(item);
+ const minimum=item.minimum_deposit==null?'—':new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ const insurance=item.deposit_insurance_eligible===true?`${item.deposit_insurance_scheme||'Deposit insurance'} eligible`:item.deposit_insurance_eligible===false?'Not marked eligible':'Verify with issuer';
+ return <>
+  <div className="compare-metric"><span>Rate range</span><strong>{rate||'Check issuer'}</strong></div>
+  <div className="compare-metric"><span>Term range</span><strong>{terms||'—'}</strong></div>
+  <div className="compare-metric"><span>Access</span><strong>{pretty(item.redeemability)}</strong></div>
+  <div className="compare-metric"><span>Minimum deposit</span><strong>{minimum}</strong></div>
+  <div className="compare-metric"><span>Deposit insurance</span><strong>{insurance}</strong></div>
+  {options.length>0&&<div className="compare-gic-curve">
+   <strong>Term options</strong>
+   <div>{options.slice(0,5).map(option=><span key={option.option_key}><b>{termLabel(option.term_months)}</b>{option.annual_rate_pct==null?'Check issuer':formatMetric(option.annual_rate_pct,'%')}</span>)}</div>
+   {options.length>5&&<small>+{options.length-5} more term{options.length-5===1?'':'s'} in details</small>}
+  </div>}
+ </>;
 }
 
 function FitSummary({canMatch,match,matchStatus,dnaPresent}:{canMatch:boolean;match?:MatchItem;matchStatus?:string;dnaPresent:boolean}){
@@ -175,6 +195,10 @@ function displayValue(item:Instrument,key:string,suffix='',digits=2){
  if(raw===null||raw===undefined||raw==='')return '—';
  if(typeof raw==='number')return formatMetric(raw,suffix,digits);
  return pretty(raw);
+}
+function termLabel(months:number){
+ if(months%12===0)return `${months/12}Y`;
+ return `${months}M`;
 }
 function pretty(value:unknown){
  if(value===null||value===undefined||value==='')return '—';
