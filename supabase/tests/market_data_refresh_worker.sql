@@ -147,14 +147,23 @@ begin
     raise exception 'expected active Canadian ETFs to resolve to yahoo_free, got %',v_count;
   end if;
 
-  select id into v_mutual_fund
-  from public.investments
-  where is_active and asset_type='MUTUAL_FUND' and country_code='CA' and exchange='FUND'
-  order by symbol
+  select i.id into v_mutual_fund
+  from public.investments i
+  join public.market_data_symbol_aliases a
+    on a.investment_id=i.id
+   and a.is_active
+  join public.market_data_sources s
+    on s.id=a.source_id
+   and s.source_key='yahoo_free'
+  where i.is_active
+    and i.asset_type='MUTUAL_FUND'
+    and i.country_code='CA'
+    and i.exchange='FUND'
+  order by i.symbol
   limit 1;
 
   if v_mutual_fund is null then
-    raise exception 'expected at least one active Canadian mutual-fund fixture';
+    raise exception 'expected at least one alias-backed Canadian mutual-fund fixture';
   end if;
 
   v_resolution:=public.resolve_automated_market_data_source(v_mutual_fund,'price_history');
@@ -177,13 +186,38 @@ begin
   end if;
 
   select count(*) into v_count
-  from public.investments i
-  where i.is_active
-    and i.asset_type='MUTUAL_FUND'
-    and public.resolve_automated_market_data_source(i.id,'price_history')->>'source_key'='yahoo_free';
+  from public.investments
+  where is_active and asset_type='MUTUAL_FUND';
 
-  if v_count < 3 then
-    raise exception 'expected the first mutual-fund wave to resolve to yahoo_free, got %',v_count;
+  if v_count <> 25 then
+    raise exception 'expected focused V1 mutual-fund universe of 25, got %',v_count;
+  end if;
+
+  select count(*) into v_count
+  from jsonb_array_elements(v_plan) p
+  where p->>'asset_type'='MUTUAL_FUND'
+    and nullif(p->>'provider_symbol','') is null;
+
+  if v_count <> 0 then
+    raise exception 'mutual funds without verified provider aliases must never enter the due plan, got %',v_count;
+  end if;
+
+  select count(*) into v_count
+  from jsonb_array_elements(v_plan) p
+  where p->>'asset_type'='MUTUAL_FUND';
+
+  if v_count <> (
+    select count(*)
+    from public.investments i
+    join public.market_data_symbol_aliases a
+      on a.investment_id=i.id
+     and a.is_active
+    join public.market_data_sources s
+      on s.id=a.source_id
+     and s.source_key='yahoo_free'
+    where i.is_active and i.asset_type='MUTUAL_FUND'
+  ) then
+    raise exception 'due mutual-fund count must equal verified alias-backed fund count, got %',v_count;
   end if;
 end $$;
 
@@ -203,4 +237,4 @@ begin
 end $audit$;
 rollback;
 
-select 'PASS: ETF + mutual-fund market-data refresh policy, browser read model, provider alias, due-plan and service boundary' as result;
+select 'PASS: 25-fund V1 universe, alias-gated mutual-fund refresh policy, browser read model, due-plan and service boundary' as result;
