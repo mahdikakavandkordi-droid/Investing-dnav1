@@ -129,7 +129,8 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
        {item.asset_type==='MUTUAL_FUND'&&<InstrumentTermsCard instrument={item}/>}
        {dna&&<InvestmentDnaCard dna={dna}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title="Risk">
+      <ResearchDisclosure title={item.asset_type==='GIC'?'Risk & protection':'Risk'}>
+       {item.asset_type==='GIC'&&<GicRiskSummary item={item}/>}
        <ProductRiskCard investmentId={item.id}/>
       </ResearchDisclosure>
       <ResearchDisclosure title="Performance & holdings">
@@ -156,6 +157,19 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
       </ResearchDisclosure>
      </>}
   </div>
+ </div>;
+}
+
+function GicRiskSummary({item}:{item:Instrument}){
+ const insured=item.deposit_insurance_eligible===true
+  ? `${item.deposit_insurance_scheme||'Deposit-insurance'} eligible, subject to applicable coverage limits and conditions.`
+  : 'Deposit-insurance eligibility should be verified with the issuer.';
+ const access=item.redeemability==='non_redeemable'
+  ? 'Funds are generally locked until maturity under the standard terms.'
+  : 'Earlier access depends on the product redemption rules and can change the interest received.';
+ return <div className="notice">
+  <strong>Capital-preservation research</strong>
+  <p>{insured} {access} This is a single-issuer deposit, so term, access and coverage rules matter more than market-price volatility.</p>
  </div>;
 }
 
