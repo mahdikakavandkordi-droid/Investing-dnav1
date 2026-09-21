@@ -13,6 +13,24 @@ import type {Investment} from '@/lib/types';
  * `app_compare_instruments`. See `docs/ARCHITECTURE.md` and
  * `docs/DATABASE-AND-API.md`.
  */
+export type DepositTermOption={
+ option_key:string;
+ term_months:number;
+ annual_rate_pct:number|null;
+ rate_type:string;
+ rate_basis?:string|null;
+ minimum_deposit?:number|null;
+ account_scope?:string|null;
+ registered_account_eligibility?:string[]|null;
+ redeemability:string;
+ interest_payment_frequency?:string|null;
+ special_terms?:string|null;
+ is_featured?:boolean|null;
+ source_name:string;
+ source_url:string;
+ as_of_date:string;
+};
+
 export type Instrument=Investment&{
  // Identity / generic research fields.
  legal_name?:string|null;
@@ -118,6 +136,7 @@ export type Instrument=Investment&{
  deposit_source_name?:string|null;
  deposit_source_url?:string|null;
  deposit_as_of_date?:string|null;
+ deposit_term_options?:DepositTermOption[]|null;
 };
 
 export type SavedInstrument={
@@ -215,4 +234,33 @@ export function instrumentDisplayName(item:Pick<Instrument,'name'|'display_name'
 export function hasFriendlyDisplayName(item:Pick<Instrument,'name'|'display_name'>){
  const friendly=item.display_name?.trim();
  return !!friendly&&friendly!==item.name;
+}
+
+
+export function depositTermOptions(item:Pick<Instrument,'deposit_term_options'>){
+ return Array.isArray(item.deposit_term_options)?item.deposit_term_options:[];
+}
+
+export function gicTermRange(item:Pick<Instrument,'deposit_term_options'|'term_months'>){
+ const terms=depositTermOptions(item).map(option=>option.term_months).filter(Number.isFinite).sort((a,b)=>a-b);
+ if(!terms.length&&item.term_months)return formatTerm(item.term_months);
+ if(!terms.length)return null;
+ const min=terms[0],max=terms[terms.length-1];
+ return min===max?formatTerm(min):`${formatTerm(min)}–${formatTerm(max)}`;
+}
+
+export function gicRateRange(item:Pick<Instrument,'deposit_term_options'|'deposit_rate_pct'>){
+ const rates=depositTermOptions(item).map(option=>option.annual_rate_pct).filter((value):value is number=>typeof value==='number'&&Number.isFinite(value)).sort((a,b)=>a-b);
+ if(!rates.length&&typeof item.deposit_rate_pct==='number')return formatRate(item.deposit_rate_pct);
+ if(!rates.length)return null;
+ const min=rates[0],max=rates[rates.length-1];
+ return Math.abs(max-min)<0.0001?formatRate(min):`${formatRate(min)}–${formatRate(max)}`;
+}
+
+function formatTerm(months:number){
+ if(months%12===0)return `${months/12} ${months===12?'year':'years'}`;
+ return months<12?`${months} months`:`${months/12} years`;
+}
+function formatRate(value:number){
+ return new Intl.NumberFormat('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2}).format(value)+'%';
 }
