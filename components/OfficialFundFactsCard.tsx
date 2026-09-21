@@ -19,6 +19,7 @@ function niceDate(value?:string){
 }
 function finiteMix(facts:OfficialFundFacts){
  return Object.entries(facts.asset_mix||{})
+  .filter(([,value])=>value!==null&&value!==undefined&&value!=='')
   .map(([key,value])=>[key,Number(value)] as const)
   .filter(([,value])=>Number.isFinite(value)&&value>=0);
 }
@@ -45,6 +46,7 @@ export function OfficialFundFactsCard({facts,assetType}:{facts:OfficialFundFacts
    <p className="official-summary">{facts.summary||facts.objective||'A plain-English summary is not available yet.'}</p>
   </div>
 
+  {mix.length===0&&<div className="notice allocation-missing-notice"><strong>Allocation data is not available yet</strong><p>Missing portfolio weights are not displayed as 0%. We will show the allocation once a sourced fund disclosure is available.</p></div>}
   {overall.length>0&&<section className="allocation-overall-card">
    <div className="allocation-head">
     <div><span>Overall allocation</span><small>Shares of the full portfolio</small></div>
