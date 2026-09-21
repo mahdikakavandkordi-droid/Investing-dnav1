@@ -17,10 +17,12 @@ These names have different meanings and should not be used interchangeably:
 The public V1 product intentionally exposes only three product types:
 
 - **ETF** — exchange-traded fund research + personalized DNA Match.
-- **MUTUAL_FUND** — Canadian mutual-fund research + personalized DNA Match.
+- **MUTUAL_FUND** — Canadian mutual-fund research + personalized DNA Match when the required evidence gates are satisfied.
 - **GIC** — deposit / capital-preservation research. Personalized DNA Match remains disabled in V1.
 
 The database can retain previously researched T-Bills, individual bonds, commercial paper and ABCP for future versions. They are not part of the focused V1 Explore, Home rail or Compare picker.
+
+The curated V1 mutual-fund universe currently contains **25 Series-specific products** across RBC GAM, TD Asset Management, Fidelity Canada, Mackenzie Investments and BMO GAM. Research visibility does not imply Match eligibility: funds with incomplete official risk, structure or suitability evidence remain research-only / review-required until those prerequisites are verified.
 
 Individual stocks remain out of scope. They require a separate company-level Stock DNA model.
 
@@ -147,17 +149,19 @@ GICs remain research products in V1. Their terms — rate, term, redeemability a
 
 ETF prices and mutual-fund NAV/price history use the audited daily market-data worker.
 
-Mutual funds use provider-specific aliases stored in `market_data_symbol_aliases` so a public fund code such as `RBF460` is never conflated with a third-party provider symbol.
+Mutual funds use provider-specific aliases stored in `market_data_symbol_aliases` so a public fund code such as `RBF460` is never conflated with a third-party provider symbol. **A mutual fund is eligible for the automated daily NAV plan only when an active verified alias exists for the selected provider.** The worker never guesses a provider symbol from a FundServ code.
 
 Current temporary Canadian route:
 
 - provider: Yahoo Finance temporary research feed
 - cadence: daily after the configured Toronto market-close threshold
 - ETF mapping: TSX / Cboe suffix transforms
-- Mutual Fund mapping: explicit provider alias
+- Mutual Fund mapping: explicit verified provider alias; no alias means no automated fetch
 - mutual-fund canonical row stores provider close as both `close` and `nav`
 
 Issuer disclosures remain the source of truth for Series, fees, objectives, strategic allocation and official risk classifications. The daily worker does not overwrite those slower-moving research facts.
+
+The first three RBC funds currently have verified temporary provider aliases and automated daily NAV history. The newer V1 funds retain their source-dated issuer NAV/fee snapshots until a provider alias or issuer-specific automated adapter is validated.
 
 ## 10. V1 UI identity
 
