@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {searchInstruments,compareInstruments} from '@/lib/instruments';
+import {instrumentDisplayName,searchInstruments,compareInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {assetLabel,matchEligible,heroMetrics,isPublicV1AssetType} from '@/lib/instrument-model';
 import {formatMetric,validId} from '@/lib/investments';
@@ -126,7 +126,7 @@ function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instru
     const disabled=index>0&&!anchorType;
     return <label key={index}>Investment {index+1}<select className="field" value={id} disabled={disabled} onChange={event=>onSelect(index,event.target.value)}>
      <option value="">{index===0?'Choose a product':disabled?'Choose the first product first':index===1?`Choose another ${assetLabel(anchorType)}`:`Optional third ${assetLabel(anchorType)}`}</option>
-     {choices.map(item=><option key={item.id} value={item.id}>{assetLabel(item.asset_type)} · {item.symbol?`${item.symbol} — `:''}{item.name}</option>)}
+     {choices.map(item=><option key={item.id} value={item.id}>{assetLabel(item.asset_type)} · {item.symbol?`${item.symbol} — `:''}{instrumentDisplayName(item)}</option>)}
     </select></label>;
    })}
   </div>
@@ -143,7 +143,7 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
 
  return <article className={'compare-card compare-card-'+String(item.asset_type||'unknown').toLowerCase()}>
   <div className="actions compact"><span className="pill">{assetLabel(item.asset_type)}</span>{item.symbol&&<span className="pill">{item.symbol}</span>}</div>
-  <h2>{item.name}</h2>
+  <h2>{instrumentDisplayName(item)}</h2>
   <FitSummary canMatch={canMatch} match={match} matchStatus={matchStatus} dnaPresent={dnaPresent}/>
   <h3>Shared Investment DNA</h3>
   {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}><span>{label}</span><strong>{pretty(item[key])}</strong></div>)}
