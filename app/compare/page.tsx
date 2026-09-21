@@ -23,7 +23,7 @@ const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
  ['complexity_level','Complexity']
 ];
 
-/** Structure-first comparison. Personalized fit is layered only onto ETFs. */
+/** Same-type comparison with personalized fit layered onto supported fund vehicles. */
 export default function Compare(){
  const {user}=useAccount();
  const [items,setItems]=useState<Instrument[]>([]);
@@ -98,7 +98,7 @@ export default function Compare(){
  return <section className="section compare-page-v2">
   <div className="container">
    <div className="eyebrow">Compare</div>
-   <h1><span className="desktop-compare-title">{comparisonType?`Compare ${assetLabel(comparisonType)}s side by side`:'Compare investments side by side'}</span><span className="mobile-compare-title">Compare investments</span></h1>
+   <h1><span className="desktop-compare-title">{comparisonType?`Compare ${assetLabel(comparisonType)}s side by side`:'Compare investments side by side'}</span><span className="mobile-compare-title">{comparisonType?`Compare ${assetLabel(comparisonType)}s`:'Compare investments'}</span></h1>
    <p className="muted"><span className="desktop-compare-copy">V1 keeps comparisons apples-to-apples: ETF vs ETF, Mutual Fund vs Mutual Fund, or GIC vs GIC. Choose the first product and the remaining selectors stay within that type.</span><span className="mobile-compare-copy">Choose one product type, then compare two or three similar investments.</span></p>
 
    {loading?<p>Loading comparison tools…</p>:<ComparisonPicker items={items.filter(item=>isPublicV1AssetType(item.asset_type))} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
@@ -151,7 +151,7 @@ function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dna
   {metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
   {item.credit_exposure&&<div className="compare-metric"><span>Credit exposure</span><strong>{pretty(item.credit_exposure)}</strong></div>}
   {item.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(item.time_structure)}</strong></div>}
-  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':'Why this ETF may fit'}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
+  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':`Why this ${assetLabel(item.asset_type)} may fit`}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   <Link className="btn" href={`/investment/${item.id}`}>Open research</Link>
  </article>;
