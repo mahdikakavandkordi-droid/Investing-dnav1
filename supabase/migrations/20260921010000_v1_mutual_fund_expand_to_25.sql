@@ -43,7 +43,7 @@ upserted as (
  )
  select
    f.symbol,f.name,f.name,'MUTUAL_FUND',iss.id,f.category,f.subcategory,f.strategy,f.region,
-   'CA','CAD','FUND',f.display_name,true,false,'verified_partial',f.display_name
+   'CA','CAD','FUND',f.strategy,true,false,'verified_partial',f.display_name
  from fund f
  join public.investment_issuers iss on iss.name=f.issuer_name
  on conflict(symbol,exchange) do update set
