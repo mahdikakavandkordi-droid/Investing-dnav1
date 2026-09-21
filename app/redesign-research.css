@@ -251,3 +251,14 @@
 .compare-card-mutual_fund:before{background:#6f97c7}
 .compare-card-gic:before{background:#e8c85d}
 .compare-card-mutual_fund .pill:first-child{background:#e8f0fb;color:#456b99}
+
+.compare-gic-curve{margin:14px 0 4px;padding:13px;border-radius:13px;background:#fffdf5;border:1px solid #eee8cb}
+.compare-gic-curve>strong{display:block;font-size:11px;color:#735d10;margin-bottom:9px}
+.compare-gic-curve>div{display:flex;flex-wrap:wrap;gap:7px}
+.compare-gic-curve>div span{display:grid;gap:2px;min-width:64px;padding:7px 8px;border-radius:9px;background:#fff;color:#6e7880;font-size:9px}
+.compare-gic-curve>div b{font-size:10px;color:#806812}
+.compare-gic-curve small{display:block;margin-top:8px;font-size:9px;color:#8a8f88}
+@media(max-width:560px){
+ .compare-gic-curve>div{display:grid;grid-template-columns:repeat(2,1fr)}
+ .compare-gic-curve>div span{min-width:0}
+}
