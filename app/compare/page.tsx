@@ -169,6 +169,7 @@ function GicCompareFacts({item}:{item:Instrument}){
   <div className="compare-metric"><span>Access</span><strong>{pretty(item.redeemability)}</strong></div>
   <div className="compare-metric"><span>Minimum deposit</span><strong>{minimum}</strong></div>
   <div className="compare-metric"><span>Deposit insurance</span><strong>{insurance}</strong></div>
+  {item.deposit_as_of_date&&<div className="compare-metric"><span>Terms sourced</span><strong>{formatDate(item.deposit_as_of_date)}</strong></div>}
   {options.length>0&&<div className="compare-gic-curve">
    <strong>Term options</strong>
    <div>{options.slice(0,5).map(option=><span key={option.option_key}><b>{termLabel(option.term_months)}</b>{option.annual_rate_pct==null?'Check issuer':formatMetric(option.annual_rate_pct,'%')}</span>)}</div>
@@ -195,6 +196,10 @@ function displayValue(item:Instrument,key:string,suffix='',digits=2){
  if(raw===null||raw===undefined||raw==='')return '—';
  if(typeof raw==='number')return formatMetric(raw,suffix,digits);
  return pretty(raw);
+}
+function formatDate(value:string){
+ const parsed=new Date(value+'T00:00:00Z');
+ return Number.isNaN(parsed.valueOf())?value:new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(parsed);
 }
 function termLabel(months:number){
  if(months%12===0)return `${months/12}Y`;
