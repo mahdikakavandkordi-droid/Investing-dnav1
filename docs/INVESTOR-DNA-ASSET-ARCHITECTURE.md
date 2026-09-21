@@ -24,6 +24,8 @@ The database can retain previously researched T-Bills, individual bonds, commerc
 
 The curated V1 mutual-fund universe currently contains **25 Series-specific products** across RBC GAM, TD Asset Management, Fidelity Canada, Mackenzie Investments and BMO GAM. Research visibility does not imply Match eligibility: funds with incomplete official risk, structure or suitability evidence remain research-only / review-required until those prerequisites are verified.
 
+The curated V1 GIC universe uses **14 product-family cards across 7 deposit issuers**: RBC, TD, BMO, CIBC, Scotiabank, National Bank and Tangerine. A family card can contain multiple source-dated term options instead of duplicating the same product into separate 1-year, 2-year, 3-year, 4-year and 5-year cards. Market-linked GICs are intentionally excluded from V1 because their payoff structures are not directly comparable with conventional fixed-rate/cashable GICs.
+
 Individual stocks remain out of scope. They require a separate company-level Stock DNA model.
 
 ## 3. Asset mix is not product mix
@@ -51,6 +53,8 @@ V1 Compare is intentionally same-type only:
 - ETF ↔ ETF
 - Mutual Fund ↔ Mutual Fund
 - GIC ↔ GIC
+
+For GICs, Compare emphasizes rate range, term range, redeemability, minimum deposit, deposit-insurance eligibility and the available term curve. It does not create a DNA Match score.
 
 The first selected product determines the available products in the second and third selectors. Cross-type Compare is rejected rather than silently mixing non-comparable metrics.
 
@@ -124,7 +128,7 @@ Mutual-fund dealing/series facts live in `investment_mutual_fund_terms`:
 - capital-gains distribution frequency
 - source + as-of date
 
-GIC terms remain in `investment_deposit_terms`.
+GIC summary terms remain in `investment_deposit_terms`. Multi-term family curves live in `investment_deposit_term_options`, including term, source-dated rate when verified, redeemability, minimum, registered-account eligibility, rate basis and issuer source. If an issuer publishes a live rate dynamically and the numeric value has not been verified, the stored rate remains null and the UI shows **Check issuer** rather than inferring a number.
 
 ## 7. Mutual-fund series rule
 
@@ -170,6 +174,8 @@ Product type should remain visually recognizable across Explore, Detail, Compare
 - ETF — existing teal identity.
 - Mutual Fund — dedicated blue identity.
 - GIC — existing gold identity.
+
+GIC cards represent product families, not isolated term rows. Explore summarizes the available rate/term range; Detail exposes the full source-dated term curve.
 
 The color is a navigation aid, not a risk signal.
 
