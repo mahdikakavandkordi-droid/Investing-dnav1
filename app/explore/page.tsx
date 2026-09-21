@@ -148,6 +148,9 @@ function InvestmentCard({item}:{item:Instrument}){
   {item.market_price_date&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<p className="investment-card-market-date">
    {item.asset_type==='MUTUAL_FUND'?'NAV updated':'Price updated after close'} · {formatMarketDate(item.market_price_date)}
   </p>}
+  {item.asset_type==='GIC'&&item.deposit_as_of_date&&<p className="investment-card-market-date">
+   Rates/terms sourced · {formatMarketDate(item.deposit_as_of_date)}
+  </p>}
 
   <div className="investment-card-footer">
    <span>{canMatch?'DNA Match available':'Structural research'}</span>
