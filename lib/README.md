@@ -71,3 +71,5 @@ If a helper is used by more than one page and encodes a domain decision, move it
 Do not keep parallel `foo-v2.ts`, `foo-old.ts`, `foo-backup.ts` or `foo-final.ts` implementations. Replace callers, delete the obsolete file, and rely on Git history. Numbered versions are appropriate only when the version itself is part of a persisted/reproducible product contract such as questionnaire/scoring/Match versions.
 
 See `docs/ARCHITECTURE.md` and `docs/ENGINEERING-GUIDE.md`.
+### `instrument-card.ts`
+Selects one coherent GIC term for catalog display: featured issuer option first, otherwise shortest term. Rate, access, minimum and source date remain tied to that option; missing rates are not borrowed from another term. Catalog metric selection lives separately from detail metrics in `instrument-model.ts`.

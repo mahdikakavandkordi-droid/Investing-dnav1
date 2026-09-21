@@ -101,7 +101,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  assert.match(await mfCard.innerText(),/1\.94%/);
  assert.match(await mfCard.innerText(),/NAV updated/i);
 
- await Promise.all([page.waitForURL(`**/investment/${ids.mf}`),mfCard.getByRole('link',{name:'Open research',exact:true}).click()]);
+ await Promise.all([page.waitForURL(`**/investment/${ids.mf}`),mfCard.getByRole('link',{name:/View details for/}).click()]);
  await page.getByRole('button',{name:'Fund profile & fees',exact:true}).click();
  text=await page.locator('body').innerText();
  assert.match(text,/Series A/);
@@ -147,7 +147,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  const gicCard=page.locator('.investment-card-gic').filter({hasText:'BMO-GIC-NR'});
  assert.match(await gicCard.innerText(),/2\.70%–3\.10%/);
  assert.match(await gicCard.innerText(),/1 year–5 years/);
- await Promise.all([page.waitForURL(`**/investment/${ids.gic}`),gicCard.getByRole('link',{name:'Open research',exact:true}).click()]);
+ await Promise.all([page.waitForURL(`**/investment/${ids.gic}`),gicCard.getByRole('link',{name:/View details for/}).click()]);
  await page.getByRole('button',{name:'Structure & terms',exact:true}).click();
  text=await page.locator('body').innerText();
  assert.match(text,/Available terms/);assert.match(text,/2\.70%/);assert.match(text,/3\.10%/);assert.match(text,/5 years/);assert.match(text,/CDIC/);
