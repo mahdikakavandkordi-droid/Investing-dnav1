@@ -242,7 +242,7 @@ assert.match(contextSource,/context-experience-art/);
 assert.match(profileUiSource,/dashboard-reference-shell/);
 assert.match(dnaSummarySource,/Part 1 · Your Investor DNA/);
 const homeAssetRailSource=readFileSync(new URL('../components/HomeAssetRail.tsx',import.meta.url),'utf8');
-assert.match(homeAssetRailSource,/searchInstruments\\(\\{limit:250\\}\\)/);
+assert.match(homeAssetRailSource,/searchInstruments\(\{limit:250\}\)/);
 assert.match(homeAssetRailSource,/ETF/);
 assert.match(homeAssetRailSource,/MUTUAL_FUND/);
 assert.match(homeAssetRailSource,/GIC/);
