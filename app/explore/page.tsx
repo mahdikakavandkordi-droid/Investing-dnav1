@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {searchInstruments} from '@/lib/instruments';
+import {instrumentDisplayName,searchInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {
  EXPLORE_TABS,
@@ -41,7 +41,7 @@ export default function Explore(){
   return items.filter(item=>{
    if(!inExploreTab(item.asset_type,tab))return false;
    if(!needle)return true;
-   const haystack=[item.symbol,item.name,item.issuer_name,assetLabel(item.asset_type),item.profile_summary,item.description]
+   const haystack=[item.symbol,item.display_name,item.name,item.issuer_name,assetLabel(item.asset_type),item.profile_summary,item.description]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -131,7 +131,7 @@ function InvestmentCard({item}:{item:Instrument}){
   </div>
 
   <div className="investment-card-copy">
-   <h2>{item.name}</h2>
+   <h2>{instrumentDisplayName(item)}</h2>
    {item.issuer_name&&<p className="investment-card-issuer">{item.issuer_name}</p>}
    <p>{item.profile_summary||item.description||'Research profile available.'}</p>
   </div>
