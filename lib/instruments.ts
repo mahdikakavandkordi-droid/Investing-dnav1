@@ -124,6 +124,7 @@ export type SavedInstrument={
  investment_id:string;
  symbol:string;
  name:string;
+ display_name?:string|null;
  note?:string;
  created_at?:string;
 };
