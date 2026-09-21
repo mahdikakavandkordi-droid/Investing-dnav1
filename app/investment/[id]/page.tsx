@@ -3,7 +3,7 @@
 import {useEffect,useState} from 'react';
 import {useParams} from 'next/navigation';
 import Link from 'next/link';
-import {getInstrument,hasFriendlyDisplayName,instrumentDisplayName} from '@/lib/instruments';
+import {gicRateRange,gicTermRange,getInstrument,hasFriendlyDisplayName,instrumentDisplayName} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {
  investmentDna,
@@ -86,10 +86,12 @@ function PageShell({children}:{children:React.ReactNode}){
 }
 
 function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:InvestmentDna|null;facts:OfficialFundFacts|null;research:ResearchContext|null}){
- const metrics=heroMetrics(item.asset_type)
-  .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
-  .filter(metric=>metric.value!==null)
-  .slice(0,4);
+ const metrics=item.asset_type==='GIC'
+  ? gicDetailMetrics(item)
+  : heroMetrics(item.asset_type)
+    .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
+    .filter(metric=>metric.value!==null)
+    .slice(0,4);
  const isFund=usesFundResearch(item.asset_type);
  const freshness=item.fixed_income_as_of_date||item.deposit_as_of_date||item.metrics_as_of_date||item.structure_as_of_date;
 
