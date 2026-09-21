@@ -250,11 +250,14 @@ export function gicTermRange(item:Pick<Instrument,'deposit_term_options'|'term_m
 }
 
 export function gicRateRange(item:Pick<Instrument,'deposit_term_options'|'deposit_rate_pct'>){
- const rates=depositTermOptions(item).map(option=>option.annual_rate_pct).filter((value):value is number=>typeof value==='number'&&Number.isFinite(value)).sort((a,b)=>a-b);
+ const options=depositTermOptions(item);
+ const rates=options.map(option=>option.annual_rate_pct).filter((value):value is number=>typeof value==='number'&&Number.isFinite(value)).sort((a,b)=>a-b);
  if(!rates.length&&typeof item.deposit_rate_pct==='number')return formatRate(item.deposit_rate_pct);
  if(!rates.length)return null;
  const min=rates[0],max=rates[rates.length-1];
- return Math.abs(max-min)<0.0001?formatRate(min):`${formatRate(min)}–${formatRate(max)}`;
+ const range=Math.abs(max-min)<0.0001?formatRate(min):`${formatRate(min)}–${formatRate(max)}`;
+ const incomplete=options.length>rates.length;
+ return incomplete?`${range} verified · others live`:range;
 }
 
 function formatTerm(months:number){
