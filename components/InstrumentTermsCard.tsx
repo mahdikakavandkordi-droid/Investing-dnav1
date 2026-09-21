@@ -1,4 +1,4 @@
-import type {Instrument} from '@/lib/instruments';
+import type {DepositTermOption,Instrument} from '@/lib/instruments';
 import {assetTypeOf} from '@/lib/instrument-model';
 import {formatMetric} from '@/lib/investments';
 
@@ -46,14 +46,32 @@ function DepositTerms({instrument}:{instrument:Instrument}){
   instrument.deposit_insurance_eligible!==null&&instrument.deposit_insurance_eligible!==undefined?{label:'Deposit insurance',value:depositInsuranceLabel(instrument)}:null
  ].filter((row):row is {label:string;value:string}=>!!row);
 
+ const options=Array.isArray(instrument.deposit_term_options)?instrument.deposit_term_options:[];
  return <section className="card instrument-terms-v2">
   <div className="eyebrow">Deposit terms</div>
   <h2>Rate, access and protection</h2>
   <div className="terms-grid-v2">{rows.map(row=><Row key={row.label} {...row}/>)}</div>
-  {rows.length<4&&<p className="fine muted">Limited term coverage is available for this research profile. Missing optional fields are hidden.</p>}
+  {options.length>0&&<GicTermCurve options={options}/>}
+  {rows.length<4&&options.length===0&&<p className="fine muted">Limited term coverage is available for this research profile. Missing optional fields are hidden.</p>}
   {instrument.lockup_note&&<p className="terms-note-v2">{instrument.lockup_note}</p>}
   <SourceLine url={instrument.deposit_source_url} name={instrument.deposit_source_name||'Official issuer'} asOf={instrument.deposit_as_of_date}/>
  </section>;
+}
+
+function GicTermCurve({options}:{options:DepositTermOption[]}){
+ const sorted=[...options].sort((a,b)=>a.term_months-b.term_months);
+ return <div className="gic-term-curve-v2">
+  <div className="gic-term-curve-head"><strong>Available terms</strong><span>Source-dated issuer rates</span></div>
+  <div className="gic-term-curve-grid" role="table" aria-label="GIC term options">
+   {sorted.map(option=><div className="gic-term-option" role="row" key={option.option_key}>
+    <span role="cell">{formatTermMonths(option.term_months)}</span>
+    <strong role="cell">{option.annual_rate_pct==null?'Check issuer':formatMetric(option.annual_rate_pct,'%')}</strong>
+    <span role="cell">{pretty(option.redeemability)}</span>
+    {option.minimum_deposit!=null&&<span role="cell">{new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(option.minimum_deposit)} min</span>}
+   </div>)}
+  </div>
+  {sorted.some(option=>option.special_terms)&&<p className="fine muted gic-term-note">{sorted.find(option=>option.is_featured&&option.special_terms)?.special_terms||sorted.find(option=>option.special_terms)?.special_terms}</p>}
+ </div>;
 }
 
 function FixedIncomeTerms({instrument,type}:{instrument:Instrument;type:string}){
@@ -94,6 +112,10 @@ function creditRatingLabel(instrument:Instrument){
 }
 function pretty(value:unknown){
  return String(value).replaceAll('_',' ').replace(/\b\w/g,char=>char.toUpperCase());
+}
+function formatTermMonths(months:number){
+ if(months%12===0)return `${months/12} ${months===12?'year':'years'}`;
+ return months<12?`${months} months`:`${months/12} years`;
 }
 function formatDate(value?:string|null){
  if(!value)return '';
