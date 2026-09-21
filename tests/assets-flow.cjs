@@ -8,14 +8,26 @@ const ids={
  etf:'11111111-1111-4111-8111-111111111111',
  mf:'22222222-2222-4222-8222-222222222222',
  mf2:'33333333-3333-4333-8333-333333333333',
- gic:'44444444-4444-4444-8444-444444444444'
+ gic:'44444444-4444-4444-8444-444444444444',
+ gic2:'55555555-5555-4555-8555-555555555555'
 };
 const common={capital_protection:'none',liquidity_level:'high',income_predictability:'medium',diversification_level:'diversified',complexity_level:'medium',time_structure:'open_ended',structure_model_version:'structure-v1',structure_as_of_date:'2026-09-18'};
 const etf={...common,id:ids.etf,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',display_name:'Balanced All-in-One Portfolio',asset_type:'ETF',issuer_name:'Vanguard Canada',price:35.2,return_1y_pct:13.89,mer_pct:.22,risk_level:'Low to Medium',price_volatility:'low',growth_participation:'medium',interest_rate_sensitivity:'medium',profile_summary:'Diversified ETF research example.'};
 const mf={...common,id:ids.mf,symbol:'RBF460',name:'RBC Select Balanced Portfolio - Series A',display_name:'Balanced Global Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:38.81,return_1y_pct:17.5,return_3y_annualized_pct:13.3,return_5y_annualized_pct:7,mer_pct:1.94,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF460',cifsc_category:'Global Neutral Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Annually',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf460',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:60,fixed_income:38,cash:2},profile_summary:'Balanced mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
 const mf2={...common,id:ids.mf2,symbol:'RBF461',name:'RBC Select Conservative Portfolio - Series A',display_name:'Conservative Global Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:26.53,return_1y_pct:12.2,return_3y_annualized_pct:10,return_5y_annualized_pct:5,mer_pct:1.70,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF461',cifsc_category:'Global Fixed Income Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Quarterly',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf461',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:40,fixed_income:58,cash:2},profile_summary:'Conservative mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
-const gic={...common,id:ids.gic,symbol:'RBC-GIC-1Y-NR',name:'RBC 1-Year Non-Redeemable GIC',asset_type:'GIC',issuer_name:'Royal Bank of Canada',capital_protection:'insured_deposit',liquidity_level:'locked',price_volatility:'none',income_predictability:'very_high',time_structure:'locked_term',deposit_rate_pct:2.45,term_months:12,redeemability:'non_redeemable',minimum_deposit:1000,interest_payment_frequency:'At maturity',registered_account_eligibility:['TFSA','RRSP'],deposit_insurance_scheme:'CDIC',deposit_insurance_eligible:true,deposit_source_name:'RBC Royal Bank',deposit_source_url:'https://example.test/rbc',deposit_as_of_date:'2026-09-11',profile_summary:'Fixed-rate deposit research example.'};
-const catalog=[etf,mf,mf2,gic];
+const gic={...common,id:ids.gic,symbol:'BMO-GIC-NR',name:'BMO Guaranteed Investment Certificate',display_name:'BMO Non-Cashable GIC',asset_type:'GIC',issuer_name:'Bank of Montreal',capital_protection:'insured_deposit',liquidity_level:'locked',price_volatility:'none',income_predictability:'very_high',time_structure:'locked_term',deposit_rate_pct:2.70,term_months:12,redeemability:'non_redeemable',minimum_deposit:1000,interest_payment_frequency:'Annual / annual compound',registered_account_eligibility:['TFSA','RRSP','FHSA'],deposit_insurance_scheme:'CDIC',deposit_insurance_eligible:true,deposit_source_name:'BMO',deposit_source_url:'https://example.test/bmo',deposit_as_of_date:'2026-09-20',profile_summary:'Fixed-rate guaranteed deposit with multiple terms.',deposit_term_options:[
+ {option_key:'12m',term_months:12,annual_rate_pct:2.70,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20',is_featured:true},
+ {option_key:'24m',term_months:24,annual_rate_pct:2.75,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20'},
+ {option_key:'36m',term_months:36,annual_rate_pct:2.85,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20'},
+ {option_key:'48m',term_months:48,annual_rate_pct:3.00,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20'},
+ {option_key:'60m',term_months:60,annual_rate_pct:3.10,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20'}
+]};
+const gic2={...common,id:ids.gic2,symbol:'RBC-GIC-NR',name:'RBC Non-Redeemable GIC',display_name:'RBC Non-Redeemable GIC',asset_type:'GIC',issuer_name:'Royal Bank of Canada',capital_protection:'insured_deposit',liquidity_level:'locked',price_volatility:'none',income_predictability:'very_high',time_structure:'locked_term',deposit_rate_pct:2.45,term_months:12,redeemability:'non_redeemable',minimum_deposit:null,interest_payment_frequency:'Annual / maturity',registered_account_eligibility:['TFSA','RRSP'],deposit_insurance_scheme:'CDIC',deposit_insurance_eligible:true,deposit_source_name:'RBC Royal Bank',deposit_source_url:'https://example.test/rbc',deposit_as_of_date:'2026-09-17',profile_summary:'Fixed-rate guaranteed deposit.',deposit_term_options:[
+ {option_key:'12m',term_months:12,annual_rate_pct:2.45,rate_type:'fixed',redeemability:'non_redeemable',source_name:'RBC Royal Bank',source_url:'https://example.test/rbc',as_of_date:'2026-09-17',is_featured:true},
+ {option_key:'24m',term_months:24,annual_rate_pct:2.55,rate_type:'fixed',redeemability:'non_redeemable',source_name:'RBC Royal Bank',source_url:'https://example.test/rbc',as_of_date:'2026-09-17'},
+ {option_key:'60m',term_months:60,annual_rate_pct:2.75,rate_type:'fixed',redeemability:'non_redeemable',source_name:'RBC Royal Bank',source_url:'https://example.test/rbc',as_of_date:'2026-09-17'}
+]};
+const catalog=[etf,mf,mf2,gic,gic2];
 
 const dnaFor=item=>item.asset_type==='MUTUAL_FUND'?{
  investment_id:item.id,symbol:item.symbol,name:item.name,asset_type:item.asset_type,risk_band:item.risk_level,official_risk_rating:item.risk_level,
@@ -71,7 +83,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  await page.getByRole('heading',{name:'Balanced Global Portfolio',exact:true}).waitFor();
  let text=await page.locator('body').innerText();
  assert.match(text,/Balanced Global Portfolio/);
- assert.match(text,/RBC 1-Year Non-Redeemable GIC/);
+ assert.match(text,/BMO Non-Cashable GIC/);
  check('Explore is focused on ETF, Mutual Fund and GIC only');
 
  await page.getByRole('tab',{name:'Mutual Funds',exact:true}).click();
@@ -116,12 +128,26 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
 
  await page.goto(origin+'/explore');
  await page.getByRole('tab',{name:'GICs',exact:true}).click();
- const gicCard=page.locator('.investment-card-gic').filter({hasText:'RBC-GIC-1Y-NR'});
+ const gicCard=page.locator('.investment-card-gic').filter({hasText:'BMO-GIC-NR'});
+ assert.match(await gicCard.innerText(),/2\.70%–3\.10%/);
+ assert.match(await gicCard.innerText(),/1 year–5 years/);
  await Promise.all([page.waitForURL(`**/investment/${ids.gic}`),gicCard.getByRole('link',{name:'Open research',exact:true}).click()]);
  await page.getByRole('button',{name:'Structure & terms',exact:true}).click();
  text=await page.locator('body').innerText();
- assert.match(text,/2\.45%/);assert.match(text,/12 months/);assert.match(text,/CDIC/);
- check('GIC remains a focused terms-and-protection research path');
+ assert.match(text,/Available terms/);assert.match(text,/2\.70%/);assert.match(text,/3\.10%/);assert.match(text,/5 years/);assert.match(text,/CDIC/);
+ check('GIC family detail exposes a source-dated multi-term curve');
+
+ await page.goto(origin+`/compare?ids=${ids.gic}`);
+ await page.getByRole('heading',{name:/Compare GICs/i}).waitFor();
+ const gicSelectors=page.locator('.compare-picker select');
+ await gicSelectors.nth(1).selectOption(ids.gic2);
+ const gicOptions=await gicSelectors.nth(1).locator('option').allTextContents();
+ assert.ok(gicOptions.every(x=>!x.includes('VBAL')&&!x.includes('RBF460')));
+ await page.getByRole('button',{name:'Compare investments',exact:true}).click();
+ await page.getByRole('heading',{name:gic2.display_name,exact:true}).waitFor();
+ text=await page.locator('body').innerText();
+ assert.match(text,/Rate range/);assert.match(text,/Term range/);assert.match(text,/Term options/);assert.match(text,/2\.70%–3\.10%/);
+ check('GIC Compare stays same-type and compares family term curves');
 
  await page.screenshot({path:path.join(artifacts,'v1-focused-assets-mobile.png'),fullPage:true});
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
