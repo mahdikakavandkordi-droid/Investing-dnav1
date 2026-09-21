@@ -162,7 +162,7 @@ function InvestmentCard({item}:{item:Instrument}){
 function gicCardMetrics(item:Instrument){
  const option=gicCardOption(item);
  const term=option.term==null?null:option.term%12===0?`${option.term/12}-year`:`${option.term}-month`;
- const rate=typeof option.rate==='number'&&Number.isFinite(option.rate)?formatMetric(option.rate,'%'):null;
+ const rate=typeof option.rate==='number'&&Number.isFinite(option.rate)?new Intl.NumberFormat('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2}).format(option.rate)+'%':null;
  return [
   {key:'gic-rate',label:term?`${term} annual rate`:'Annual rate',value:term?(rate||'Check issuer'):null},
   {key:'gic-access',label:'Early access',value:option.access==='non_redeemable'?'Locked until maturity':option.access?pretty(option.access):null},
