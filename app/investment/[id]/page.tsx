@@ -232,6 +232,16 @@ function FundResearchDetails({item,facts}:{item:Instrument;facts:OfficialFundFac
  </section>;
 }
 
+function gicDetailMetrics(item:Instrument):{key:string;label:string;value:string}[]{
+ const minimum=item.minimum_deposit==null?null:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ return [
+  {key:'gic-rate-range',label:'Rates',value:gicRateRange(item)||'Check issuer'},
+  {key:'gic-term-range',label:'Terms',value:gicTermRange(item)},
+  {key:'gic-access',label:'Access',value:item.redeemability?pretty(item.redeemability):null},
+  {key:'gic-minimum',label:'Minimum',value:minimum}
+ ].filter((metric):metric is {key:string;label:string;value:string}=>metric.value!==null).slice(0,4);
+}
+
 function metricValue(item:Instrument,key:string,suffix='',digits=2):string|null{
  const raw=(item as unknown as Record<string,unknown>)[key];
  if(raw===null||raw===undefined||raw==='')return null;
