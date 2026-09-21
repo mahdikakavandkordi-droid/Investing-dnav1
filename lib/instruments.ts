@@ -192,7 +192,7 @@ export async function searchInstruments(args:{assetType?:string|null;search?:str
  const items=await rpc<Instrument[]>('app_search_instruments',{
   p_asset_type:args.assetType??null,
   p_search:args.search??null,
-  p_limit:args.limit??100,
+  p_limit:args.limit??250,
  });
  const statuses=await marketDataStatus(items.map(item=>item.id)).catch(()=>[]);
  return mergeMarketData(items,statuses);
