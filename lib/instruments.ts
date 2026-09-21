@@ -16,6 +16,7 @@ import type {Investment} from '@/lib/types';
 export type Instrument=Investment&{
  // Identity / generic research fields.
  legal_name?:string|null;
+ display_name?:string|null;
  subcategory?:string|null;
  strategy?:string|null;
  sector?:string|null;
@@ -201,4 +202,16 @@ export function saveInstrument(id:string){
 
 export function removeInstrument(id:string){
  return rpc<{removed:boolean}>('app_watchlist',{p_action:'remove',p_investment_id:id});
+}
+
+
+/** User-facing descriptive name; official product name remains on `name`. */
+export function instrumentDisplayName(item:Pick<Instrument,'name'|'display_name'>){
+ const friendly=item.display_name?.trim();
+ return friendly||item.name;
+}
+
+export function hasFriendlyDisplayName(item:Pick<Instrument,'name'|'display_name'>){
+ const friendly=item.display_name?.trim();
+ return !!friendly&&friendly!==item.name;
 }
