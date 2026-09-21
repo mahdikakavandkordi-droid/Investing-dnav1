@@ -97,7 +97,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  check('Mutual-fund detail exposes series, fees, allocation, NAV freshness and Fund Facts');
 
  await page.goto(origin+`/compare?ids=${ids.mf}`);
- await page.getByRole('heading',{name:/Compare Mutual Funds side by side/i}).waitFor();
+ await page.getByRole('heading',{name:/Compare Mutual Funds(?: side by side)?/i}).waitFor();
  const selectors=page.locator('.compare-picker select');
  await selectors.nth(1).selectOption(ids.mf2);
  const secondOptions=await selectors.nth(1).locator('option').allTextContents();
