@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as d from '../lib/dna.ts';
+import {gicCardOption} from '../lib/instrument-card.ts';
 import {buildPortfolioBlueprint} from '../lib/portfolio-blueprint.ts';
 
 const data=new Map();
@@ -285,3 +286,12 @@ const brandMarkSource=readFileSync(new URL('../components/BrandMark.tsx',import.
 assert.match(brandMarkSource,/investing-dna-lockup\.png/);
 
 console.log('PASS assessment envelope, session-only guest result recovery, complete-context semantics, scale options, missing versus zero score, guest isolation, narrow questionnaire DTO, explicit Magic Link callback hygiene, retake reset, cognitive research-code continuity, dashboard Match fallback, clean DNA matrix highlighting, payload-level Match redaction wiring, and approved scenic front-end journey contracts');
+const term=(option_key,term_months,annual_rate_pct,is_featured=false)=>({option_key,term_months,annual_rate_pct,is_featured,redeemability:'non_redeemable',minimum_deposit:1000,as_of_date:'2026-09-20'});
+const shortTerm=term('short',12,2.5),longTerm=term('long',60,5);
+assert.equal(gicCardOption({deposit_term_options:[longTerm,shortTerm]}).term,12);
+assert.equal(gicCardOption({deposit_term_options:[shortTerm,{...longTerm,is_featured:true}]}).rate,5);
+const missingRate=gicCardOption({deposit_term_options:[{...shortTerm,annual_rate_pct:null}],deposit_rate_pct:9});
+assert.equal(missingRate.rate,null); // Never borrow another term's rate.
+assert.equal(missingRate.term,12);
+assert.equal(gicCardOption({deposit_term_options:[shortTerm,longTerm]}).more,true);
+console.log('PASS GIC cards keep rate, term, access and minimum together without highest-rate selection');

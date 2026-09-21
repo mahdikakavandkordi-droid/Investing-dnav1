@@ -124,13 +124,13 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
   <div className="detail-flow-v2">
    {isFund
     ? <>
-      <ResearchDisclosure title={item.asset_type==='MUTUAL_FUND'?'Fund profile & fees':'Fund DNA & fees'}>
+      <ResearchDisclosure title="Fund profile & fees">
        {facts&&<OfficialFundFactsCard facts={facts} assetType={item.asset_type}/>}
        {item.asset_type==='MUTUAL_FUND'&&<InstrumentTermsCard instrument={item}/>}
        {dna&&<InvestmentDnaCard dna={dna}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title={item.asset_type==='GIC'?'Risk & protection':'Risk'}>
-       {item.asset_type==='GIC'&&<GicRiskSummary item={item}/>}
+      <ResearchDisclosure title="Risk">
+
        <ProductRiskCard investmentId={item.id}/>
       </ResearchDisclosure>
       <ResearchDisclosure title="Performance & holdings">
@@ -145,11 +145,12 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
       </ResearchDisclosure>
      </>
     : <>
-      <ResearchDisclosure title="Structure & terms">
-       <InstrumentStructureCard instrument={item}/>
+      <ResearchDisclosure title="Rate & access">
        <InstrumentTermsCard instrument={item}/>
+       <details className="investment-dna-methodology"><summary>Investment structure explained</summary><InstrumentStructureCard instrument={item}/></details>
       </ResearchDisclosure>
-      <ResearchDisclosure title="Risk">
+      <ResearchDisclosure title="Risk & protection">
+       {item.asset_type==='GIC'&&<GicRiskSummary item={item}/>}
        <ProductRiskCard investmentId={item.id}/>
       </ResearchDisclosure>
       <ResearchDisclosure title="Save for later">

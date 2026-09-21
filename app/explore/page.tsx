@@ -2,12 +2,13 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments} from '@/lib/instruments';
+import {instrumentDisplayName,searchInstruments} from '@/lib/instruments';
+import {gicCardOption} from '@/lib/instrument-card';
 import type {Instrument} from '@/lib/instruments';
 import {
  EXPLORE_TABS,
  assetLabel,
- heroMetrics,
+ catalogMetrics,
  inExploreTab,
  matchEligible
 } from '@/lib/instrument-model';
@@ -117,11 +118,12 @@ function ExploreTabs({selected,onSelect}:{selected:ExploreTab;onSelect:(tab:Expl
 function InvestmentCard({item}:{item:Instrument}){
  const metrics=item.asset_type==='GIC'
   ? gicCardMetrics(item)
-  : heroMetrics(item.asset_type)
+  : catalogMetrics(item.asset_type)
     .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
     .filter(metric=>metric.value!==null)
     .slice(0,3);
  const canMatch=matchEligible(item.asset_type);
+ const deposit=item.asset_type==='GIC'?gicCardOption(item):null;
 
  return <article className={"investment-card-v2 investment-card-"+String(item.asset_type||"unknown").toLowerCase()}>
   <div className="investment-card-top">
@@ -134,6 +136,7 @@ function InvestmentCard({item}:{item:Instrument}){
 
   <div className="investment-card-copy">
    <h2>{instrumentDisplayName(item)}</h2>
+   {item.asset_type==='MUTUAL_FUND'&&item.series_name&&<p className="investment-card-issuer">Series: {item.series_name}</p>}
    {item.issuer_name&&<p className="investment-card-issuer">{item.issuer_name}</p>}
    <p>{item.profile_summary||item.description||'Research profile available.'}</p>
   </div>
@@ -145,30 +148,26 @@ function InvestmentCard({item}:{item:Instrument}){
    </div>)}
   </div>}
 
-  {item.market_price_date&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<p className="investment-card-market-date">
-   {item.asset_type==='MUTUAL_FUND'?'NAV updated':'Price updated after close'} · {formatMarketDate(item.market_price_date)}
-  </p>}
-  {item.asset_type==='GIC'&&item.deposit_as_of_date&&<p className="investment-card-market-date">
-   Rates/terms sourced · {formatMarketDate(item.deposit_as_of_date)}
-  </p>}
+  {(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&item.metrics_as_of_date&&<p className="investment-card-market-date">Fund metrics as of {formatMarketDate(item.metrics_as_of_date)}</p>}
+  {deposit?.date&&<p className="investment-card-market-date">Rates/terms sourced · {formatMarketDate(deposit.date)}</p>}
+  {deposit?.more&&<p className="investment-card-market-date">One term shown · more terms in details</p>}
 
   <div className="investment-card-footer">
-   <span>{canMatch?'DNA Match available':'Structural research'}</span>
-   <Link aria-label="Open research" href={'/investment/'+item.id}>Open research →</Link>
+   <span>{canMatch?'Personal fit available':'Rate and access details'}</span>
+   <Link aria-label={`View details for ${instrumentDisplayName(item)}`} href={'/investment/'+item.id}>View details →</Link>
   </div>
  </article>;
 }
 
 function gicCardMetrics(item:Instrument){
- const rate=gicRateRange(item);
- const term=gicTermRange(item);
- const minimum=item.minimum_deposit==null?null:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ const option=gicCardOption(item);
+ const term=option.term==null?null:option.term%12===0?`${option.term/12}-year`:`${option.term}-month`;
+ const rate=typeof option.rate==='number'&&Number.isFinite(option.rate)?new Intl.NumberFormat('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2}).format(option.rate)+'%':null;
  return [
-  {key:'gic-rate',label:'Rates',value:rate||'See issuer'},
-  {key:'gic-term',label:'Terms',value:term},
-  {key:'gic-access',label:'Access',value:item.redeemability?pretty(item.redeemability):null},
-  {key:'gic-minimum',label:'Minimum',value:minimum}
- ].filter(metric=>metric.value!==null).slice(0,3) as {key:string;label:string;value:string}[];
+  {key:'gic-rate',label:term?`${term} annual rate`:'Annual rate',value:term?(rate||'Check issuer'):null},
+  {key:'gic-access',label:'Early access',value:option.access==='non_redeemable'?'Locked until maturity':option.access?pretty(option.access):null},
+  {key:'gic-minimum',label:'Minimum deposit',value:option.minimum==null?null:new Intl.NumberFormat('en-CA',{style:'currency',currency:item.currency||'CAD',maximumFractionDigits:0}).format(option.minimum)}
+ ].filter(metric=>metric.value!==null) as {key:string;label:string;value:string}[];
 }
 
 function CatalogError({error,onRetry}:{error:string;onRetry:()=>void}){
@@ -190,6 +189,7 @@ function EmptyCategory({query}:{query:string}){
 function metricValue(item:Instrument,key:string,suffix='',digits=2):string|null{
  const raw=(item as unknown as Record<string,unknown>)[key];
  if(raw===null||raw===undefined||raw==='')return null;
+ if(key==='minimum_initial_investment'&&typeof raw==='number')return new Intl.NumberFormat('en-CA',{style:'currency',currency:item.currency||'CAD',maximumFractionDigits:0}).format(raw);
  if(typeof raw==='number')return formatMetric(raw,suffix,digits);
  return pretty(raw);
 }

@@ -257,7 +257,7 @@ export function gicRateRange(item:Pick<Instrument,'deposit_term_options'|'deposi
  const min=rates[0],max=rates[rates.length-1];
  const range=Math.abs(max-min)<0.0001?formatRate(min):`${formatRate(min)}–${formatRate(max)}`;
  const incomplete=options.length>rates.length;
- return incomplete?`${range} verified · others live`:range;
+ return incomplete?`${range} sourced · other rates unavailable`:range;
 }
 
 function formatTerm(months:number){

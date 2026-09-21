@@ -16,6 +16,8 @@ All 28 question IDs, ordering, score mappings, weights, dimensions, capacity gua
 
 Name and age are independently optional before the result. An entered age must be an integer from 18 to 100; an omitted age is absent, never a synthetic zero. Name-only profiles can continue through the optional report-save flow. Personalization does not enter the scoring request. Progress counts answered questions rather than the current question index; the decorative helix continues to indicate question position.
 
+For mobile readability, RC01 and RC03 preserve the exact versioned prompt text but render the first question sentence as the heading and the remaining clarification as helper copy underneath. No questionnaire wording, score mapping or stored response contract is changed by this presentation split.
+
 ## Verification
 
 - `npm test`: normalization and guest continuity contracts.

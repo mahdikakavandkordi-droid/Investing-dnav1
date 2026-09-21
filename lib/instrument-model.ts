@@ -47,6 +47,13 @@ export type AssetDefinition = {
  heroMetrics:InstrumentMetric[];
 };
 
+/** Compact catalog facts; detail pages retain their fuller metric set. */
+export function catalogMetrics(type:unknown):InstrumentMetric[]{
+ if(type==='ETF')return [{key:'risk_level',label:'Risk'},{key:'mer_pct',label:'Annual cost (MER)',suffix:'%'},{key:'return_1y_pct',label:'Past 1-year return',suffix:'%'}];
+ if(type==='MUTUAL_FUND')return [{key:'risk_level',label:'Risk'},{key:'mer_pct',label:'Annual cost (MER)',suffix:'%'},{key:'minimum_initial_investment',label:'Minimum investment'}];
+ return [];
+}
+
 const DEFINITIONS:Record<AssetType,AssetDefinition> = {
  ETF:{
   label:'ETF',

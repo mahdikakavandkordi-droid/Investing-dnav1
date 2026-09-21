@@ -214,6 +214,7 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  const multi=question.question_type==='multi_choice';
  const chosenValues=multi?(Array.isArray(chosen)?chosen:typeof chosen==='string'&&chosen?[chosen]:[]):[];
  const answered=hasAnswer(question,chosen);
+ const promptParts=splitCapacityPrompt(question);
  function choose(value:string){
   if(!multi){onPersist({...draft,answers:{...draft.answers,[question.question_id]:value}});return;}
   let next:string[];
@@ -224,7 +225,7 @@ function QuestionStep({locale,cohort,draft,questions,question,busy,warning,error
  return <div className="assessment-question-layout" dir={direction} lang={locale}>
   <div className="assessment-card question-shell question-shell-v2">
    <div className="question-header question-header-v2"><div><div className="question-count">{copy.question} {current} {copy.of} {questions.length}</div>{researchCode&&<div className="fine muted question-research-code">Research code: <strong>{researchCode}</strong></div>}</div><div className="question-percent">{Math.round((completed/questions.length)*100)}%</div></div>
-   <progress aria-label={copy.progress} max={questions.length} value={completed}/><h1 className="question-title">{question.prompt}</h1>{multi&&<p className="question-hint question-hint-top">{copy.multiple}</p>}
+   <progress aria-label={copy.progress} max={questions.length} value={completed}/><h1 className="question-title">{promptParts.title}</h1>{promptParts.helper&&<p className="question-hint question-hint-top question-context-hint">{promptParts.helper}</p>}{multi&&<p className="question-hint question-hint-top">{copy.multiple}</p>}
    <div className="question-options" role="group" aria-label="Answer choices">{options.map(option=>{const selected=multi?chosenValues.includes(option.value):chosen===option.value;return <button aria-pressed={selected} className={'option '+(selected?'active':'')} key={option.value} disabled={busy} onClick={()=>choose(option.value)}><span className="option-indicator" aria-hidden="true"/><span>{option.label}</span></button>})}</div>
    <div className="question-actions"><button className="btn" disabled={busy||draft.index===0} onClick={()=>onPersist({...draft,index:draft.index-1})}>{copy.back}</button><button className="btn primary" disabled={busy||!answered} onClick={()=>onPersist({...draft,index:draft.index+1})}>{last?copy.continue:copy.next} <span aria-hidden="true">→</span></button></div>
    {warning&&<p className="muted fine">{warning}</p>}{error&&<p role="alert" className="notice">{error}</p>}
@@ -264,6 +265,16 @@ function PersonalizationStep({locale,draft,total,busy,error,onPersist,onBack,onF
   </section>
   <aside className="personalization-scenery approved-illustration-panel" aria-hidden="true"><PersonalizationVisual/></aside>
  </div>;
+}
+
+function splitCapacityPrompt(question:Question){
+ if(question.question_id!=='RC01'&&question.question_id!=='RC03')return {title:question.prompt,helper:null as string|null};
+ const indexes=[question.prompt.indexOf('?'),question.prompt.indexOf('؟')].filter(index=>index>=0);
+ if(!indexes.length)return {title:question.prompt,helper:null as string|null};
+ const end=Math.min(...indexes);
+ const title=question.prompt.slice(0,end+1).trim();
+ const helper=question.prompt.slice(end+1).trim();
+ return {title,helper:helper||null};
 }
 
 function hasAnswer(question:Question,value:Draft['answers'][string]){

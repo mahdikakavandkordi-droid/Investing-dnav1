@@ -43,6 +43,7 @@ const testAccess=['eyJhbGciOiJIUzI1NiJ9',Buffer.from(JSON.stringify({sub:authUse
  const page=await ctx.newPage();page.setDefaultTimeout(15000);
  const runtimeErrors=[];page.on('pageerror',error=>runtimeErrors.push(error.message));
  let starts=0,cognitiveStarts=0,claims=0,feedbacks=0,contextSaves=0,pdfRequests=0,saved=false,failSave=true,failClaim=true,failEmail=false;
+ let activeQuestionnaireVersion='v1.10-clarity-1';
  const tracked=[];
 
  await ctx.route('https://dna-test.supabase.co/**',async route=>{
@@ -66,11 +67,16 @@ const testAccess=['eyJhbGciOiJIUzI1NiJ9',Buffer.from(JSON.stringify({sub:authUse
    if(body.action==='track_event'){tracked.push(body.event_name);return send({tracked:true});}
    if(body.action==='submit_feedback'){feedbacks++;assert.equal(body.ease_score,4);assert.equal(body.trust_score,4);assert.equal(body.usefulness_score,5);assert.equal(body.understood_match,true);assert.equal(body.interpreted_match_as_buy_recommendation,false);assert.equal(body.interpreted_match_score_as_return_forecast,false);assert.equal(body.would_return,true);assert.equal(body.assessment_id,'assessment-1');return send({saved:true});}
    if(body.action==='start'){
-    if(body.cohort_code==='COGNITIVE_V1_10'){cognitiveStarts++;assert.match(body.consent_version,/cognitive-v1\.10-en/);assert.equal(body.cohort_access_code,TEST_COGNITIVE_CODE);}
-    else{starts++;assert.equal(body.cohort_code,'DEV_V1_10');assert.match(body.consent_version,/prepilot-v1\.10-en/);assert.equal(body.cohort_access_code,undefined);}
-    return send({assessment_id:'assessment-1',session_token:'guest-capability',account_linked:false,questionnaire_version:'v1.10-cognitive-candidate',model_version:'dna-v1.10-research',language_code:'en'});
+    if(body.cohort_code==='COGNITIVE_V1_10'){
+     cognitiveStarts++;activeQuestionnaireVersion='v1.10-cognitive-candidate';
+     assert.match(body.consent_version,/cognitive-v1\.10-en/);assert.equal(body.cohort_access_code,TEST_COGNITIVE_CODE);
+    }else{
+     starts++;activeQuestionnaireVersion='v1.10-clarity-1';
+     assert.equal(body.cohort_code,'DEV_V1_10_CLARITY');assert.match(body.consent_version,/prepilot-v1\.10-clarity-1-en/);assert.equal(body.cohort_access_code,undefined);
+    }
+    return send({assessment_id:'assessment-1',session_token:'guest-capability',account_linked:false,questionnaire_version:activeQuestionnaireVersion,model_version:'dna-v1.10-research',language_code:'en'});
    }
-   if(body.action==='questionnaire')return send({questions,questionnaire_version:'v1.10-cognitive-candidate'});
+   if(body.action==='questionnaire')return send({questions,questionnaire_version:activeQuestionnaireVersion});
    if(body.action==='save_answers'){
     assert.deepEqual(body.answers,[{question_id:'RT01',answer_value:{value:'C'}},{question_id:'BD01',answer_value:{value:'D'}}]);
     if(failSave){failSave=false;return send({error:'Temporary save error'},503);}return send({saved:2});
