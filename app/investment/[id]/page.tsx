@@ -3,7 +3,7 @@
 import {useEffect,useState} from 'react';
 import {useParams} from 'next/navigation';
 import Link from 'next/link';
-import {getInstrument} from '@/lib/instruments';
+import {getInstrument,hasFriendlyDisplayName,instrumentDisplayName} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {
  investmentDna,
@@ -101,7 +101,8 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
      <span className="asset-tag">{assetLabel(item.asset_type)}</span>
      {item.symbol&&<span className="symbol-tag">{item.symbol}</span>}
     </div>
-    <h1>{item.name}</h1>
+    <h1>{instrumentDisplayName(item)}</h1>
+    {hasFriendlyDisplayName(item)&&<p className="fine muted">Official name: {item.name}</p>}
     {item.issuer_name&&<p className="detail-issuer-v2">{item.issuer_name}</p>}
     <p className="detail-summary-v2">{facts?.summary||item.profile_summary||item.description||'A research description is not available yet.'}</p>
    </div>
