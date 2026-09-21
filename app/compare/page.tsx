@@ -52,7 +52,7 @@ export default function Compare(){
 
   const stateRequest=user?rpc<AppState>('get_current_investor_app_state').catch(()=>null):Promise.resolve(guestState);
 
-  Promise.all([searchInstruments({limit:100}),stateRequest])
+  Promise.all([searchInstruments({limit:250}),stateRequest])
    .then(([catalog,appState])=>{
     if(!active)return;
     setItems(catalog);setState(appState);
