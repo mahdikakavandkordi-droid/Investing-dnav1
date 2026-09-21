@@ -19,7 +19,7 @@ function niceDate(value?:string){
 }
 function finiteMix(facts:OfficialFundFacts){
  return Object.entries(facts.asset_mix||{})
-  .filter(([,value])=>value!==null&&value!==undefined&&value!=='')
+  .filter(([,value])=>value!==null&&value!==undefined)
   .map(([key,value])=>[key,Number(value)] as const)
   .filter(([,value])=>Number.isFinite(value)&&value>=0);
 }
