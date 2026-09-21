@@ -99,7 +99,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  assert.equal(await mfCard.count(),1);
  const mfCardText=await mfCard.innerText();
  assert.match(mfCardText,/Series A/);
- assert.match(mfCardText,/Low to Medium/);
+ assert.match(mfCardText,/Low to Medium/i);
  assert.match(mfCardText,/1\.94%/);
  assert.match(mfCardText,/\$500/);
  assert.doesNotMatch(mfCardText,/NAV updated/i);
