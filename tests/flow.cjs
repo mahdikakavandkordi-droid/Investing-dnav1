@@ -52,6 +52,7 @@ const testAccess=['eyJhbGciOiJIUzI1NiJ9',Buffer.from(JSON.stringify({sub:authUse
   if(url.includes('/auth/v1/user')){if(body.data&&typeof body.data==='object')authUser.user_metadata={...authUser.user_metadata,...body.data};return send(authUser);}
   if(url.includes('/auth/v1/logout'))return send({});
   if(url.includes('/rest/v1/rpc/app_watchlist'))return send({items:[]});
+  if(url.includes('/rest/v1/rpc/app_search_instruments'))return send(body.p_asset_type==='MUTUAL_FUND'?[]:[etf]);
   if(url.includes('/rest/v1/rpc/app_search_investments'))return send([etf]);
   if(url.includes('/rest/v1/rpc/get_current_investor_app_state'))return send({has_profile:true,assessment_id:saved?'assessment-1':null,dna:saved?dna:null,report:saved?dna:null,matches:saved?dnaOnlyMatch:null});
   if(url.includes('/functions/v1/investor-dna-report')){
