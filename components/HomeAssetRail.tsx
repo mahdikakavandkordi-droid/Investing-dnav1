@@ -2,14 +2,14 @@
 
 import {useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
-import {instrumentDisplayName,searchInstruments} from "@/lib/instruments";
+import {gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments} from "@/lib/instruments";
 import type {Instrument} from "@/lib/instruments";
 
 const ORDER=["ETF","MUTUAL_FUND","GIC"] as const;
 const PREFERRED:Record<string,string[]>={
  ETF:["VGRO","XBAL","VAB"],
  MUTUAL_FUND:["RBF460","RBF461","RBF459"],
- GIC:["RBC-GIC-1Y-CASH"]
+ GIC:["RBC-GIC-NR","BMO-GIC-NR","TNG-GIC-NR"]
 };
 
 export function HomeAssetRail(){
@@ -127,9 +127,9 @@ function assetMetrics(item:Instrument){
   {label:"Series",value:item.series_name||null}
  ]);
  if(item.asset_type==="GIC")return compact([
-  {label:"Interest rate",value:numberValue(item.deposit_rate_pct)!=null?fmt(Number(item.deposit_rate_pct),"%"):null},
-  {label:"Term",value:item.term_months?item.term_months+" months":null},
-  {label:"Redeemability",value:pretty(item.redeemability)},
+  {label:"Rates",value:gicRateRange(item)||"See issuer"},
+  {label:"Terms",value:gicTermRange(item)},
+  {label:"Access",value:pretty(item.redeemability)},
   {label:"Deposit insurance",value:item.deposit_insurance_eligible===true?(item.deposit_insurance_scheme||"Eligible"):item.deposit_insurance_eligible===false?"Not indicated":null}
  ]);
  if(item.asset_type==="BOND")return compact([
@@ -180,7 +180,7 @@ function assetTags(item:Instrument){
 function footerCopy(item:Instrument){
  if(item.asset_type==="ETF")return "Portfolio structure";
  if(item.asset_type==="MUTUAL_FUND")return "Fund profile & fees";
- if(item.asset_type==="GIC")return "Deposit terms";
+ if(item.asset_type==="GIC")return "Rates, terms & protection";
  if(item.asset_type==="BOND")return "Yield & maturity";
  if(item.asset_type==="T_BILL")return "Short-term government debt";
  return "Money-market reference";
