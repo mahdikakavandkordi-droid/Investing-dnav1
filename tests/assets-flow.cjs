@@ -160,8 +160,10 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  await Promise.all([page.waitForURL(`**/investment/${ids.gic}`),gicCard.getByRole('link',{name:/View details for/}).click()]);
  await page.getByRole('button',{name:'Rate & access',exact:true}).click();
  text=await page.locator('body').innerText();
- assert.match(text,/Available terms/);assert.match(text,/2\.70%/);assert.match(text,/3\.10%/);assert.match(text,/5 years/);assert.match(text,/CDIC/);
- check('GIC family detail exposes a source-dated multi-term curve');
+ assert.match(text,/Available terms/);assert.match(text,/2\.70%/);assert.match(text,/3\.10%/);assert.match(text,/5 years/);
+ await page.getByRole('button',{name:'Risk & protection',exact:true}).click();
+ text=await page.locator('body').innerText();assert.match(text,/CDIC/);
+ check('GIC family detail exposes a source-dated multi-term curve and protection context');
 
  await page.goto(origin+`/compare?ids=${ids.gic}`);
  await page.getByRole('heading',{name:/Compare GICs/i}).waitFor();
