@@ -8,6 +8,7 @@ const ids={
  etf:'11111111-1111-4111-8111-111111111111',
  mf:'22222222-2222-4222-8222-222222222222',
  mf2:'33333333-3333-4333-8333-333333333333',
+ mfIncomplete:'66666666-6666-4666-8666-666666666666',
  gic:'44444444-4444-4444-8444-444444444444',
  gic2:'55555555-5555-4555-8555-555555555555'
 };
@@ -15,6 +16,7 @@ const common={capital_protection:'none',liquidity_level:'high',income_predictabi
 const etf={...common,id:ids.etf,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',display_name:'Balanced All-in-One Portfolio',asset_type:'ETF',issuer_name:'Vanguard Canada',price:35.2,return_1y_pct:13.89,mer_pct:.22,risk_level:'Low to Medium',price_volatility:'low',growth_participation:'medium',interest_rate_sensitivity:'medium',profile_summary:'Diversified ETF research example.'};
 const mf={...common,id:ids.mf,symbol:'RBF460',name:'RBC Select Balanced Portfolio - Series A',display_name:'Balanced Global Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:38.81,return_1y_pct:17.5,return_3y_annualized_pct:13.3,return_5y_annualized_pct:7,mer_pct:1.94,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF460',cifsc_category:'Global Neutral Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Annually',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf460',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:60,fixed_income:38,cash:2},profile_summary:'Balanced mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
 const mf2={...common,id:ids.mf2,symbol:'RBF461',name:'RBC Select Conservative Portfolio - Series A',display_name:'Conservative Global Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:26.53,return_1y_pct:12.2,return_3y_annualized_pct:10,return_5y_annualized_pct:5,mer_pct:1.70,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF461',cifsc_category:'Global Fixed Income Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Quarterly',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf461',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:40,fixed_income:58,cash:2},profile_summary:'Conservative mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
+const mfIncomplete={...common,id:ids.mfIncomplete,symbol:'MFC7486',name:'Mackenzie All-Equity ETF Portfolio - Series A',display_name:'All-Equity Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'Mackenzie Investments',price:null,mer_pct:1.90,risk_level:null,series_name:'Series A',fund_code:'MFC7486',cifsc_category:'Global Equity',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:null,minimum_additional_investment:null,mf_income_distribution_frequency:null,capital_gains_distribution_frequency:null,mutual_fund_source_name:'Mackenzie Investments',mutual_fund_source_url:'https://example.test/mfc7486',mutual_fund_as_of_date:'2026-07-31',profile_target_allocation:null,profile_summary:'Growth-focused all-equity ETF portfolio.'};
 const gic={...common,id:ids.gic,symbol:'BMO-GIC-NR',name:'BMO Guaranteed Investment Certificate',display_name:'BMO Non-Cashable GIC',asset_type:'GIC',issuer_name:'Bank of Montreal',capital_protection:'insured_deposit',liquidity_level:'locked',price_volatility:'none',income_predictability:'very_high',time_structure:'locked_term',deposit_rate_pct:2.70,term_months:12,redeemability:'non_redeemable',minimum_deposit:1000,interest_payment_frequency:'Annual / annual compound',registered_account_eligibility:['TFSA','RRSP','FHSA'],deposit_insurance_scheme:'CDIC',deposit_insurance_eligible:true,deposit_source_name:'BMO',deposit_source_url:'https://example.test/bmo',deposit_as_of_date:'2026-09-20',profile_summary:'Fixed-rate guaranteed deposit with multiple terms.',deposit_term_options:[
  {option_key:'12m',term_months:12,annual_rate_pct:2.70,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20',is_featured:true},
  {option_key:'24m',term_months:24,annual_rate_pct:2.75,rate_type:'fixed',rate_basis:'annual_compound',minimum_deposit:1000,redeemability:'non_redeemable',source_name:'BMO',source_url:'https://example.test/bmo',as_of_date:'2026-09-20'},
@@ -27,19 +29,23 @@ const gic2={...common,id:ids.gic2,symbol:'RBC-GIC-NR',name:'RBC Non-Redeemable G
  {option_key:'24m',term_months:24,annual_rate_pct:2.55,rate_type:'fixed',redeemability:'non_redeemable',source_name:'RBC Royal Bank',source_url:'https://example.test/rbc',as_of_date:'2026-09-17'},
  {option_key:'60m',term_months:60,annual_rate_pct:2.75,rate_type:'fixed',redeemability:'non_redeemable',source_name:'RBC Royal Bank',source_url:'https://example.test/rbc',as_of_date:'2026-09-17'}
 ]};
-const catalog=[etf,mf,mf2,gic,gic2];
+const catalog=[etf,mf,mf2,mfIncomplete,gic,gic2];
 
-const dnaFor=item=>item.asset_type==='MUTUAL_FUND'?{
- investment_id:item.id,symbol:item.symbol,name:item.name,asset_type:item.asset_type,risk_band:item.risk_level,official_risk_rating:item.risk_level,
- official_risk_issuer:'RBC Global Asset Management Inc.',official_risk_source_type:'Fund Facts',official_risk_source_url:'https://example.test/fund-facts',
- official_risk_source_date:'2025-12-17',growth_score:item.symbol==='RBF460'?60:40,income_score:item.symbol==='RBF460'?50:66,stability_score:item.symbol==='RBF460'?51:63,
- diversification_score:93,equity_pct:item.profile_target_allocation.equity,fixed_income_pct:item.profile_target_allocation.fixed_income+item.profile_target_allocation.cash,mer_pct:item.mer_pct,
- explanation:{signal_inputs:{meaningful_geographic_regions:3}}
-}:null;
+const dnaFor=item=>item.asset_type==='MUTUAL_FUND'
+ ? item.symbol==='MFC7486'
+   ? {investment_id:item.id,symbol:item.symbol,name:item.name,asset_type:item.asset_type,risk_band:null,official_risk_rating:null,growth_score:null,income_score:null,stability_score:null,diversification_score:null,equity_pct:null,fixed_income_pct:null,mer_pct:item.mer_pct,explanation:null,data_quality_status:'stale'}
+   : {
+      investment_id:item.id,symbol:item.symbol,name:item.name,asset_type:item.asset_type,risk_band:item.risk_level,official_risk_rating:item.risk_level,
+      official_risk_issuer:'RBC Global Asset Management Inc.',official_risk_source_type:'Fund Facts',official_risk_source_url:'https://example.test/fund-facts',
+      official_risk_source_date:'2025-12-17',growth_score:item.symbol==='RBF460'?60:40,income_score:item.symbol==='RBF460'?50:66,stability_score:item.symbol==='RBF460'?51:63,
+      diversification_score:93,equity_pct:item.profile_target_allocation.equity,fixed_income_pct:item.profile_target_allocation.fixed_income+item.profile_target_allocation.cash,mer_pct:item.mer_pct,
+      explanation:{signal_inputs:{meaningful_geographic_regions:3}}
+     }
+ : null;
 const factsFor=item=>item.asset_type==='MUTUAL_FUND'?{
  investment_id:item.id,symbol:item.symbol,source_name:'RBC Global Asset Management',product_url:'https://example.test/product',etf_facts_url:'https://example.test/fund-facts',
  etf_facts_date:'2025-12-17',management_fee_pct:item.symbol==='RBF460'?1.65:1.45,mer_pct:item.mer_pct,fee_source_note:'Series A fees from issuer disclosure.',
- summary:item.profile_summary,objective:'Long-term growth with an income component.',asset_mix:item.profile_target_allocation,management_style:'Active',distribution_policy:item.mf_income_distribution_frequency
+ summary:item.profile_summary,objective:item.symbol==='MFC7486'?'Long-term capital growth.':'Long-term growth with an income component.',asset_mix:item.symbol==='MFC7486'?{equity:null,fixed_income:null}:item.profile_target_allocation,management_style:'Active',distribution_policy:item.mf_income_distribution_frequency
 }:null;
 const researchFor=item=>item.asset_type==='MUTUAL_FUND'?{
  investment_id:item.id,coverage:{has_official_facts:true,has_official_risk:true,has_return_1y:true,has_return_3y:true,has_return_5y:true,data_status:'verified_partial'},
@@ -108,6 +114,16 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  text=await page.locator('body').innerText();
  assert.match(text,/Fund Facts/);assert.match(text,/Official name: RBC Select Balanced Portfolio - Series A/);
  check('Mutual-fund detail exposes series, fees, allocation, NAV freshness and Fund Facts');
+
+ await page.goto(origin+`/investment/${ids.mfIncomplete}`);
+ await page.getByRole('button',{name:'Fund profile & fees',exact:true}).click();
+ text=await page.locator('body').innerText();
+ assert.match(text,/Allocation data is incomplete/);
+ assert.match(text,/Allocation data is not available yet/);
+ assert.doesNotMatch(text,/0% equity/i);
+ assert.doesNotMatch(text,/Growth orientation\s+Lower/i);
+ assert.match(text,/Not enough sourced structure data yet/);
+ check('Incomplete All-Equity fund allocation fails closed instead of showing zero or a low-growth label');
 
  await page.goto(origin+`/compare?ids=${ids.mf}`);
  await page.getByRole('heading',{name:/Compare Mutual Funds(?: side by side)?/i}).waitFor();
