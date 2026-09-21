@@ -9,6 +9,15 @@
 
 .instrument-structure-v2{padding:28px}.investment-dna-grid-v2{grid-template-columns:repeat(2,1fr)}.structure-extra-list{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.structure-extra-list p{margin:0;background:#f7f9f9;border-radius:13px;padding:13px;display:grid;gap:4px}.structure-extra-list span{font-size:10px;color:#81909a}.structure-extra-list strong{font-size:13px;color:#29475a}.structure-coverage-note{border-top:1px solid #e8eeee;padding-top:13px}
 .instrument-terms-v2{padding:28px}.instrument-terms-v2 h2{font-size:28px;color:var(--dna-ink);letter-spacing:-.035em;margin:8px 0 20px}.terms-grid-v2{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.term-stat-v2{background:#f7f9f9;border-radius:14px;padding:15px;display:grid;gap:5px}.term-stat-v2 span{font-size:10px;color:#7c8993}.term-stat-v2 strong{font-size:16px;color:#1d3b50}.terms-note-v2{margin-top:16px;padding:15px;border-radius:14px;background:#f3f8f7;color:#526b69;line-height:1.55}.terms-source-v2{margin:16px 0 0;color:#788891}.terms-source-v2 a{color:#0b7d74;font-weight:700}
+.gic-term-curve-v2{margin-top:20px;padding-top:18px;border-top:1px solid #e8eeee}
+.gic-term-curve-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:10px}
+.gic-term-curve-head strong{font-size:14px;color:#28485c}
+.gic-term-curve-head span{font-size:10px;color:#89969f}
+.gic-term-curve-grid{display:grid;gap:7px}
+.gic-term-option{display:grid;grid-template-columns:90px minmax(90px,.8fr) minmax(120px,1.2fr) minmax(90px,.8fr);align-items:center;gap:10px;padding:11px 13px;border:1px solid #eee8cb;border-radius:12px;background:#fffdf5}
+.gic-term-option span{font-size:11px;color:#6d7880}
+.gic-term-option strong{font-size:14px;color:#735d10}
+.gic-term-note{margin:10px 0 0;line-height:1.5}
 
 
 /* Asset-language refinement */
@@ -106,6 +115,9 @@
  .allocation-legend,.allocation-breakdown-grid{grid-template-columns:1fr}
  .official-cost-grid-v2{grid-template-columns:repeat(2,1fr)!important}
  .structure-extra-list,.terms-grid-v2{grid-template-columns:repeat(2,1fr)}
+ .gic-term-curve-head{align-items:flex-start}
+ .gic-term-option{grid-template-columns:1fr 1fr;gap:7px;padding:10px 11px}
+ .gic-term-option span,.gic-term-option strong{font-size:11px}
 }
 
 
