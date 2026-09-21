@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {instrumentDisplayName,searchInstruments} from '@/lib/instruments';
+import {gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {
  EXPLORE_TABS,
@@ -115,10 +115,12 @@ function ExploreTabs({selected,onSelect}:{selected:ExploreTab;onSelect:(tab:Expl
 }
 
 function InvestmentCard({item}:{item:Instrument}){
- const metrics=heroMetrics(item.asset_type)
-  .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
-  .filter(metric=>metric.value!==null)
-  .slice(0,3);
+ const metrics=item.asset_type==='GIC'
+  ? gicCardMetrics(item)
+  : heroMetrics(item.asset_type)
+    .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
+    .filter(metric=>metric.value!==null)
+    .slice(0,3);
  const canMatch=matchEligible(item.asset_type);
 
  return <article className={"investment-card-v2 investment-card-"+String(item.asset_type||"unknown").toLowerCase()}>
@@ -152,6 +154,18 @@ function InvestmentCard({item}:{item:Instrument}){
    <Link aria-label="Open research" href={'/investment/'+item.id}>Open research →</Link>
   </div>
  </article>;
+}
+
+function gicCardMetrics(item:Instrument){
+ const rate=gicRateRange(item);
+ const term=gicTermRange(item);
+ const minimum=item.minimum_deposit==null?null:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ return [
+  {key:'gic-rate',label:'Rates',value:rate||'See issuer'},
+  {key:'gic-term',label:'Terms',value:term},
+  {key:'gic-access',label:'Access',value:item.redeemability?pretty(item.redeemability):null},
+  {key:'gic-minimum',label:'Minimum',value:minimum}
+ ].filter(metric=>metric.value!==null).slice(0,3) as {key:string;label:string;value:string}[];
 }
 
 function CatalogError({error,onRetry}:{error:string;onRetry:()=>void}){
