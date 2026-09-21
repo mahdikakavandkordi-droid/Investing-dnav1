@@ -1,86 +1,105 @@
-# Investor DNA — Cross-Asset Product & Code Architecture
+# Investor DNA — V1 Product & Asset Architecture
 
-Status: **M4 implementation contract**  
-Date: 2026-09-15
+Status: **focused V1 contract**  
+Updated: 2026-09-20
 
-## 1. Product naming contract
+## 1. Naming contract
 
-These names have different meanings and should not be used interchangeably in UI or code documentation:
+These names have different meanings and should not be used interchangeably:
 
 - **Investor DNA** — the overall platform and brand.
-- **Investing DNA** — the questionnaire/assessment that describes the investor's risk tolerance, capacity, behavioural tendencies and experience.
-- **Investment DNA** — the structural profile of an investment instrument.
-- **DNA Match** — the compatibility layer that combines saved Investor/Investing DNA, the context of the money and Investment DNA.
+- **Investing DNA** — the investor assessment describing risk tolerance, capacity, behavioural tendencies and experience.
+- **Investment DNA** — the structural profile of an investment product.
+- **DNA Match** — the compatibility layer combining Investor/Investing DNA, the context of the money and Investment DNA.
 
-Current rule: only the ETF universe is eligible for personalized DNA Match. Non-ETF instruments are research/discovery instruments until asset-specific Match adapters have been separately validated.
+## 2. Focused V1 public universe
 
-## 2. V1 research universe
+The public V1 product intentionally exposes only three product types:
 
-### In scope
-- ETF — current core universe; full Match remains enabled.
-- GIC — representative fixed/redeemable deposits.
-- T-Bill — Government of Canada 3M / 6M / 12M examples.
-- Bond — representative federal, provincial and investment-grade corporate examples.
-- Commercial Paper — limited research examples only.
-- ABCP — limited educational/research profile only.
+- **ETF** — exchange-traded fund research + personalized DNA Match.
+- **MUTUAL_FUND** — Canadian mutual-fund research + personalized DNA Match when the required evidence gates are satisfied.
+- **GIC** — deposit / capital-preservation research. Personalized DNA Match remains disabled in V1.
 
-### Explicitly out of scope for this phase
-- Individual stocks.
-- Stock valuation/ranking/recommendation.
-- Personalized Match for GICs, bonds, T-Bills, CP or ABCP.
-- Portfolio Builder.
+The database can retain previously researched T-Bills, individual bonds, commercial paper and ABCP for future versions. They are not part of the focused V1 Explore, Home rail or Compare picker.
 
-Stocks are intentionally deferred because company-level valuation, financial-statement quality, business/sector analysis and single-security recommendation risk require a separate Stock DNA model.
+The curated V1 mutual-fund universe currently contains **25 Series-specific products** across RBC GAM, TD Asset Management, Fidelity Canada, Mackenzie Investments and BMO GAM. Research visibility does not imply Match eligibility: funds with incomplete official risk, structure or suitability evidence remain research-only / review-required until those prerequisites are verified.
 
-## 3. Canonical taxonomy
+The curated V1 GIC universe uses **14 product-family cards across 7 deposit issuers**: RBC, TD, BMO, CIBC, Scotiabank, National Bank and Tangerine. A family card can contain multiple source-dated term options instead of duplicating the same product into separate 1-year, 2-year, 3-year, 4-year and 5-year cards. Market-linked GICs are intentionally excluded from V1 because their payoff structures are not directly comparable with conventional fixed-rate/cashable GICs.
 
-`investments` stays the canonical instrument identity table. Do not create one top-level identity table per asset type.
+Individual stocks remain out of scope. They require a separate company-level Stock DNA model.
 
-Allowed initial `asset_type` values:
+## 3. Asset mix is not product mix
+
+ETF and mutual fund are product vehicles, not asset classes.
+
+The three Portfolio / Asset Mix scenarios therefore remain expressed as:
+
+- **Equity**
+- **Fixed income**
+- **Cash / capital preservation**
+
+The product layer can then help the user research ways to implement those exposures:
+
+- Equity → equity ETFs and equity mutual funds.
+- Fixed income → fixed-income ETFs and fixed-income mutual funds.
+- Cash / capital preservation → GICs and eligible cash-like fund products.
+
+V1 must never present a scenario such as “60% ETF / 30% Mutual Fund / 10% GIC” as if those were asset classes.
+
+## 4. Compare contract
+
+V1 Compare is intentionally same-type only:
+
+- ETF ↔ ETF
+- Mutual Fund ↔ Mutual Fund
+- GIC ↔ GIC
+
+For GICs, Compare emphasizes rate range, term range, redeemability, minimum deposit, deposit-insurance eligibility and the available term curve. It does not create a DNA Match score.
+
+The first selected product determines the available products in the second and third selectors. Cross-type Compare is rejected rather than silently mixing non-comparable metrics.
+
+This replaces the earlier cross-asset Compare experiment in the public V1 UI. Shared cross-asset structural data may remain in the database for later research.
+
+## 5. Canonical taxonomy
+
+`investments` remains the canonical instrument identity table.
+
+Supported database `asset_type` values include:
 
 - `ETF`
+- `MUTUAL_FUND`
 - `GIC`
 - `T_BILL`
 - `BOND`
 - `COMMERCIAL_PAPER`
 - `ABCP`
 
-`category` and `subcategory` refine the instrument without changing its top-level type. Example:
+Public V1 visibility is centralized in `lib/instrument-model.ts` through `PUBLIC_V1_ASSET_TYPES`.
 
-- `BOND / Government / Federal`
-- `BOND / Government / Provincial`
-- `BOND / Corporate / Investment Grade`
+Do not duplicate public-visibility or Match-eligibility rules inside individual pages.
 
-UI families are intentionally broader than database asset types:
+## 6. Data layering
 
-- Funds → ETF
-- Deposits → GIC
-- Bonds → BOND
-- Government money market → T_BILL
-- Money Market → COMMERCIAL_PAPER, ABCP
+Every public product has common identity and structural data plus product-specific facts.
 
-The UI family mapping must live in one code module (`lib/instrument-model.ts`), not be duplicated across pages.
+### Layer A — common identity
 
-## 4. Data layering
+Stored in `investments` and issuer/source tables:
 
-Every instrument has three layers.
-
-### Layer A — identity/common catalog
-Stored in existing `investments` and issuer/source tables:
 - name / legal name
-- symbol or research code
+- symbol or fund code
 - asset type
-- category/subcategory
+- category / subcategory
 - issuer
 - currency
-- country/region
+- region
 - description
 - active / featured / data status
 
-### Layer B — cross-asset Investment DNA
-Stored in `investment_structure_profiles`.
+### Layer B — Investment DNA structure
 
-The shared dimensions are descriptive research labels, not regulatory ratings:
+Stored in `investment_structure_profiles`:
+
 - capital protection
 - liquidity
 - price volatility
@@ -91,108 +110,84 @@ The shared dimensions are descriptive research labels, not regulatory ratings:
 - diversification
 - complexity
 - time structure
-- principal protection / insurance basis
-- model version + source basis + as-of date
+- source basis + as-of date
 
-This is the only cross-asset layer. Asset-specific fields must not be stuffed into this table.
+### Layer C — product-specific facts
 
-### Layer C — asset-specific facts
+ETF research continues to use the existing official facts, performance, holdings, exposure and characteristics tables.
 
-#### Fixed income / money market
-`investment_fixed_income_terms`:
-- instrument subtype
-- coupon
-- yield / YTM when appropriate
-- issue / maturity dates
-- remaining term
-- duration where available
-- face value
-- credit rating + agency
-- discount instrument flag
-- market-access note
-- source / as-of date
+Mutual-fund dealing/series facts live in `investment_mutual_fund_terms`:
 
-Used by BOND, T_BILL, COMMERCIAL_PAPER and ABCP where applicable.
+- series name
+- fund code
+- CIFSC category
+- load structure
+- sales status
+- minimum initial / additional investment
+- income distribution frequency
+- capital-gains distribution frequency
+- source + as-of date
 
-#### GIC/deposit terms
-`investment_deposit_terms`:
-- annual rate
-- term months
-- redeemability
-- minimum deposit
-- interest payment frequency
-- registered-account eligibility
-- deposit-insurance scheme / eligibility
-- maturity/lock-up note
-- source / as-of date
+GIC summary terms remain in `investment_deposit_terms`. Multi-term family curves live in `investment_deposit_term_options`, including term, source-dated rate when verified, redeemability, minimum, registered-account eligibility, rate basis and issuer source. If an issuer publishes a live rate dynamically and the numeric value has not been verified, the stored rate remains null and the UI shows **Check issuer** rather than inferring a number.
 
-ETF-specific facts continue to use the existing fund facts, performance, holdings, exposure and characteristics tables.
+## 7. Mutual-fund series rule
 
-## 5. Read-model contract
+A mutual fund can have multiple series with different fees, eligibility and dealing terms. V1 therefore treats the fund code / series as part of the investable research identity.
 
-Do not expand the existing ETF Match RPCs to pretend all assets have ETF metrics.
+The UI must show Series prominently on the fund detail page and must not imply that a fee from one series applies to every series of the same fund family.
 
-Keep current ETF endpoints for Match/Screener stability.
+## 8. Match contract
 
-Create/consume a separate generic research read model for Explore/Detail/Compare:
+`matchEligible(assetType)` returns true for:
 
-- `app_search_instruments`
-- `app_get_instrument`
-- `app_compare_instruments`
+- `ETF`
+- `MUTUAL_FUND`
 
-Those responses may contain null asset-specific fields. UI must never render null as zero.
+and false for GIC in V1.
 
-## 6. UI adapter contract
+The canonical Match engine consumes `v_investment_dna_v2`, which is scoped to ETFs + mutual funds. Mutual funds must meet the same safety prerequisites used for fund Match: a valid strategic allocation, official issuer risk classification, current intelligence model and source-backed fund facts.
 
-`lib/instrument-model.ts` is the single source of truth for:
-- display name per asset type
-- UI family/tab
-- whether Match is enabled
-- whether fund research sections apply
-- hero metrics and labels
-- safe fallback copy
+GICs remain research products in V1. Their terms — rate, term, redeemability and deposit-insurance basis — are shown without a fabricated compatibility score.
 
-Pages should ask the adapter what to show. Pages should not own asset taxonomy.
+## 9. Market-data freshness
 
-## 7. Match contract
+ETF prices and mutual-fund NAV/price history use the audited daily market-data worker.
 
-`matchEligible(assetType)` returns true only for `ETF` in this phase.
+Mutual funds use provider-specific aliases stored in `market_data_symbol_aliases` so a public fund code such as `RBF460` is never conflated with a third-party provider symbol. **A mutual fund is eligible for the automated daily NAV plan only when an active verified alias exists for the selected provider.** The worker never guesses a provider symbol from a FundServ code.
 
-For non-ETF instruments:
-- Explore: enabled
-- Detail: enabled
-- Compare: research facts + shared Investment DNA enabled
-- Watchlist: can be enabled after persistence regression confirms generic IDs are safe
-- Personalized Match score: **disabled**
+Current temporary Canadian route:
 
-The UI must explicitly say `Research profile — personalized Match not enabled for this asset type yet` rather than showing a missing score as an error.
+- provider: Yahoo Finance temporary research feed
+- cadence: daily after the configured Toronto market-close threshold
+- ETF mapping: TSX / Cboe suffix transforms
+- Mutual Fund mapping: explicit verified provider alias; no alias means no automated fetch
+- mutual-fund canonical row stores provider close as both `close` and `nav`
 
-## 8. Source/freshness contract
+Issuer disclosures remain the source of truth for Series, fees, objectives, strategic allocation and official risk classifications. The daily worker does not overwrite those slower-moving research facts.
 
-Each asset-specific fact set must include source provenance and an as-of date where available.
+The first three RBC funds currently have verified temporary provider aliases and automated daily NAV history. The newer V1 funds retain their source-dated issuer NAV/fee snapshots until a provider alias or issuer-specific automated adapter is validated.
 
-Preferred Canadian sources:
-- Government of Canada / Bank of Canada for T-Bills and federal bond reference data.
-- Issuer/dealer official disclosures for GIC rates/terms and corporate/provincial fixed income.
-- CDIC or the applicable provincial insurer only for the insurance rule; never infer insurance from the word `GIC` alone.
+## 10. V1 UI identity
 
-Do not synthesize a current rate/yield where a verified source is unavailable.
+Product type should remain visually recognizable across Explore, Detail, Compare and Home.
 
-## 9. Historical/obsolete instruments
+- ETF — existing teal identity.
+- Mutual Fund — dedicated blue identity.
+- GIC — existing gold identity.
 
-Do not add Bankers' Acceptances as an active sample. The Canadian BA market ceased new issuance after the CDOR transition in 2024.
+GIC cards represent product families, not isolated term rows. Explore summarizes the available rate/term range; Detail exposes the full source-dated term curve.
 
-Do not add a 1-month Government of Canada T-Bill as a current sample; the 1M program was discontinued in 2025.
+The color is a navigation aid, not a risk signal.
 
-## 10. Change-control rule
+## 11. Change-control rule
 
-Before adding a new asset class later:
-1. define its `asset_type` and UI family here;
-2. list common Investment DNA dimensions that genuinely apply;
-3. create one asset-specific facts model instead of adding unrelated columns to generic tables;
-4. define source/freshness requirements;
-5. define whether Match is disabled, experimental or validated;
-6. add contract + browser regression tests;
-7. only then expose it in Explore.
+Before exposing a new product type in public V1 or a later release:
 
-If a proposed field cannot be meaningfully compared across asset classes, it belongs in an asset-specific table/component — not the shared structure profile.
+1. define its taxonomy and product-specific facts;
+2. define verified source/freshness requirements;
+3. decide whether Match is disabled, experimental or validated;
+4. define same-type comparison metrics;
+5. add contract + browser regression tests;
+6. only then add it to the public visibility list.
+
+The focused V1 rule is deliberate: product breadth in the database must not automatically become UI complexity.

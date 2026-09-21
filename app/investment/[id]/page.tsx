@@ -3,7 +3,7 @@
 import {useEffect,useState} from 'react';
 import {useParams} from 'next/navigation';
 import Link from 'next/link';
-import {getInstrument} from '@/lib/instruments';
+import {gicRateRange,gicTermRange,getInstrument,hasFriendlyDisplayName,instrumentDisplayName} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {
  investmentDna,
@@ -22,7 +22,7 @@ import {OfficialFundFactsCard,OfficialFundDocumentCard} from '@/components/Offic
 import {ResearchContextCard} from '@/components/ResearchContextCard';
 import {ProductRiskCard} from '@/components/ProductRiskCard';
 
-/** Generic cross-asset detail shell; ETF-only research is composed when eligible. */
+/** Generic detail shell for the focused V1 product universe. */
 export default function Detail(){
  const {id}=useParams<{id:string}>();
  const [item,setItem]=useState<Instrument|null>(null);
@@ -86,10 +86,12 @@ function PageShell({children}:{children:React.ReactNode}){
 }
 
 function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:InvestmentDna|null;facts:OfficialFundFacts|null;research:ResearchContext|null}){
- const metrics=heroMetrics(item.asset_type)
-  .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
-  .filter(metric=>metric.value!==null)
-  .slice(0,4);
+ const metrics=item.asset_type==='GIC'
+  ? gicDetailMetrics(item)
+  : heroMetrics(item.asset_type)
+    .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
+    .filter(metric=>metric.value!==null)
+    .slice(0,4);
  const isFund=usesFundResearch(item.asset_type);
  const freshness=item.fixed_income_as_of_date||item.deposit_as_of_date||item.metrics_as_of_date||item.structure_as_of_date;
 
@@ -101,7 +103,8 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
      <span className="asset-tag">{assetLabel(item.asset_type)}</span>
      {item.symbol&&<span className="symbol-tag">{item.symbol}</span>}
     </div>
-    <h1>{item.name}</h1>
+    <h1>{instrumentDisplayName(item)}</h1>
+    {hasFriendlyDisplayName(item)&&<p className="fine muted">Official name: {item.name}</p>}
     {item.issuer_name&&<p className="detail-issuer-v2">{item.issuer_name}</p>}
     <p className="detail-summary-v2">{facts?.summary||item.profile_summary||item.description||'A research description is not available yet.'}</p>
    </div>
@@ -121,22 +124,24 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
   <div className="detail-flow-v2">
    {isFund
     ? <>
-      <ResearchDisclosure title="Fund DNA & fees">
-       {facts&&<OfficialFundFactsCard facts={facts}/>}
+      <ResearchDisclosure title={item.asset_type==='MUTUAL_FUND'?'Fund profile & fees':'Fund DNA & fees'}>
+       {facts&&<OfficialFundFactsCard facts={facts} assetType={item.asset_type}/>}
+       {item.asset_type==='MUTUAL_FUND'&&<InstrumentTermsCard instrument={item}/>}
        {dna&&<InvestmentDnaCard dna={dna}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title="Risk">
+      <ResearchDisclosure title={item.asset_type==='GIC'?'Risk & protection':'Risk'}>
+       {item.asset_type==='GIC'&&<GicRiskSummary item={item}/>}
        <ProductRiskCard investmentId={item.id}/>
       </ResearchDisclosure>
       <ResearchDisclosure title="Performance & holdings">
        {research&&<ResearchContextCard context={research}/>}
       </ResearchDisclosure>
-      <ResearchDisclosure title="About this ETF">
+      <ResearchDisclosure title={`About this ${assetLabel(item.asset_type)}`}>
        <FundResearchDetails item={item} facts={facts}/>
       </ResearchDisclosure>
       <ResearchDisclosure title="Save & official documents">
        <InstrumentConnection id={item.id} assetType={item.asset_type}/>
-       {facts&&<OfficialFundDocumentCard facts={facts}/>}
+       {facts&&<OfficialFundDocumentCard facts={facts} assetType={item.asset_type}/>}
       </ResearchDisclosure>
      </>
     : <>
@@ -152,6 +157,19 @@ function InvestmentDetail({item,dna,facts,research}:{item:Instrument;dna:Investm
       </ResearchDisclosure>
      </>}
   </div>
+ </div>;
+}
+
+function GicRiskSummary({item}:{item:Instrument}){
+ const insured=item.deposit_insurance_eligible===true
+  ? `${item.deposit_insurance_scheme||'Deposit-insurance'} eligible, subject to applicable coverage limits and conditions.`
+  : 'Deposit-insurance eligibility should be verified with the issuer.';
+ const access=item.redeemability==='non_redeemable'
+  ? 'Funds are generally locked until maturity under the standard terms.'
+  : 'Earlier access depends on the product redemption rules and can change the interest received.';
+ return <div className="notice">
+  <strong>Capital-preservation research</strong>
+  <p>{insured} {access} This is a single-issuer deposit, so term, access and coverage rules matter more than market-price volatility.</p>
  </div>;
 }
 
@@ -177,9 +195,9 @@ function ResearchFreshness({item,freshness}:{item:Instrument;freshness?:string|n
 
  return <div className="detail-freshness-panel">
   {marketDate&&<span className={clearlyDelayed?"detail-freshness-chip delayed":"detail-freshness-chip"}>
-   {clearlyDelayed?'Market data may be delayed':'Market data after close'} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
+   {clearlyDelayed?(item.asset_type==='MUTUAL_FUND'?'NAV may be delayed':'Market data may be delayed'):(item.asset_type==='MUTUAL_FUND'?'Latest NAV':'Market data after close')} · {formatResearchDate(marketDate)}{sourceLabel?' · '+sourceLabel:''}
   </span>}
-  {!marketDate&&item.asset_type==='ETF'&&<span className="detail-freshness-chip delayed">Latest market-price date is not available</span>}
+  {!marketDate&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<span className="detail-freshness-chip delayed">Latest {item.asset_type==='MUTUAL_FUND'?'NAV':'market-price'} date is not available</span>}
   <p className="muted fine detail-freshness-note">{researchCopy} Missing figures are never shown as zero.</p>
  </div>;
 }
@@ -203,7 +221,7 @@ function FundResearchDetails({item,facts}:{item:Instrument;facts:OfficialFundFac
  if(!hasObjective&&!hasBenchmark&&!hasRisks)return null;
 
  return <section className="fund-research-details-v2">
-  <div className="eyebrow">About this ETF</div>
+  <div className="eyebrow">About this {assetLabel(item.asset_type)}</div>
   <div className="fund-research-grid-v2">
    <div>
     {hasObjective&&<><h2>Objective</h2><p>{item.profile_objective||facts?.objective}</p></>}
@@ -212,6 +230,16 @@ function FundResearchDetails({item,facts}:{item:Instrument;facts:OfficialFundFac
    {hasRisks&&<div><h2>Key risks</h2><ul>{item.profile_key_risks!.map(risk=><li key={risk}>{risk}</li>)}</ul></div>}
   </div>
  </section>;
+}
+
+function gicDetailMetrics(item:Instrument):{key:string;label:string;value:string}[]{
+ const minimum=item.minimum_deposit==null?null:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ return [
+  {key:'gic-rate-range',label:'Rates',value:gicRateRange(item)||'Check issuer'},
+  {key:'gic-term-range',label:'Terms',value:gicTermRange(item)},
+  {key:'gic-access',label:'Access',value:item.redeemability?pretty(item.redeemability):null},
+  {key:'gic-minimum',label:'Minimum',value:minimum}
+ ].filter((metric):metric is {key:string;label:string;value:string}=>metric.value!==null).slice(0,4);
 }
 
 function metricValue(item:Instrument,key:string,suffix='',digits=2):string|null{

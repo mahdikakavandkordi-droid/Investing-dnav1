@@ -2,16 +2,14 @@
 
 import {useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
-import {searchInstruments} from "@/lib/instruments";
+import {gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments} from "@/lib/instruments";
 import type {Instrument} from "@/lib/instruments";
 
-const ORDER=["ETF","GIC","BOND","T_BILL","COMMERCIAL_PAPER"] as const;
+const ORDER=["ETF","MUTUAL_FUND","GIC"] as const;
 const PREFERRED:Record<string,string[]>={
  ETF:["VGRO","XBAL","VAB"],
- GIC:["RBC-GIC-1Y-CASH"],
- BOND:["GOC-BOND-5Y","GOC-BOND-2Y","GOC-BOND-10Y"],
- T_BILL:["GOC-TBILL-3M","GOC-TBILL-6M","GOC-TBILL-1Y"],
- COMMERCIAL_PAPER:["CA-CP-REF"]
+ MUTUAL_FUND:["RBF460","RBF461","RBF459"],
+ GIC:["RBC-GIC-NR","BMO-GIC-NR","TNG-GIC-NR"]
 };
 
 export function HomeAssetRail(){
@@ -22,7 +20,7 @@ export function HomeAssetRail(){
 
  useEffect(()=>{
   let active=true;
-  searchInstruments({limit:100})
+  searchInstruments({limit:250})
    .then(data=>{if(active)setItems(Array.isArray(data)?data:[])})
    .catch(err=>{if(active)setError(err instanceof Error?err.message:String(err))})
    .finally(()=>{if(active)setLoading(false)});
@@ -80,7 +78,7 @@ function AssetCard({item}:{item:Instrument}){
   </div>
 
   <div className="home-asset-copy">
-   <h3>{item.name}</h3>
+   <h3>{instrumentDisplayName(item)}</h3>
    {item.issuer_name&&<p className="home-asset-issuer">{item.issuer_name}</p>}
    <p>{item.profile_summary||item.description||"Source-backed research profile available."}</p>
   </div>
@@ -104,6 +102,7 @@ function AssetCard({item}:{item:Instrument}){
 }
 
 function assetName(type?:string){
+ if(type==="MUTUAL_FUND")return "Mutual Fund";
  if(type==="T_BILL")return "T-Bill";
  if(type==="COMMERCIAL_PAPER")return "Commercial Paper";
  return pretty(type)||"Investment";
@@ -121,10 +120,16 @@ function assetMetrics(item:Instrument){
    {label:"Liquidity",value:pretty(item.liquidity_level)}
   ]);
  }
+ if(item.asset_type==="MUTUAL_FUND")return compact([
+  {label:"NAV",value:numberValue(item.price)!=null?fmt(Number(item.price),""):null},
+  {label:"Risk",value:pretty(item.risk_level)},
+  {label:"MER",value:numberValue(item.mer_pct)!=null?fmt(Number(item.mer_pct),"%"):null},
+  {label:"Series",value:item.series_name||null}
+ ]);
  if(item.asset_type==="GIC")return compact([
-  {label:"Interest rate",value:numberValue(item.deposit_rate_pct)!=null?fmt(Number(item.deposit_rate_pct),"%"):null},
-  {label:"Term",value:item.term_months?item.term_months+" months":null},
-  {label:"Redeemability",value:pretty(item.redeemability)},
+  {label:"Rates",value:gicRateRange(item)||"See issuer"},
+  {label:"Terms",value:gicTermRange(item)},
+  {label:"Access",value:pretty(item.redeemability)},
   {label:"Deposit insurance",value:item.deposit_insurance_eligible===true?(item.deposit_insurance_scheme||"Eligible"):item.deposit_insurance_eligible===false?"Not indicated":null}
  ]);
  if(item.asset_type==="BOND")return compact([
@@ -153,6 +158,11 @@ function assetTags(item:Instrument){
   item.diversification_level?pretty(item.diversification_level)+" diversification":null,
   item.liquidity_level?pretty(item.liquidity_level)+" liquidity":null
  ]).slice(0,3);
+ if(item.asset_type==="MUTUAL_FUND")return compactStrings([
+  item.cifsc_category||item.category||null,
+  item.profile_management_style?pretty(item.profile_management_style):null,
+  item.liquidity_level?pretty(item.liquidity_level)+" liquidity":null
+ ]).slice(0,3);
  if(item.asset_type==="GIC")return compactStrings([
   item.redeemability?pretty(item.redeemability):null,
   item.deposit_insurance_eligible?"Deposit-insurance eligible":null,
@@ -169,7 +179,8 @@ function assetTags(item:Instrument){
 
 function footerCopy(item:Instrument){
  if(item.asset_type==="ETF")return "Portfolio structure";
- if(item.asset_type==="GIC")return "Deposit terms";
+ if(item.asset_type==="MUTUAL_FUND")return "Fund profile & fees";
+ if(item.asset_type==="GIC")return "Rates, terms & protection";
  if(item.asset_type==="BOND")return "Yield & maturity";
  if(item.asset_type==="T_BILL")return "Short-term government debt";
  return "Money-market reference";

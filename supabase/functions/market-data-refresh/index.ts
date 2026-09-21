@@ -15,6 +15,7 @@ type DueItem = {
   country_code: string | null;
   exchange: string | null;
   currency: string | null;
+  provider_symbol?: string | null;
   latest_price_date: string | null;
   target_price_date: string;
   cadence: string;
@@ -138,6 +139,7 @@ async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
     throw new Error("yahoo_free_route_is_canada_only");
   }
 
+  const providerSymbol = item.provider_symbol?.trim();
   const exchangeSuffix =
     item.exchange === "TSX"
       ? ".TO"
@@ -145,7 +147,7 @@ async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
         ? ".NE"
         : null;
 
-  if (!exchangeSuffix) {
+  if (!providerSymbol && !exchangeSuffix) {
     throw new Error("yahoo_free_route_exchange_not_supported");
   }
 
@@ -153,7 +155,7 @@ async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
   const from = item.latest_price_date
     ? laterDate(addUtcDays(item.latest_price_date, 1), fallbackFrom)
     : fallbackFrom;
-  const yahooSymbol = item.symbol.toUpperCase() + exchangeSuffix;
+  const yahooSymbol = providerSymbol || item.symbol.toUpperCase() + exchangeSuffix;
 
   const url = new URL(
     `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}`,
@@ -217,7 +219,7 @@ async function fetchYahooDaily(item: DueItem): Promise<CanonicalPriceRow[]> {
       high: normalizedHigh,
       low: normalizedLow,
       close,
-      nav: null,
+      nav: item.asset_type === "MUTUAL_FUND" ? close : null,
       volume: Number.isFinite(volume) && volume >= 0 ? volume : null,
       currency: metaCurrency,
     });
@@ -311,6 +313,7 @@ Deno.serve(async (req: Request) => {
         due_count: plan.length,
         due: plan.map((item) => ({
           symbol: item.symbol,
+          provider_symbol: item.provider_symbol ?? null,
           latest_price_date: item.latest_price_date,
           target_price_date: item.target_price_date,
           source_key: item.selected_source?.source_key ?? null,

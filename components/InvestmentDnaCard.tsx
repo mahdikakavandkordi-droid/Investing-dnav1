@@ -7,7 +7,7 @@ const AXES:[SignalKey,string,string][]=[
   ['stability_score','Stability orientation','How strongly the structure leans toward a steadier, more defensive mix.'],
   ['diversification_score','Exposure breadth','Breadth across asset classes and meaningful geographic regions — not the number of individual holdings.'],
 ];
-function n(value:unknown){const x=Number(value);return Number.isFinite(x)?Math.max(0,Math.min(100,x)):null;}
+function n(value:unknown){if(value===null||value===undefined||value==='')return null;const x=Number(value);return Number.isFinite(x)?Math.max(0,Math.min(100,x)):null;}
 function band(key:SignalKey,value:unknown){
   const x=n(value);if(x===null)return 'Not available';
   if(key==='growth_score') return x<40?'Lower':x<75?'Moderate':'Higher';
@@ -24,6 +24,8 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
   const fixed=n(dna.fixed_income_pct);
   const explanation=(dna.explanation&&typeof dna.explanation==='object'?dna.explanation:null) as null|{signal_inputs?:{meaningful_geographic_regions?:number}};
   const regions=Number(explanation?.signal_inputs?.meaningful_geographic_regions);
+  const allocationMissing=equity===null&&fixed===null;
+  const signalsMissing=AXES.every(([key])=>n(dna[key])===null);
   const inputs=[
     equity!==null?`${Math.round(equity)}% equity`:null,
     fixed!==null?`${Math.round(fixed)}% fixed income`:null,
@@ -50,6 +52,10 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
     <p className="official-risk-method">This is the issuer-disclosed Canadian risk classification. It is not an Investing DNA score and it does not predict future losses or returns.</p>
 
     <div className="investment-dna-subhead"><h3>Investment DNA signals</h3><p>These are broad research labels, not regulatory ratings or precise 0–100 measurements. Each label is generated from a fixed rule set using fund-structure data.</p></div>
+    {allocationMissing&&<div className="notice investment-dna-missing">
+      <strong>Allocation data is incomplete</strong>
+      <p>We do not treat missing allocation as 0%. Growth, income, stability and diversification labels are withheld until enough sourced fund-structure data is available.</p>
+    </div>}
     <div className="investment-dna-grid">
       {AXES.map(([key,label,help])=>{const value=n(dna[key]);return <div className="investment-dna-axis" key={key}>
         <div className="investment-dna-axis-top"><span>{label}</span><strong>{value===null?'—':band(key,value)}</strong></div>
@@ -58,6 +64,7 @@ export function InvestmentDnaCard({dna}:{dna:InvestmentDna}){
     </div>
 
     {inputs&&<p className="investment-dna-inputs"><strong>Inputs used for this fund:</strong> {inputs}</p>}
+    {!inputs&&signalsMissing&&<p className="investment-dna-inputs muted"><strong>Inputs used for this fund:</strong> Not enough sourced structure data yet.</p>}
 
     <details className="investment-dna-methodology">
       <summary>How we derive these signals</summary>

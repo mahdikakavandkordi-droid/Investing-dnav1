@@ -2,9 +2,9 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {searchInstruments,compareInstruments} from '@/lib/instruments';
+import {depositTermOptions,gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments,compareInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
-import {assetLabel,matchEligible,heroMetrics} from '@/lib/instrument-model';
+import {assetLabel,matchEligible,heroMetrics,isPublicV1AssetType} from '@/lib/instrument-model';
 import {formatMetric,validId} from '@/lib/investments';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
@@ -23,7 +23,7 @@ const SHARED_DIMENSIONS:[keyof Instrument,string][] = [
  ['complexity_level','Complexity']
 ];
 
-/** Structure-first comparison. Personalized fit is layered only onto ETFs. */
+/** Same-type comparison with personalized fit layered onto supported fund vehicles. */
 export default function Compare(){
  const {user}=useAccount();
  const [items,setItems]=useState<Instrument[]>([]);
@@ -52,7 +52,7 @@ export default function Compare(){
 
   const stateRequest=user?rpc<AppState>('get_current_investor_app_state').catch(()=>null):Promise.resolve(guestState);
 
-  Promise.all([searchInstruments({limit:100}),stateRequest])
+  Promise.all([searchInstruments({limit:250}),stateRequest])
    .then(([catalog,appState])=>{
     if(!active)return;
     setItems(catalog);setState(appState);
@@ -64,6 +64,7 @@ export default function Compare(){
   return ()=>{active=false};
  },[user?.id]);
 
+ const comparisonType=items.find(item=>item.id===selected[0])?.asset_type;
  const rawMatchStatus=state?.matches?.status;
  const context=state?.report?.investment_context||state?.dna?.investment_context||null;
  const matchStatus=effectiveMatchStatus(rawMatchStatus,hasCompleteInvestmentContext(context))||undefined;
@@ -77,73 +78,111 @@ export default function Compare(){
   try{
    const data=await compareInstruments(ids);
    if(data.length<2){setRows([]);setError('At least two of the selected investments must still be available in the research catalog.');return;}
+   const types=[...new Set(data.map(item=>item.asset_type))];
+   if(types.length!==1||!isPublicV1AssetType(types[0])){setRows([]);setError('V1 comparisons stay within one product type: ETF vs ETF, Mutual Fund vs Mutual Fund, or GIC vs GIC.');return;}
    setRows(data);
    history.replaceState(null,'',`/compare?ids=${ids.join(',')}`);
   }catch(e){setRows([]);setError(e instanceof Error?e.message:'Could not compare these investments.');}
   finally{setBusy(false);}
  }
 
- function setSlot(index:number,id:string){setSelected(current=>current.map((value,currentIndex)=>currentIndex===index?id:value));}
+ function setSlot(index:number,id:string){
+  setSelected(current=>{
+   if(index===0)return [id,'',''];
+   return current.map((value,currentIndex)=>currentIndex===index?id:value);
+  });
+  setRows([]);
+  setError('');
+ }
 
  return <section className="section compare-page-v2">
   <div className="container">
    <div className="eyebrow">Compare</div>
-   <h1><span className="desktop-compare-title">Compare Investment DNA side by side</span><span className="mobile-compare-title">Compare investments</span></h1>
-   <p className="muted"><span className="desktop-compare-copy">Compare two or three investment structures. Shared structural traits come first; asset-specific facts stay separate. ETF DNA Match is layered in when your current-session or saved Investor DNA is available.</span><span className="mobile-compare-copy">Choose two or three investments and swipe through the key differences.</span></p>
+   <h1><span className="desktop-compare-title">{comparisonType?`Compare ${assetLabel(comparisonType)}s side by side`:'Compare investments side by side'}</span><span className="mobile-compare-title">{comparisonType?`Compare ${assetLabel(comparisonType)}s`:'Compare investments'}</span></h1>
+   <p className="muted"><span className="desktop-compare-copy">V1 keeps comparisons apples-to-apples: ETF vs ETF, Mutual Fund vs Mutual Fund, or GIC vs GIC. Choose the first product and the remaining selectors stay within that type.</span><span className="mobile-compare-copy">Choose one product type, then compare two or three similar investments.</span></p>
 
-   {loading?<p>Loading comparison tools…</p>:<ComparisonPicker items={items} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
+   {loading?<p>Loading comparison tools…</p>:<ComparisonPicker items={items.filter(item=>isPublicV1AssetType(item.asset_type))} selected={selected} busy={busy} onSelect={setSlot} onCompare={()=>void runComparison()}/>} 
    {error&&<p className="notice" role="alert">{error}</p>}
 
    {rows.length>=2&&<>
     <div className="compare-grid mobile-compare-rail">
      {rows.map(item=><ComparisonCard key={item.id} item={item} dnaPresent={!!state?.dna} matchStatus={matchStatus} match={matchEligible(item.asset_type)?matches.get(item.symbol):undefined}/>) }
     </div>
-    <p className="fine muted">Historical returns and quoted rates/yields are not forecasts. Cross-asset Investment DNA labels are research descriptors. ETF DNA Match is a compatibility signal, not a recommendation to buy.</p>
+    <p className="fine muted">Historical returns and quoted rates are not forecasts. DNA Match is a research compatibility signal, not a recommendation to buy. GIC comparisons use product terms rather than a personalized Match score.</p>
    </>}
   </div>
  </section>;
 }
 
 function ComparisonPicker({items,selected,busy,onSelect,onCompare}:{items:Instrument[];selected:string[];busy:boolean;onSelect:(index:number,id:string)=>void;onCompare:()=>void;}){
+ const anchorType=items.find(item=>item.id===selected[0])?.asset_type;
  return <>
   <div className="compare-picker">
-   {selected.map((id,index)=><label key={index}>Investment {index+1}<select className="field" value={id} onChange={event=>onSelect(index,event.target.value)}>
-    <option value="">{index<2?'Choose an investment':'Optional third investment'}</option>
-    {items.filter(item=>!selected.includes(item.id)||item.id===id).map(item=><option key={item.id} value={item.id}>{assetLabel(item.asset_type)} · {item.symbol?`${item.symbol} — `:''}{item.name}</option>)}
-   </select></label>)}
+   {selected.map((id,index)=>{
+    const choices=items.filter(item=>{
+     if(index>0&&anchorType&&item.asset_type!==anchorType)return false;
+     return !selected.includes(item.id)||item.id===id;
+    });
+    const disabled=index>0&&!anchorType;
+    return <label key={index}>Investment {index+1}<select className="field" value={id} disabled={disabled} onChange={event=>onSelect(index,event.target.value)}>
+     <option value="">{index===0?'Choose a product':disabled?'Choose the first product first':index===1?`Choose another ${assetLabel(anchorType)}`:`Optional third ${assetLabel(anchorType)}`}</option>
+     {choices.map(item=><option key={item.id} value={item.id}>{assetLabel(item.asset_type)} · {item.symbol?`${item.symbol} — `:''}{instrumentDisplayName(item)}</option>)}
+    </select></label>;
+   })}
   </div>
-  <div className="actions"><button className="btn primary" disabled={busy} onClick={onCompare}>{busy?'Comparing…':'Compare investments'}</button><Link className="btn" href="/explore">Back to Explore</Link></div>
+  <div className="actions"><button className="btn primary" disabled={busy||!selected[0]||!selected[1]} onClick={onCompare}>{busy?'Comparing…':'Compare investments'}</button><Link className="btn" href="/explore">Back to Explore</Link></div>
   </>;
 }
 
 function ComparisonCard({item,dnaPresent,matchStatus,match}:{item:Instrument;dnaPresent:boolean;matchStatus?:string;match?:MatchItem;}){
  const canMatch=matchEligible(item.asset_type);
- const metrics=heroMetrics(item.asset_type);
+ const metrics=item.asset_type==='GIC'?[]:heroMetrics(item.asset_type);
  const contextOnly=matchStatus==='context_required';
  const rowContextOnly=match?.eligibility==='context_required'||match?.recommendation_tier==='consider';
  const showExplanation=matchStatus!=='review_required'&&(!contextOnly||rowContextOnly);
 
- return <article className="compare-card">
+ return <article className={'compare-card compare-card-'+String(item.asset_type||'unknown').toLowerCase()}>
   <div className="actions compact"><span className="pill">{assetLabel(item.asset_type)}</span>{item.symbol&&<span className="pill">{item.symbol}</span>}</div>
-  <h2>{item.name}</h2>
+  <h2>{instrumentDisplayName(item)}</h2>
   <FitSummary canMatch={canMatch} match={match} matchStatus={matchStatus} dnaPresent={dnaPresent}/>
   <h3>Shared Investment DNA</h3>
   {SHARED_DIMENSIONS.map(([key,label])=><div className="compare-metric" key={String(key)}><span>{label}</span><strong>{pretty(item[key])}</strong></div>)}
   <h3>{assetLabel(item.asset_type)} facts</h3>
-  {metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
+  {item.asset_type==='GIC'?<GicCompareFacts item={item}/>:metrics.map(metric=><div className="compare-metric" key={metric.key}><span>{metric.label}</span><strong>{displayValue(item,metric.key,metric.suffix,metric.digits)}</strong></div>)}
   {item.credit_exposure&&<div className="compare-metric"><span>Credit exposure</span><strong>{pretty(item.credit_exposure)}</strong></div>}
   {item.time_structure&&<div className="compare-metric"><span>Time structure</span><strong>{pretty(item.time_structure)}</strong></div>}
-  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':'Why this ETF may fit'}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
+  {showExplanation&&match?.explanation?.strengths?.length?<><strong>{contextOnly?'DNA-only alignment':`Why this ${assetLabel(item.asset_type)} may fit`}</strong><ul className="compare-fit-list">{match.explanation.strengths.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   {showExplanation&&match?.explanation?.watchouts?.length?<><strong>What conflicts</strong><ul className="compare-fit-list">{match.explanation.watchouts.slice(0,2).map(text=><li key={text}>{text}</li>)}</ul></>:null}
   <Link className="btn" href={`/investment/${item.id}`}>Open research</Link>
  </article>;
 }
 
+function GicCompareFacts({item}:{item:Instrument}){
+ const options=depositTermOptions(item);
+ const rate=gicRateRange(item);
+ const terms=gicTermRange(item);
+ const minimum=item.minimum_deposit==null?'—':new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ const insurance=item.deposit_insurance_eligible===true?`${item.deposit_insurance_scheme||'Deposit insurance'} eligible`:item.deposit_insurance_eligible===false?'Not marked eligible':'Verify with issuer';
+ return <>
+  <div className="compare-metric"><span>Rate range</span><strong>{rate||'Check issuer'}</strong></div>
+  <div className="compare-metric"><span>Term range</span><strong>{terms||'—'}</strong></div>
+  <div className="compare-metric"><span>Access</span><strong>{pretty(item.redeemability)}</strong></div>
+  <div className="compare-metric"><span>Minimum deposit</span><strong>{minimum}</strong></div>
+  <div className="compare-metric"><span>Deposit insurance</span><strong>{insurance}</strong></div>
+  {item.deposit_as_of_date&&<div className="compare-metric"><span>Terms sourced</span><strong>{formatDate(item.deposit_as_of_date)}</strong></div>}
+  {options.length>0&&<div className="compare-gic-curve">
+   <strong>Term options</strong>
+   <div>{options.slice(0,5).map(option=><span key={option.option_key}><b>{termLabel(option.term_months)}</b>{option.annual_rate_pct==null?'Check issuer':formatMetric(option.annual_rate_pct,'%')}</span>)}</div>
+   {options.length>5&&<small>+{options.length-5} more term{options.length-5===1?'':'s'} in details</small>}
+  </div>}
+ </>;
+}
+
 function FitSummary({canMatch,match,matchStatus,dnaPresent}:{canMatch:boolean;match?:MatchItem;matchStatus?:string;dnaPresent:boolean}){
  if(!canMatch)return <div className="notice"><span>Research profile · personalized Match not enabled for this asset type yet</span></div>;
- if(!match)return <div className="notice"><span>{dnaPresent?'No ETF compatibility row is available for this item':'Complete Investing DNA to add an ETF compatibility layer'}</span></div>;
+ if(!match)return <div className="notice"><span>{dnaPresent?'No fund compatibility row is available for this item':'Complete Investing DNA to add a fund compatibility layer'}</span></div>;
  const score=matchScorePresentation(match,matchStatus);
- const layerCopy=matchStatus==='context_required'?'DNA-only ETF compatibility layer':matchStatus==='review_required'?'Personalized ranking paused':'Personal ETF compatibility layer';
+ const layerCopy=matchStatus==='context_required'?'DNA-only fund compatibility layer':matchStatus==='review_required'?'Personalized ranking paused':'Personal fund compatibility layer';
  return <div><div className="compare-score">{score.text}</div><strong>{matchFitLabel(match,matchStatus)}</strong><p className="fine muted">{layerCopy}</p></div>;
 }
 
@@ -157,6 +196,14 @@ function displayValue(item:Instrument,key:string,suffix='',digits=2){
  if(raw===null||raw===undefined||raw==='')return '—';
  if(typeof raw==='number')return formatMetric(raw,suffix,digits);
  return pretty(raw);
+}
+function formatDate(value:string){
+ const parsed=new Date(value+'T00:00:00Z');
+ return Number.isNaN(parsed.valueOf())?value:new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}).format(parsed);
+}
+function termLabel(months:number){
+ if(months%12===0)return `${months/12}Y`;
+ return `${months}M`;
 }
 function pretty(value:unknown){
  if(value===null||value===undefined||value==='')return '—';

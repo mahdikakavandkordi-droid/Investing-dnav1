@@ -9,17 +9,28 @@
 
 .instrument-structure-v2{padding:28px}.investment-dna-grid-v2{grid-template-columns:repeat(2,1fr)}.structure-extra-list{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.structure-extra-list p{margin:0;background:#f7f9f9;border-radius:13px;padding:13px;display:grid;gap:4px}.structure-extra-list span{font-size:10px;color:#81909a}.structure-extra-list strong{font-size:13px;color:#29475a}.structure-coverage-note{border-top:1px solid #e8eeee;padding-top:13px}
 .instrument-terms-v2{padding:28px}.instrument-terms-v2 h2{font-size:28px;color:var(--dna-ink);letter-spacing:-.035em;margin:8px 0 20px}.terms-grid-v2{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.term-stat-v2{background:#f7f9f9;border-radius:14px;padding:15px;display:grid;gap:5px}.term-stat-v2 span{font-size:10px;color:#7c8993}.term-stat-v2 strong{font-size:16px;color:#1d3b50}.terms-note-v2{margin-top:16px;padding:15px;border-radius:14px;background:#f3f8f7;color:#526b69;line-height:1.55}.terms-source-v2{margin:16px 0 0;color:#788891}.terms-source-v2 a{color:#0b7d74;font-weight:700}
+.gic-term-curve-v2{margin-top:20px;padding-top:18px;border-top:1px solid #e8eeee}
+.gic-term-curve-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:10px}
+.gic-term-curve-head strong{font-size:14px;color:#28485c}
+.gic-term-curve-head span{font-size:10px;color:#89969f}
+.gic-term-curve-grid{display:grid;gap:7px}
+.gic-term-option{display:grid;grid-template-columns:90px minmax(90px,.8fr) minmax(120px,1.2fr) minmax(90px,.8fr);align-items:center;gap:10px;padding:11px 13px;border:1px solid #eee8cb;border-radius:12px;background:#fffdf5}
+.gic-term-option span{font-size:11px;color:#6d7880}
+.gic-term-option strong{font-size:14px;color:#735d10}
+.gic-term-note{margin:10px 0 0;line-height:1.5}
 
 
 /* Asset-language refinement */
 .investment-card-v2{position:relative;overflow:hidden}
 .investment-card-v2:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#80cfc3}
 .investment-card-etf:before{background:#65c8b8}
+.investment-card-mutual_fund:before{background:#6f97c7}
 .investment-card-gic:before{background:#e8c85d}
 .investment-card-bond:before{background:#9b83d8}
 .investment-card-t_bill:before{background:#e59494}
 .investment-card-commercial_paper:before{background:#8aa9b5}
 .investment-card-etf .asset-tag{background:#dff4ef;color:#177f72}
+.investment-card-mutual_fund .asset-tag{background:#e8f0fb;color:#456b99}
 .investment-card-gic .asset-tag{background:#fff0bd;color:#86680b}
 .investment-card-bond .asset-tag{background:#eee5ff;color:#6a4aa6}
 .investment-card-t_bill .asset-tag{background:#ffe0e0;color:#aa4b4b}
@@ -104,6 +115,9 @@
  .allocation-legend,.allocation-breakdown-grid{grid-template-columns:1fr}
  .official-cost-grid-v2{grid-template-columns:repeat(2,1fr)!important}
  .structure-extra-list,.terms-grid-v2{grid-template-columns:repeat(2,1fr)}
+ .gic-term-curve-head{align-items:flex-start}
+ .gic-term-option{grid-template-columns:1fr 1fr;gap:7px;padding:10px 11px}
+ .gic-term-option span,.gic-term-option strong{font-size:11px}
 }
 
 
@@ -155,6 +169,9 @@
 }
 .investment-detail-identity.asset-detail-etf{
  --asset-accent:#65c8b8;--asset-soft:#dff4ef;--asset-ink:#177f72;--asset-wash:#f4fbf9;--asset-border:#cfe9e4;
+}
+.investment-detail-identity.asset-detail-mutual_fund{
+ --asset-accent:#6f97c7;--asset-soft:#e8f0fb;--asset-ink:#456b99;--asset-wash:#f7faff;--asset-border:#d5e2f2;
 }
 .investment-detail-identity.asset-detail-gic{
  --asset-accent:#e8c85d;--asset-soft:#fff0bd;--asset-ink:#86680b;--asset-wash:#fffbef;--asset-border:#f0df9f;
@@ -225,4 +242,23 @@
 @media(max-width:560px){
  .investment-detail-identity .detail-hero-v2:before{height:4px}
  .investment-detail-identity .detail-key-facts-v2 .detail-stat-v2:before{width:2px}
+}
+
+/* V1 same-type compare identity */
+.compare-card{position:relative;overflow:hidden}
+.compare-card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:#d8e1e4}
+.compare-card-etf:before{background:#65c8b8}
+.compare-card-mutual_fund:before{background:#6f97c7}
+.compare-card-gic:before{background:#e8c85d}
+.compare-card-mutual_fund .pill:first-child{background:#e8f0fb;color:#456b99}
+
+.compare-gic-curve{margin:14px 0 4px;padding:13px;border-radius:13px;background:#fffdf5;border:1px solid #eee8cb}
+.compare-gic-curve>strong{display:block;font-size:11px;color:#735d10;margin-bottom:9px}
+.compare-gic-curve>div{display:flex;flex-wrap:wrap;gap:7px}
+.compare-gic-curve>div span{display:grid;gap:2px;min-width:64px;padding:7px 8px;border-radius:9px;background:#fff;color:#6e7880;font-size:9px}
+.compare-gic-curve>div b{font-size:10px;color:#806812}
+.compare-gic-curve small{display:block;margin-top:8px;font-size:9px;color:#8a8f88}
+@media(max-width:560px){
+ .compare-gic-curve>div{display:grid;grid-template-columns:repeat(2,1fr)}
+ .compare-gic-curve>div span{min-width:0}
 }

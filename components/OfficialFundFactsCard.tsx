@@ -19,11 +19,13 @@ function niceDate(value?:string){
 }
 function finiteMix(facts:OfficialFundFacts){
  return Object.entries(facts.asset_mix||{})
+  .filter(([,value])=>value!==null&&value!==undefined)
   .map(([key,value])=>[key,Number(value)] as const)
   .filter(([,value])=>Number.isFinite(value)&&value>=0);
 }
 
-export function OfficialFundFactsCard({facts}:{facts:OfficialFundFacts}){
+export function OfficialFundFactsCard({facts,assetType}:{facts:OfficialFundFacts;assetType?:string|null}){
+ void assetType;
  const mix=finiteMix(facts);
  const overall=mix.filter(([key])=>key==='equity'||key==='fixed_income'||key==='cash'||key==='other');
  const equity=mix.filter(([key])=>key!=='equity'&&key.includes('equity'));
@@ -40,10 +42,11 @@ export function OfficialFundFactsCard({facts}:{facts:OfficialFundFacts}){
  return <section className="official-facts-card official-facts-v2">
   <div className="official-facts-intro">
    <div className="eyebrow">Fund at a glance</div>
-   <h2>How this ETF is allocated</h2>
+   <h2>How this fund is allocated</h2>
    <p className="official-summary">{facts.summary||facts.objective||'A plain-English summary is not available yet.'}</p>
   </div>
 
+  {mix.length===0&&<div className="notice allocation-missing-notice"><strong>Allocation data is not available yet</strong><p>Missing portfolio weights are not displayed as 0%. We will show the allocation once a sourced fund disclosure is available.</p></div>}
   {overall.length>0&&<section className="allocation-overall-card">
    <div className="allocation-head">
     <div><span>Overall allocation</span><small>Shares of the full portfolio</small></div>
@@ -82,9 +85,11 @@ function AllocationBreakdown({title,parent,rows}:{title:string;parent:string;row
  </section>;
 }
 
-export function OfficialFundDocumentCard({facts}:{facts:OfficialFundFacts}){
+export function OfficialFundDocumentCard({facts,assetType}:{facts:OfficialFundFacts;assetType?:string|null}){
+ const isMutualFund=assetType==='MUTUAL_FUND';
+ const documentLabel=isMutualFund?'Fund Facts':'ETF Facts';
  return <section className="official-document-card">
-  <div><div className="eyebrow">Official document</div><h2>ETF Facts</h2><p>The issuer's legal summary covers the fund's objective, holdings, risk, past performance and costs.</p><p className="official-source-line">Source: {facts.source_name}{facts.etf_facts_date?` · ${niceDate(facts.etf_facts_date)}`:''}</p></div>
-  <a className="btn primary" href={facts.etf_facts_url} target="_blank" rel="noreferrer">Open ETF Facts ↗</a>
+  <div><div className="eyebrow">Official document</div><h2>{documentLabel}</h2><p>The issuer's legal summary covers the fund's objective, holdings, risk, past performance and costs.</p><p className="official-source-line">Source: {facts.source_name}{facts.etf_facts_date?` · ${niceDate(facts.etf_facts_date)}`:''}</p></div>
+  <a className="btn primary" href={facts.etf_facts_url} target="_blank" rel="noreferrer">Open {documentLabel} ↗</a>
  </section>;
 }

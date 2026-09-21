@@ -22,7 +22,7 @@ The worker never changes an old real source date just to make a card look fresh.
 | Commercial Paper | Daily where issue-level data exists | No | Current catalog item is research/reference only |
 | ABCP reference metadata | Manual | No | Do not synthesize live values |
 
-Only ETF `price_history` has `automation_enabled=true` in V1. Other policy rows document the intended cadence without pretending an adapter exists.
+ETF `price_history` and alias-backed Mutual Fund NAV/price history are automated in V1. GIC posted-rate / term rows remain source-dated research data until an issuer-specific refresh adapter is validated.
 
 ## Runtime
 
@@ -115,3 +115,22 @@ The active Canadian ETF research universe is now **79 ETFs** across nine issuers
 The source remains explicitly temporary and low priority. After funding, replace it with a licensed Canadian provider, give that provider a higher source priority, run a source-overlap canary, and only then retire `yahoo_free`.
 
 `.github/workflows/market-data-refresh.yml` remains only as an optional manual maintenance fallback; it is not the production scheduler.
+
+
+## Weekly quality watchdog
+
+A separate database watchdog runs every Saturday at **03:15 UTC**, after the Friday post-close worker.
+
+It does not replace the daily refresh worker. It checks whether the data we already ingested still looks operationally trustworthy:
+
+- active ETF market bars are not older than four calendar days;
+- alias-backed Mutual Fund NAV rows are not older than four calendar days;
+- snapshot-only Mutual Funds are counted separately and never presented as live;
+- GIC term/rate source dates are not older than ten calendar days;
+- the latest ETF / Mutual Fund one-day move is flagged for review if its absolute move exceeds 25%;
+- the most recent worker execution is not failed or partial;
+- failed worker attempts from the prior seven days are retained as diagnostics without keeping the current status in warning after a healthy recovery.
+
+Results are written to `market_data_quality_audit_runs`; the latest result is available service-side through `v_latest_market_data_quality_audit`.
+
+This is an integrity / freshness monitor, not a substitute for external source reconciliation. A future production data contract should also run periodic source-overlap checks against a second licensed provider or issuer feed.

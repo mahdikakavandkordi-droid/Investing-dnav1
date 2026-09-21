@@ -110,7 +110,7 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
 
  if(!user){
   return <div className="card instrument-connection-card">
-   {guestMatch&&<GuestEtfFit guest={guestMatch}/>} 
+   {guestMatch&&<GuestFundFit guest={guestMatch}/>} 
    <div className={guestMatch?'connection-save-block':''}>
     <h2>{guestMatch?'Save this research for later':`Keep this ${typeLabel.toLowerCase()} on your radar`}</h2>
     <p>Create a free passwordless account only if you want to save research items and return to your watchlist later.</p>
@@ -118,17 +118,17 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
      <Link className="btn primary" href={'/profile?mode=signup&investment='+id}>Save with an account</Link>
      <Link className="btn" href={'/profile?investment='+id}>Already have an account? Sign in</Link>
     </div>
-    <p className="muted fine">Browsing research, Investor DNA results and same-session ETF Match stay available without an account.</p>
+    <p className="muted fine">Browsing research, Investor DNA results and same-session fund Match stay available without an account.</p>
    </div>
   </div>;
  }
 
  return <div className="card">
   <div className="eyebrow">Connected to your profile</div>
-  <h2>{canMatch?'This ETF and your DNA':'Save this research item'}</h2>
+  <h2>{canMatch?`This ${typeLabel} and your DNA`:'Save this research item'}</h2>
 
   {canMatch
-   ? <EtfFit fit={fit} fitError={fitError}/>
+   ? <FundFit fit={fit} fitError={fitError}/>
    : <p className="muted">Personalized DNA Match is intentionally disabled for {typeLabel} research in this phase. You can still save it and compare its structure with other investments.</p>}
 
   <div className="actions">
@@ -147,7 +147,7 @@ export function InstrumentConnection({id,assetType}:{id:string;assetType?:string
  </div>;
 }
 
-function GuestEtfFit({guest}:{guest:GuestMatch}){
+function GuestFundFit({guest}:{guest:GuestMatch}){
  const {match,status}=guest;
  const score=matchScorePresentation(match,status);
  const rowContextOnly=match.eligibility==='context_required'||match.recommendation_tier==='consider';
@@ -156,7 +156,7 @@ function GuestEtfFit({guest}:{guest:GuestMatch}){
  const watchouts=allowExplanation?(match.explanation?.watchouts||match.watchouts||[]):[];
 
  return <div className="guest-fit-block">
-  <div className="eyebrow">Your current-session ETF match</div>
+  <div className="eyebrow">Your current-session fund match</div>
   <div className="kpi">{score.text}</div>
   <strong>{matchFitLabel(match,status)}</strong>
   {allowExplanation&&match.explanation?.summary&&<p>{match.explanation.summary}</p>}
@@ -170,8 +170,8 @@ function GuestEtfFit({guest}:{guest:GuestMatch}){
  </div>;
 }
 
-/** ETF-only fit presentation for persisted accounts. */
-function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
+/** Fund fit presentation for persisted accounts. */
+function FundFit({fit,fitError}:{fit:Fit|null;fitError:string}){
  if(fit?.status==='available'&&fit.fit){
   const score=matchScorePresentation(fit.fit);
   const watchouts=fit.fit.explanation?.watchouts?.filter(item=>typeof item==='string')||[];
@@ -187,19 +187,19 @@ function EtfFit({fit,fitError}:{fit:Fit|null;fitError:string}){
     ? 'Add the goal, horizon, access and principal-protection needs for this money before a numeric Match score is shown.'
     : score.kind==='review'
       ? 'Personalized ranking is paused while this Match requires review.'
-      : 'Based on your saved DNA and available ETF data. A compatibility signal, not a recommendation to buy.'}</p>
+      : 'Based on your saved DNA and available fund data. A compatibility signal, not a recommendation to buy.'}</p>
   </>;
  }
 
  if(fit?.status==='no_dna'){
   return <>
-   <p>Save your Investing DNA to see ETF compatibility.</p>
+   <p>Save your Investing DNA to see fund compatibility.</p>
    <Link href="/dna/assessment" className="btn">Discover my Investing DNA</Link>
   </>;
  }
 
  if(fit?.status==='unavailable'){
-  return <p>No compatibility result is available for this ETF and your current DNA yet.</p>;
+  return <p>No compatibility result is available for this fund and your current DNA yet.</p>;
  }
 
  if(!fitError)return <p>Loading your DNA connection…</p>;

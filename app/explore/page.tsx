@@ -2,7 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {searchInstruments} from '@/lib/instruments';
+import {gicRateRange,gicTermRange,instrumentDisplayName,searchInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {
  EXPLORE_TABS,
@@ -28,7 +28,7 @@ export default function Explore(){
   setLoading(true);
   setError('');
 
-  searchInstruments({limit:100})
+  searchInstruments({limit:250})
    .then(data=>{if(active)setItems(data)})
    .catch(e=>{if(active)setError(e.message)})
    .finally(()=>{if(active)setLoading(false)});
@@ -41,7 +41,7 @@ export default function Explore(){
   return items.filter(item=>{
    if(!inExploreTab(item.asset_type,tab))return false;
    if(!needle)return true;
-   const haystack=[item.symbol,item.name,item.issuer_name,assetLabel(item.asset_type),item.profile_summary,item.description]
+   const haystack=[item.symbol,item.display_name,item.name,item.issuer_name,assetLabel(item.asset_type),item.profile_summary,item.description]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -56,7 +56,7 @@ export default function Explore(){
     <div className="explore-hero-row">
      <div>
       <h1><span className="desktop-explore-title">Research different structures without the jargon.</span><span className="mobile-explore-title">Explore</span></h1>
-      <p><span className="desktop-explore-copy">Search ETFs, GICs, T-Bills and bonds, then compare what each investment is built to do using a shared Investment DNA language.</span><span className="mobile-explore-copy">Find investments, scan the key facts and open the research that matters to you.</span></p>
+      <p><span className="desktop-explore-copy">Search ETFs, mutual funds and GICs, then compare products within the same type and see how each one fits into your investment research.</span><span className="mobile-explore-copy">Find investments, scan the key facts and open the research that matters to you.</span></p>
      </div>
      <Link className="btn" href="/compare">Compare investments</Link><Link className="mobile-explore-compare" href="/compare">Compare</Link>
     </div>
@@ -83,7 +83,7 @@ export default function Explore(){
       <strong>{loading?'Loading research…':`${visible.length} investment${visible.length===1?'':'s'}`}</strong>
       <span>Only sourced research fields are shown. Missing optional facts are hidden instead of filled with placeholders.</span>
      </div>
-     <span className="pill">DNA Match: ETFs</span>
+     <span className="pill">DNA Match: ETFs + Mutual Funds</span>
     </div>
 
     {loading
@@ -115,10 +115,12 @@ function ExploreTabs({selected,onSelect}:{selected:ExploreTab;onSelect:(tab:Expl
 }
 
 function InvestmentCard({item}:{item:Instrument}){
- const metrics=heroMetrics(item.asset_type)
-  .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
-  .filter(metric=>metric.value!==null)
-  .slice(0,3);
+ const metrics=item.asset_type==='GIC'
+  ? gicCardMetrics(item)
+  : heroMetrics(item.asset_type)
+    .map(metric=>({...metric,value:metricValue(item,metric.key,metric.suffix,metric.digits)}))
+    .filter(metric=>metric.value!==null)
+    .slice(0,3);
  const canMatch=matchEligible(item.asset_type);
 
  return <article className={"investment-card-v2 investment-card-"+String(item.asset_type||"unknown").toLowerCase()}>
@@ -131,7 +133,7 @@ function InvestmentCard({item}:{item:Instrument}){
   </div>
 
   <div className="investment-card-copy">
-   <h2>{item.name}</h2>
+   <h2>{instrumentDisplayName(item)}</h2>
    {item.issuer_name&&<p className="investment-card-issuer">{item.issuer_name}</p>}
    <p>{item.profile_summary||item.description||'Research profile available.'}</p>
   </div>
@@ -143,8 +145,11 @@ function InvestmentCard({item}:{item:Instrument}){
    </div>)}
   </div>}
 
-  {item.market_price_date&&item.asset_type==='ETF'&&<p className="investment-card-market-date">
-   Price updated after close · {formatMarketDate(item.market_price_date)}
+  {item.market_price_date&&(item.asset_type==='ETF'||item.asset_type==='MUTUAL_FUND')&&<p className="investment-card-market-date">
+   {item.asset_type==='MUTUAL_FUND'?'NAV updated':'Price updated after close'} · {formatMarketDate(item.market_price_date)}
+  </p>}
+  {item.asset_type==='GIC'&&item.deposit_as_of_date&&<p className="investment-card-market-date">
+   Rates/terms sourced · {formatMarketDate(item.deposit_as_of_date)}
   </p>}
 
   <div className="investment-card-footer">
@@ -152,6 +157,18 @@ function InvestmentCard({item}:{item:Instrument}){
    <Link aria-label="Open research" href={'/investment/'+item.id}>Open research →</Link>
   </div>
  </article>;
+}
+
+function gicCardMetrics(item:Instrument){
+ const rate=gicRateRange(item);
+ const term=gicTermRange(item);
+ const minimum=item.minimum_deposit==null?null:new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(item.minimum_deposit);
+ return [
+  {key:'gic-rate',label:'Rates',value:rate||'See issuer'},
+  {key:'gic-term',label:'Terms',value:term},
+  {key:'gic-access',label:'Access',value:item.redeemability?pretty(item.redeemability):null},
+  {key:'gic-minimum',label:'Minimum',value:minimum}
+ ].filter(metric=>metric.value!==null).slice(0,3) as {key:string;label:string;value:string}[];
 }
 
 function CatalogError({error,onRetry}:{error:string;onRetry:()=>void}){

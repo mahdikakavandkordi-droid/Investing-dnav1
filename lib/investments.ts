@@ -42,16 +42,16 @@ export type InvestmentDna = {
  category?:string;
  subcategory?:string;
  risk_band?:string;
- risk_score?:number;
- growth_score?:number;
- income_score?:number;
- stability_score?:number;
- diversification_score?:number;
- liquidity_score?:number;
- complexity_score?:number;
+ risk_score?:number|null;
+ growth_score?:number|null;
+ income_score?:number|null;
+ stability_score?:number|null;
+ diversification_score?:number|null;
+ liquidity_score?:number|null;
+ complexity_score?:number|null;
  official_risk_rating?:string;
- official_risk_band_min?:number;
- official_risk_band_max?:number;
+ official_risk_band_min?:number|null;
+ official_risk_band_max?:number|null;
  official_risk_issuer?:string;
  official_risk_source_type?:string;
  official_risk_source_title?:string;
@@ -61,13 +61,13 @@ export type InvestmentDna = {
  official_risk_methodology?:string;
  official_risk_verification_note?:string;
  official_risk_verified_at?:string;
- minimum_horizon_months?:number;
+ minimum_horizon_months?:number|null;
  concentration_level?:string;
  geographic_scope?:string;
  currency_exposure?:string;
- equity_pct?:number;
- fixed_income_pct?:number;
- mer_pct?:number;
+ equity_pct?:number|null;
+ fixed_income_pct?:number|null;
+ mer_pct?:number|null;
  style_class?:string;
  objective_class?:string;
  ideal_investor?:unknown;
@@ -75,8 +75,8 @@ export type InvestmentDna = {
  key_tradeoffs?:unknown;
  explanation?:unknown;
  data_quality_status?:string;
- data_quality_score?:number;
- as_of_date?:string;
+ data_quality_score?:number|null;
+ as_of_date?:string|null;
 };
 
 export type OfficialFundFacts = {
@@ -92,7 +92,7 @@ export type OfficialFundFacts = {
  verified_at?:string;
  summary?:string;
  objective?:string;
- asset_mix?:Record<string,number>;
+ asset_mix?:Record<string,number|null>;
  management_style?:string;
  distribution_policy?:string;
 };

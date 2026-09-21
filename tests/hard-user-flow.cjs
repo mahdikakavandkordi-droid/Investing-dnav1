@@ -193,7 +193,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  await page.goto(ORIGIN+`/compare?ids=${ETF1},${ETF2}`);
  await page.getByText('AAA',{exact:true}).first().waitFor();
  await page.getByText('BBB',{exact:true}).first().waitFor();
- await page.getByText('No ETF compatibility row is available for this item',{exact:true}).first().waitFor();
+ await page.getByText('No fund compatibility row is available for this item',{exact:true}).first().waitFor();
  text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/,'Compare leaked numeric score without complete context');
  console.log('PASS stale available client state cannot bypass the complete-context rule across Result, Match, Screener or Compare');
@@ -207,7 +207,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/Mahdi, a clearer path for this goal\./);
  assert.match(text,/91\s*\/100|91\/100/);
  assert.match(text,/same DNA/i);
- assert.match(text,/Part 3 · Portfolio Blueprint/i);
+ assert.match(text,/Part 3 · Asset mix scenarios/i);
  assert.match(text,/Your Core Blueprint/i);
  assert.match(text,/Equity\s*60%/i);
  assert.match(text,/Equity\s*75%/i);
@@ -232,7 +232,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  await page.getByText('91/100',{exact:true}).first().waitFor();
  text=await page.locator('body').innerText();
  assert.match(text,/91\/100/);
- console.log('PASS complete context unlocks numeric compatibility consistently across the connected ETF surfaces');
+ console.log('PASS complete context unlocks numeric compatibility consistently across the connected fund surfaces');
 
  await seed(draftFor('MAVERICK','review_required',context));
  await page.goto(ORIGIN+'/dna/result');
@@ -241,7 +241,7 @@ function draftFor(archetype,status='context_required',context=null,withBehavior=
  assert.match(text,/DNA Match paused/i);
  assert.doesNotMatch(text,/91\/100|84\/100/);
  await page.goto(ORIGIN+'/match');
- await page.getByRole('heading',{name:'Review this money before ranking ETFs'}).waitFor();
+ await page.getByRole('heading',{name:'Review this money before ranking funds'}).waitFor();
  text=await page.locator('body').innerText();
  assert.doesNotMatch(text,/91\/100|84\/100/);
  assert.equal(await page.locator('.match-dna-card').count(),0);

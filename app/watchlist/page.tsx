@@ -79,7 +79,7 @@ function SavedList({items,error,busyId,onRemove}:{items:SavedInstrument[];error:
 
 function SavedInvestmentCard({item,busy,disabled,onRemove}:{item:SavedInstrument;busy:boolean;disabled:boolean;onRemove:()=>void;}){
  return <article className="watchlist-card-v2">
-  <div>{item.symbol&&<span className="symbol-tag">{item.symbol}</span>}<h2>{item.name}</h2><p>Saved investment research</p></div>
+  <div>{item.symbol&&<span className="symbol-tag">{item.symbol}</span>}<h2>{item.display_name||item.name}</h2><p>Saved investment research</p></div>
   <div className="watchlist-card-actions-v2"><Link href={'/investment/'+item.investment_id}>Open research →</Link><button disabled={disabled} onClick={onRemove}>{busy?'Removing…':'Remove'}</button></div>
  </article>;
 }

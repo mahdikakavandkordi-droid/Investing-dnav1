@@ -10,13 +10,14 @@ export function Nav(){
   <div className="navin">
    <BrandMark/>
    <nav className="links platform-nav-links" aria-label="Main navigation">
-    <Link href="/#how-it-works">How it works</Link>
+    <Link href="/">Home</Link>
     <Link href="/explore">Explore</Link>
     <Link href="/compare">Compare</Link>
-    <Link href="/research">Research</Link>
+    <Link href="/dna">My DNA</Link>
    </nav>
    <div className="account-links platform-account-links">
-    <Link className="profile-link" href="/profile">{user?'Dashboard':loading?'Account':'Sign in'}</Link>
+    <Link className="profile-link" href="/watchlist">Watchlist</Link>
+    <Link className="profile-link" href={user?"/account":"/profile"}>{user?'Account':loading?'Account':'Sign in'}</Link>
     <Link className="btn primary platform-nav-cta" href="/dna/assessment">Start your DNA</Link>
    </div>
   </div>
