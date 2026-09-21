@@ -4,7 +4,7 @@ import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {useAccount} from '@/lib/use-account';
 import {rpc} from '@/lib/supabase';
-import {searchInstruments} from '@/lib/instruments';
+import {instrumentDisplayName,searchInstruments} from '@/lib/instruments';
 import type {Instrument} from '@/lib/instruments';
 import {hasCompleteInvestmentContext,readDraft} from '@/lib/dna';
 import {formatInvestmentContext} from '@/lib/dna-presentation';
@@ -113,6 +113,7 @@ export default function Matches(){
     : eligibleRows;
 
  const idBySymbol=useMemo(()=>new Map(funds.map(fund=>[fund.symbol,fund.id])),[funds]);
+ const displayNameBySymbol=useMemo(()=>new Map(funds.map(fund=>[fund.symbol,instrumentDisplayName(fund)])),[funds]);
  const featured=rows.slice(0,3);
  const more=rows.slice(3,9);
  const compareIds=featured
@@ -136,6 +137,7 @@ export default function Matches(){
            more={more}
            context={context}
            idBySymbol={idBySymbol}
+           displayNameBySymbol={displayNameBySymbol}
            compareIds={compareIds}
           />}
   </div>
@@ -185,7 +187,7 @@ function MissingDnaState(){
 }
 
 function MatchContent({
- match,constraints,featured,more,context,idBySymbol,compareIds
+ match,constraints,featured,more,context,idBySymbol,displayNameBySymbol,compareIds
 }:{
  match?:MatchPayload;
  constraints:ConstraintShape;
@@ -193,6 +195,7 @@ function MatchContent({
  more:MatchItem[];
  context:InvestmentContextProfile|null;
  idBySymbol:Map<string,string>;
+ displayNameBySymbol:Map<string,string>;
  compareIds:string[];
 }){
  const goalLens=match?.status==='available'
@@ -213,7 +216,7 @@ function MatchContent({
   </div>}
 
   {featured.length
-   ? <FeaturedMatches featured={featured} match={match} idBySymbol={idBySymbol}/>
+   ? <FeaturedMatches featured={featured} match={match} idBySymbol={idBySymbol} displayNameBySymbol={displayNameBySymbol}/>
    : match?.status!=='review_required'
      ? <div className="card">
         <h2>{match?.status==='context_required'?'No DNA-only comparisons are available':'No ranked comparisons are available'}</h2>
@@ -222,7 +225,7 @@ function MatchContent({
        </div>
      : null}
 
-  {more.length>0&&match?.status!=='no_suitable_options'&&<MoreMatches rows={more} match={match} idBySymbol={idBySymbol}/>} 
+  {more.length>0&&match?.status!=='no_suitable_options'&&<MoreMatches rows={more} match={match} idBySymbol={idBySymbol} displayNameBySymbol={displayNameBySymbol}/>} 
 
   <div className="match-footer-actions">
    {compareIds.length>=2&&<Link className="btn primary" href={`/compare?ids=${compareIds.join(',')}`}>Compare these side by side</Link>}
@@ -313,7 +316,7 @@ function MatchStatus({match,constraints,featuredCount}:{match?:MatchPayload;cons
  return null;
 }
 
-function FeaturedMatches({featured,match,idBySymbol}:{featured:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>}){
+function FeaturedMatches({featured,match,idBySymbol,displayNameBySymbol}:{featured:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>;displayNameBySymbol:Map<string,string>}){
  const noSuitable=match?.status==='no_suitable_options';
  const contextOnly=match?.status==='context_required';
  return <section className="match-section">
@@ -326,12 +329,13 @@ function FeaturedMatches({featured,match,idBySymbol}:{featured:MatchItem[];match
     index={index}
     match={match}
     investmentId={idBySymbol.get(item.symbol)}
+    displayName={displayNameBySymbol.get(item.symbol)}
    />)}
   </div>
  </section>;
 }
 
-function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;match?:MatchPayload;investmentId?:string}){
+function MatchCard({item,index,match,investmentId,displayName}:{item:MatchItem;index:number;match?:MatchPayload;investmentId?:string;displayName?:string}){
  const contextOnly=match?.status==='context_required';
  const rowContextOnly=item.eligibility==='context_required'||item.recommendation_tier==='consider';
  const allowExplanation=!contextOnly||rowContextOnly;
@@ -353,7 +357,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
    </div>
   </div>
 
-  <h3>{item.name||item.symbol}</h3>
+  <h3>{displayName||item.name||item.symbol}</h3>
   <div className="match-meta">
    <span className="match-fit">{matchFitLabel(item,match?.status)}</span>
    {item.risk_band&&<span className="pill">Official risk: {item.risk_band}</span>}
@@ -387,7 +391,7 @@ function MatchCard({item,index,match,investmentId}:{item:MatchItem;index:number;
  </article>;
 }
 
-function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>}){
+function MoreMatches({rows,match,idBySymbol,displayNameBySymbol}:{rows:MatchItem[];match?:MatchPayload;idBySymbol:Map<string,string>;displayNameBySymbol:Map<string,string>}){
  const contextOnly=match?.status==='context_required';
  return <section className="match-section match-more">
   <div className="eyebrow">{contextOnly?'More DNA-only comparisons':'Also passed current limits'}</div>
@@ -399,7 +403,7 @@ function MoreMatches({rows,match,idBySymbol}:{rows:MatchItem[];match?:MatchPaylo
     return <article className="match-mini-card" key={item.symbol}>
      <div>
       <span className="pill">{item.symbol}</span>
-      <h3>{item.name||item.symbol}</h3>
+      <h3>{displayNameBySymbol.get(item.symbol)||item.name||item.symbol}</h3>
       <p>{matchFitLabel(item,match?.status)}{item.risk_band?` · Official risk: ${item.risk_band}`:''}</p>
      </div>
      <div className="match-mini-score">{score.text}</div>
