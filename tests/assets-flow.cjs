@@ -11,9 +11,9 @@ const ids={
  gic:'44444444-4444-4444-8444-444444444444'
 };
 const common={capital_protection:'none',liquidity_level:'high',income_predictability:'medium',diversification_level:'diversified',complexity_level:'medium',time_structure:'open_ended',structure_model_version:'structure-v1',structure_as_of_date:'2026-09-18'};
-const etf={...common,id:ids.etf,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',asset_type:'ETF',issuer_name:'Vanguard Canada',price:35.2,return_1y_pct:13.89,mer_pct:.22,risk_level:'Low to Medium',price_volatility:'low',growth_participation:'medium',interest_rate_sensitivity:'medium',profile_summary:'Diversified ETF research example.'};
-const mf={...common,id:ids.mf,symbol:'RBF460',name:'RBC Select Balanced Portfolio - Series A',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:38.81,return_1y_pct:17.5,return_3y_annualized_pct:13.3,return_5y_annualized_pct:7,mer_pct:1.94,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF460',cifsc_category:'Global Neutral Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Annually',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf460',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:60,fixed_income:38,cash:2},profile_summary:'Balanced mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
-const mf2={...common,id:ids.mf2,symbol:'RBF461',name:'RBC Select Conservative Portfolio - Series A',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:26.53,return_1y_pct:12.2,return_3y_annualized_pct:10,return_5y_annualized_pct:5,mer_pct:1.70,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF461',cifsc_category:'Global Fixed Income Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Quarterly',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf461',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:40,fixed_income:58,cash:2},profile_summary:'Conservative mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
+const etf={...common,id:ids.etf,symbol:'VBAL',name:'Vanguard Balanced ETF Portfolio',display_name:'Balanced All-in-One Portfolio',asset_type:'ETF',issuer_name:'Vanguard Canada',price:35.2,return_1y_pct:13.89,mer_pct:.22,risk_level:'Low to Medium',price_volatility:'low',growth_participation:'medium',interest_rate_sensitivity:'medium',profile_summary:'Diversified ETF research example.'};
+const mf={...common,id:ids.mf,symbol:'RBF460',name:'RBC Select Balanced Portfolio - Series A',display_name:'Balanced Global Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:38.81,return_1y_pct:17.5,return_3y_annualized_pct:13.3,return_5y_annualized_pct:7,mer_pct:1.94,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF460',cifsc_category:'Global Neutral Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Annually',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf460',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:60,fixed_income:38,cash:2},profile_summary:'Balanced mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
+const mf2={...common,id:ids.mf2,symbol:'RBF461',name:'RBC Select Conservative Portfolio - Series A',display_name:'Conservative Global Portfolio',asset_type:'MUTUAL_FUND',issuer_name:'RBC Global Asset Management Inc.',price:26.53,return_1y_pct:12.2,return_3y_annualized_pct:10,return_5y_annualized_pct:5,mer_pct:1.70,risk_level:'Low to Medium',series_name:'Series A',fund_code:'RBF461',cifsc_category:'Global Fixed Income Balanced',load_structure:'No Load',sales_status:'Open',minimum_initial_investment:500,minimum_additional_investment:25,mf_income_distribution_frequency:'Quarterly',capital_gains_distribution_frequency:'Annually',mutual_fund_source_name:'RBC Global Asset Management',mutual_fund_source_url:'https://example.test/rbf461',mutual_fund_as_of_date:'2026-06-30',profile_target_allocation:{equity:40,fixed_income:58,cash:2},profile_summary:'Conservative mutual fund research example.',market_price_date:'2026-09-18',market_price_source_key:'yahoo_free'};
 const gic={...common,id:ids.gic,symbol:'RBC-GIC-1Y-NR',name:'RBC 1-Year Non-Redeemable GIC',asset_type:'GIC',issuer_name:'Royal Bank of Canada',capital_protection:'insured_deposit',liquidity_level:'locked',price_volatility:'none',income_predictability:'very_high',time_structure:'locked_term',deposit_rate_pct:2.45,term_months:12,redeemability:'non_redeemable',minimum_deposit:1000,interest_payment_frequency:'At maturity',registered_account_eligibility:['TFSA','RRSP'],deposit_insurance_scheme:'CDIC',deposit_insurance_eligible:true,deposit_source_name:'RBC Royal Bank',deposit_source_url:'https://example.test/rbc',deposit_as_of_date:'2026-09-11',profile_summary:'Fixed-rate deposit research example.'};
 const catalog=[etf,mf,mf2,gic];
 
@@ -68,13 +68,14 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  assert.equal(await page.getByRole('tab',{name:'T-Bills',exact:true}).count(),0);
  assert.equal(await page.getByRole('tab',{name:'Bonds',exact:true}).count(),0);
  assert.equal(await page.getByRole('tab',{name:'Money Market',exact:true}).count(),0);
+ await page.getByRole('heading',{name:'Balanced Global Portfolio',exact:true}).waitFor();
  let text=await page.locator('body').innerText();
- assert.match(text,/RBC Select Balanced Portfolio/);
+ assert.match(text,/Balanced Global Portfolio/);
  assert.match(text,/RBC 1-Year Non-Redeemable GIC/);
  check('Explore is focused on ETF, Mutual Fund and GIC only');
 
  await page.getByRole('tab',{name:'Mutual Funds',exact:true}).click();
- await page.getByRole('heading',{name:mf.name,exact:true}).waitFor();
+ await page.getByRole('heading',{name:mf.display_name,exact:true}).waitFor();
  assert.equal(await page.getByRole('heading',{name:gic.name,exact:true}).count(),0);
  const mfCard=page.locator('.investment-card-mutual_fund').filter({hasText:'RBF460'});
  assert.equal(await mfCard.count(),1);
@@ -93,7 +94,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  assert.match(text,/Latest NAV/i);
  await page.getByRole('button',{name:'Save & official documents',exact:true}).click();
  text=await page.locator('body').innerText();
- assert.match(text,/Fund Facts/);
+ assert.match(text,/Fund Facts/);assert.match(text,/Official name: RBC Select Balanced Portfolio - Series A/);
  check('Mutual-fund detail exposes series, fees, allocation, NAV freshness and Fund Facts');
 
  await page.goto(origin+`/compare?ids=${ids.mf}`);
@@ -104,7 +105,7 @@ const gicRisk={status:'available',model_version:'product-risk-dna-v1-research',m
  assert.ok(secondOptions.some(x=>x.includes('RBF461')));
  assert.ok(secondOptions.every(x=>!x.includes('GIC')&&!x.includes('VBAL')));
  await page.getByRole('button',{name:'Compare investments',exact:true}).click();
- await page.getByRole('heading',{name:mf2.name,exact:true}).waitFor();
+ await page.getByRole('heading',{name:mf2.display_name,exact:true}).waitFor();
  assert.equal(await page.getByRole('heading',{name:gic.name,exact:true}).count(),0);
  check('Compare is same-type only and keeps Mutual Funds separate from ETFs and GICs');
 
