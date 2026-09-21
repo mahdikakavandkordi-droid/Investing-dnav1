@@ -20,7 +20,7 @@ export function HomeAssetRail(){
 
  useEffect(()=>{
   let active=true;
-  searchInstruments({limit:100})
+  searchInstruments({limit:250})
    .then(data=>{if(active)setItems(Array.isArray(data)?data:[])})
    .catch(err=>{if(active)setError(err instanceof Error?err.message:String(err))})
    .finally(()=>{if(active)setLoading(false)});
