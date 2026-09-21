@@ -28,7 +28,7 @@ export default function Explore(){
   setLoading(true);
   setError('');
 
-  searchInstruments({limit:100})
+  searchInstruments({limit:250})
    .then(data=>{if(active)setItems(data)})
    .catch(e=>{if(active)setError(e.message)})
    .finally(()=>{if(active)setLoading(false)});
